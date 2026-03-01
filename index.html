@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RxPerform Pro — Pharmacy Performance System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Geist+Mono:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Clinical Dark + Cyan Accent
+═══════════════════════════════════════════════════════════ */
+:root {
+  --ink:       #070c14;
+  --ink1:      #0d1525;
+  --ink2:      #111d2e;
+  --ink3:      #162035;
+  --ink4:      #1e2d42;
+  --ink5:      #243348;
+  --line:      rgba(0,212,255,0.08);
+  --line2:     rgba(0,212,255,0.16);
+  --line3:     rgba(0,212,255,0.28);
+  --cyan:      #00d4ff;
+  --cyan2:     #00a8cc;
+  --cyan3:     rgba(0,212,255,0.12);
+  --teal:      #00e5c4;
+  --amber:     #ffb340;
+  --rose:      #ff4d6d;
+  --emerald:   #00c896;
+  --slate:     #64748b;
+  --muted:     #4a5568;
+  --text:      #c8d8e8;
+  --text2:     #7a8fa6;
+  --text3:     #3d5166;
+  --white:     #e8f2fc;
+  --glow:      0 0 40px rgba(0,212,255,0.08);
+  --glow2:     0 0 20px rgba(0,212,255,0.15);
+  --r:         12px;
+  --r2:        18px;
+  --sidebar:   270px;
+  --topbar:    56px;
+  --toolbar:   64px;
+  --trans:     all 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { height:100%; }
+body {
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════ SCROLLBARS ═══════════════════ */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--ink5); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--muted); }
+
+/* ═══════════════════ LOGIN ═══════════════════ */
+#loginScreen {
+  position:fixed; inset:0; z-index:9000;
+  background:var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column;
+  background-image: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 70%);
+}
+.login-gfx {
+  position:absolute; inset:0; overflow:hidden; pointer-events:none;
+}
+.login-gfx::before {
+  content:''; position:absolute;
+  top:-200px; left:50%; transform:translateX(-50%);
+  width:600px; height:600px; border-radius:50%;
+  border:1px solid rgba(0,212,255,0.06);
+  box-shadow: 0 0 0 60px rgba(0,212,255,0.025), 0 0 0 120px rgba(0,212,255,0.015), 0 0 0 200px rgba(0,212,255,0.008);
+}
+.login-panel {
+  position:relative; z-index:1;
+  background:var(--ink1);
+  border:1px solid var(--line2);
+  border-radius: var(--r2);
+  padding: 48px 44px 44px;
+  width: min(440px, 94vw);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), var(--glow);
+  animation: liftIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes liftIn {
+  from { opacity:0; transform:translateY(30px) scale(0.96); }
+  to   { opacity:1; transform:none; }
+}
+.login-wordmark {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.login-wordmark span { color:var(--cyan); }
+.login-tagline { font-size:12px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:36px; }
+.role-tabs {
+  display:flex; gap:0; margin-bottom:28px;
+  background:var(--ink2); border-radius:var(--r); padding:4px;
+  border:1px solid var(--line);
+}
+.role-tab {
+  flex:1; padding:9px 0; border:none; background:transparent;
+  color:var(--text3); font-size:13px; font-weight:500;
+  cursor:pointer; border-radius:9px; transition:var(--trans);
+  font-family:inherit;
+}
+.role-tab.active {
+  background:var(--ink4); color:var(--cyan); box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.fi-label {
+  display:block; font-size:10px; font-weight:600;
+  text-transform:uppercase; letter-spacing:1.5px;
+  color:var(--text3); margin-bottom:8px;
+}
+.fi-wrap { position:relative; margin-bottom:18px; }
+.fi-icon {
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--text3); font-size:15px; pointer-events:none;
+}
+.fi {
+  width:100%; background:var(--ink2);
+  border:1px solid var(--line2);
+  border-radius:var(--r);
+  padding:13px 14px 13px 40px;
+  color:var(--white); font-size:14px; font-family:inherit;
+  outline:none; transition:var(--trans);
+}
+.fi:focus { border-color:var(--cyan); background:var(--ink3); box-shadow:0 0 0 3px rgba(0,212,255,0.08); }
+.fi-hint { font-size:11px; color:var(--text3); margin-top:6px; }
+.login-btn {
+  width:100%; padding:14px;
+  background:linear-gradient(135deg,var(--cyan2),var(--cyan));
+  border:none; border-radius:var(--r);
+  color:var(--ink); font-size:14px; font-weight:700;
+  cursor:pointer; font-family:inherit; letter-spacing:0.3px;
+  transition:var(--trans); position:relative; overflow:hidden;
+}
+.login-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.12),transparent);
+  opacity:0; transition:var(--trans);
+}
+.login-btn:hover::before { opacity:1; }
+.login-btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,212,255,0.3); }
+.login-btn:active { transform:translateY(0); }
+.login-err {
+  margin-top:14px; padding:10px 14px;
+  background:rgba(255,77,109,0.1); border:1px solid rgba(255,77,109,0.2);
+  border-radius:9px; color:var(--rose); font-size:12px;
+  display:none; align-items:center; gap:8px;
+}
+.role-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  letter-spacing:1px; padding:3px 10px; border-radius:20px;
+  margin-left:10px;
+}
+.badge-admin { background:rgba(255,179,64,0.15); color:var(--amber); border:1px solid rgba(255,179,64,0.25); }
+.badge-viewer { background:rgba(0,212,255,0.12); color:var(--cyan); border:1px solid rgba(0,212,255,0.2); }
+
+/* ═══════════════════ APP SHELL ═══════════════════ */
+#app {
+  display:none; flex-direction:column;
+  height:100vh; height:100dvh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  height:var(--topbar); flex-shrink:0;
+  background:var(--ink1);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center;
+  padding:0 20px; gap:16px;
+  position:relative; z-index:50;
+}
+.topbar-logo {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:18px; letter-spacing:-0.3px;
+  white-space:nowrap;
+}
+.topbar-logo span { color:var(--cyan); }
+.topbar-sep { flex:1; }
+.topbar-date {
+  font-family:'Geist Mono',monospace;
+  font-size:11px; color:var(--text3);
+  white-space:nowrap;
+}
+.tb-icon-btn {
+  width:34px; height:34px; border-radius:9px;
+  border:1px solid var(--line);
+  background:transparent; color:var(--text2);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:16px; transition:var(--trans);
+}
+.tb-icon-btn:hover { background:var(--ink3); color:var(--white); border-color:var(--line2); }
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 12px 4px 4px;
+  background:var(--ink2); border:1px solid var(--line);
+  border-radius:20px; cursor:pointer; transition:var(--trans);
+}
+.user-chip:hover { border-color:var(--line2); background:var(--ink3); }
+.user-ava {
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700;
+}
+.user-name { font-size:12px; font-weight:500; }
+.hamburger-btn {
+  display:none; width:34px; height:34px;
+  border-radius:9px; border:1px solid var(--line);
+  background:transparent; color:var(--text2);
+  cursor:pointer; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0; transition:var(--trans);
+}
+.hamburger-btn:hover { background:var(--ink3); color:var(--white); }
+
+/* ── TOOL BAR ── */
+.toolbar {
+  height:var(--toolbar); flex-shrink:0;
+  background:var(--ink); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; padding:0 20px; gap:8px;
+  overflow-x:auto;
+}
+.toolbar::-webkit-scrollbar { height:0; }
+.t-btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:8px 16px; border-radius:var(--r);
+  border:1px solid var(--line); background:var(--ink2);
+  color:var(--text2); font-size:12px; font-weight:500;
+  cursor:pointer; white-space:nowrap; font-family:inherit;
+  transition:var(--trans); flex-shrink:0;
+}
+.t-btn:hover { background:var(--ink3); color:var(--white); border-color:var(--line2); }
+.t-btn.t-active {
+  background:var(--cyan3); color:var(--cyan);
+  border-color:var(--line3);
+}
+.t-btn .t-ico { font-size:14px; }
+.t-divider {
+  width:1px; height:28px; background:var(--line);
+  flex-shrink:0; margin:0 4px;
+}
+.viewer-note {
+  margin-left:auto; flex-shrink:0;
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:11px; color:var(--text3); padding:6px 12px;
+  background:rgba(0,212,255,0.06); border:1px solid var(--line);
+  border-radius:20px;
+}
+
+/* ── BODY ── */
+.body-row {
+  display:flex; flex:1; overflow:hidden;
+  min-height:0;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sidebar); flex-shrink:0;
+  background:var(--ink1);
+  border-right:1px solid var(--line);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.sb-head {
+  padding:16px; border-bottom:1px solid var(--line); flex-shrink:0;
+}
+.sb-title {
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  letter-spacing:2px; color:var(--text3); margin-bottom:12px;
+}
+.sb-search-wrap { position:relative; }
+.sb-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:13px; }
+.sb-search {
+  width:100%; background:var(--ink2); border:1px solid var(--line);
+  border-radius:10px; padding:9px 10px 9px 32px;
+  color:var(--text); font-size:13px; font-family:inherit;
+  outline:none; transition:var(--trans);
+}
+.sb-search:focus { border-color:var(--cyan); background:var(--ink3); }
+.sb-list { overflow-y:auto; flex:1; padding:8px; }
+.sb-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 10px; border-radius:10px;
+  cursor:pointer; transition:var(--trans); margin-bottom:2px;
+  position:relative;
+}
+.sb-item::before {
+  content:''; position:absolute; left:0; top:50%;
+  transform:translateY(-50%) scaleY(0);
+  width:3px; height:60%; background:var(--cyan);
+  border-radius:0 2px 2px 0; transition:var(--trans);
+}
+.sb-item:hover { background:var(--ink3); }
+.sb-item.sb-active { background:rgba(0,212,255,0.08); }
+.sb-item.sb-active::before { transform:translateY(-50%) scaleY(1); }
+.sb-ava {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; flex-shrink:0;
+  font-family:'Syne',sans-serif;
+}
+.sb-info { flex:1; min-width:0; }
+.sb-name {
+  font-size:13px; font-weight:500; color:var(--white);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.sb-role { font-size:10px; color:var(--text3); margin-top:1px; }
+.sb-score {
+  font-family:'Geist Mono',monospace; font-size:11px; font-weight:500;
+  padding:2px 7px; border-radius:6px;
+}
+.sc-hi { background:rgba(0,200,150,0.15); color:var(--emerald); }
+.sc-md { background:rgba(255,179,64,0.15); color:var(--amber); }
+.sc-lo { background:rgba(255,77,109,0.15); color:var(--rose); }
+.sc-na { background:var(--ink4); color:var(--text3); }
+.sb-foot { padding:12px; flex-shrink:0; border-top:1px solid var(--line); }
+.sb-add-btn {
+  width:100%; padding:9px; border-radius:10px;
+  border:1px dashed var(--line2); background:transparent;
+  color:var(--text3); font-size:12px; cursor:pointer;
+  font-family:inherit; transition:var(--trans);
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.sb-add-btn:hover { background:var(--ink3); color:var(--text2); border-color:var(--line3); }
+
+/* ── MAIN ── */
+.main {
+  flex:1; overflow-y:auto; display:flex; flex-direction:column;
+  min-width:0;
+}
+.main-pad { padding:22px; display:flex; flex-direction:column; gap:18px; flex:1; }
+
+/* ── VIEWS ── */
+.view { display:none; flex-direction:column; gap:18px; flex:1; }
+.view.v-on { display:flex; }
+
+/* ── CARD ── */
+.card {
+  background:var(--ink1); border:1px solid var(--line);
+  border-radius:var(--r2); overflow:hidden;
+}
+.card-head {
+  padding:14px 20px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:10px;
+}
+.card-title { font-size:13px; font-weight:600; color:var(--white); }
+.card-sub { font-size:11px; color:var(--text3); margin-top:1px; }
+
+/* ── COLLEAGUE HEADER ── */
+.col-hdr {
+  background:var(--ink1); border:1px solid var(--line);
+  border-radius:var(--r2); padding:20px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:16px;
+  background-image: radial-gradient(ellipse 40% 80% at 0% 50%, rgba(0,212,255,0.04) 0%, transparent 60%);
+}
+.col-hdr-left { display:flex; align-items:center; gap:16px; }
+.col-hdr-ava {
+  width:58px; height:58px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800; font-family:'Syne',sans-serif;
+  flex-shrink:0;
+}
+.col-hdr-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+.col-hdr-role { font-size:12px; color:var(--text2); margin-top:3px; }
+.col-metrics { display:flex; gap:24px; flex-wrap:wrap; }
+.col-metric { text-align:center; }
+.col-metric-val {
+  font-family:'Geist Mono',monospace; font-size:22px; font-weight:600;
+  line-height:1;
+}
+.col-metric-lbl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.col-hdr-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* ── MONTH ROW ── */
+.month-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between; }
+.month-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.m-pill {
+  padding:6px 14px; border-radius:8px; border:1px solid var(--line);
+  background:var(--ink2); color:var(--text3); font-size:12px;
+  cursor:pointer; font-family:inherit; transition:var(--trans);
+}
+.m-pill:hover { background:var(--ink3); color:var(--text2); border-color:var(--line2); }
+.m-pill.m-on { background:var(--cyan3); color:var(--cyan); border-color:var(--line3); }
+.month-actions { display:flex; gap:6px; }
+
+/* ── PERFORMANCE TABLE ── */
+.perf-scroll { overflow-x:auto; }
+table.ptbl {
+  width:100%; border-collapse:collapse;
+  font-size:11.5px; min-width:680px;
+}
+.ptbl th {
+  padding:9px 7px; background:var(--ink2);
+  color:var(--text3); font-weight:600;
+  text-align:center; border-bottom:1px solid var(--line);
+  white-space:nowrap; font-family:'Geist Mono',monospace; font-size:10px;
+}
+.ptbl th.ptbl-cr {
+  text-align:left; padding-left:18px; min-width:180px;
+  position:sticky; left:0; background:var(--ink2); z-index:2;
+}
+.ptbl td {
+  padding:5px 4px; border-bottom:1px solid rgba(0,212,255,0.04);
+  text-align:center; vertical-align:middle;
+}
+.ptbl td.ptbl-cr-cell {
+  text-align:left; padding-left:18px;
+  position:sticky; left:0; background:var(--ink1); z-index:1;
+  white-space:nowrap;
+}
+.ptbl tr:hover td { background:rgba(0,212,255,0.02); }
+.ptbl tr:hover td.ptbl-cr-cell { background:var(--ink2); }
+.ptbl tr.trow-total td {
+  background:var(--ink2); border-top:1px solid var(--line);
+  font-weight:600;
+}
+.ptbl tr.trow-total td.ptbl-cr-cell { background:var(--ink2); }
+
+/* Score cell */
+.sc-dot {
+  width:30px; height:30px; border-radius:7px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:'Geist Mono',monospace; font-size:12px; font-weight:500;
+  cursor:pointer; transition:var(--trans);
+  border:1.5px solid transparent; background:var(--ink2);
+  color:var(--text3); user-select:none;
+}
+.sc-dot:hover { border-color:var(--cyan); color:var(--cyan); transform:scale(1.1); }
+.sc-dot.readonly { cursor:default; }
+.sc-dot.readonly:hover { transform:none; border-color:transparent; }
+.sc-5 { background:rgba(0,200,150,0.18); color:#00c896; }
+.sc-4 { background:rgba(0,200,150,0.1); color:#38d9a9; }
+.sc-3 { background:rgba(255,179,64,0.15); color:#ffb340; }
+.sc-2 { background:rgba(255,120,50,0.15); color:#ff7832; }
+.sc-1 { background:rgba(255,77,109,0.2); color:#ff4d6d; }
+.sc-dot.has-note::after {
+  content:''; position:absolute; top:3px; right:3px;
+  width:4px; height:4px; border-radius:50%; background:var(--cyan);
+}
+.sc-dot.has-note { position:relative; }
+
+.row-avg {
+  font-family:'Geist Mono',monospace; font-size:11px; font-weight:600;
+}
+.col-avg-v {
+  font-family:'Geist Mono',monospace; font-size:10px; font-weight:500;
+  color:var(--text2);
+}
+.cr-cat-badge {
+  display:inline-block; font-size:9px; padding:1px 6px;
+  border-radius:4px; background:var(--ink4); color:var(--text3);
+  margin-left:6px; text-transform:uppercase; letter-spacing:0.5px;
+}
+
+/* ── STATS ── */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+.stat-card {
+  background:var(--ink1); border:1px solid var(--line);
+  border-radius:var(--r2); padding:18px 20px;
+  display:flex; align-items:center; gap:14px;
+  transition:var(--trans);
+}
+.stat-card:hover { border-color:var(--line2); background:var(--ink2); }
+.stat-icon { font-size:26px; flex-shrink:0; }
+.stat-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; line-height:1; }
+.stat-lbl { font-size:11px; color:var(--text3); margin-top:4px; text-transform:uppercase; letter-spacing:0.8px; }
+
+/* ── CHARTS ── */
+.chart-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(400px,1fr)); gap:16px; }
+.chart-card {
+  background:var(--ink1); border:1px solid var(--line);
+  border-radius:var(--r2); padding:20px;
+}
+.chart-card-title { font-size:12px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.chart-card-sub { font-size:11px; color:var(--text3); margin-bottom:16px; }
+.chart-wrap { position:relative; height:210px; }
+
+/* ── FILTER ── */
+.filter-box {
+  background:var(--ink1); border:1px solid var(--line);
+  border-radius:var(--r2); padding:20px;
+  display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;
+}
+.fg { display:flex; flex-direction:column; gap:7px; }
+.fg-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(--text3); }
+.fg-sel, .fg-inp {
+  background:var(--ink2); border:1px solid var(--line2);
+  border-radius:var(--r); padding:9px 14px;
+  color:var(--text); font-size:13px; font-family:inherit;
+  outline:none; transition:var(--trans); cursor:pointer;
+}
+.fg-sel:focus, .fg-inp:focus { border-color:var(--cyan); }
+
+/* ── BUTTONS ── */
+.btn {
+  padding:8px 16px; border-radius:var(--r);
+  border:1px solid var(--line); background:var(--ink3);
+  color:var(--text2); font-size:12px; font-weight:500;
+  cursor:pointer; font-family:inherit; transition:var(--trans);
+  display:inline-flex; align-items:center; gap:6px;
+}
+.btn:hover { background:var(--ink4); color:var(--white); border-color:var(--line2); }
+.btn-primary {
+  background:var(--cyan3); color:var(--cyan);
+  border-color:var(--line3);
+}
+.btn-primary:hover { background:rgba(0,212,255,0.2); color:var(--cyan); }
+.btn-danger { color:var(--rose); background:rgba(255,77,109,0.08); border-color:rgba(255,77,109,0.2); }
+.btn-danger:hover { background:rgba(255,77,109,0.15); }
+.btn-sm { padding:6px 12px; font-size:11px; }
+
+/* ── MODALS ── */
+.modal-bg {
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center;
+  padding:16px;
+}
+.modal-bg.m-open { display:flex; }
+.modal {
+  background:var(--ink1); border:1px solid var(--line2);
+  border-radius:var(--r2); padding:28px;
+  width:min(500px,100%); max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,0.7), var(--glow2);
+  animation:liftIn 0.25s ease;
+}
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; color:var(--white); }
+.form-g { margin-bottom:16px; }
+.form-lbl { display:block; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(--text3); margin-bottom:8px; }
+.form-in, .form-sel {
+  width:100%; background:var(--ink2); border:1px solid var(--line2);
+  border-radius:var(--r); padding:11px 14px;
+  color:var(--white); font-size:13px; font-family:inherit;
+  outline:none; transition:var(--trans);
+}
+.form-in:focus, .form-sel:focus { border-color:var(--cyan); }
+.m-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+.color-grid { display:flex; gap:8px; flex-wrap:wrap; }
+.c-swatch {
+  width:30px; height:30px; border-radius:8px;
+  cursor:pointer; border:2px solid transparent;
+  transition:var(--trans); flex-shrink:0;
+}
+.c-swatch.c-sel { border-color:#fff; transform:scale(1.15); }
+
+/* Score picker */
+.score-picker { display:flex; gap:8px; flex-wrap:wrap; }
+.sp-o {
+  width:44px; height:44px; border-radius:10px;
+  border:2px solid transparent; cursor:pointer;
+  font-size:16px; font-weight:700; transition:var(--trans);
+  font-family:'Geist Mono',monospace;
+  display:flex; align-items:center; justify-content:center;
+}
+.sp-o:hover { transform:scale(1.1); }
+.sp-o.sp-sel { border-color:#fff; transform:scale(1.18); box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+
+/* Progress bar */
+.prog-wrap { height:4px; background:var(--ink4); border-radius:2px; overflow:hidden; margin-top:6px; }
+.prog-fill { height:100%; border-radius:2px; transition:width 0.5s ease; }
+
+/* ── RESULT TABLE ── */
+.rtbl { width:100%; border-collapse:collapse; font-size:12px; }
+.rtbl th { padding:10px 14px; background:var(--ink2); color:var(--text3); font-weight:600; text-align:left; border-bottom:1px solid var(--line); font-size:10px; text-transform:uppercase; letter-spacing:0.8px; }
+.rtbl td { padding:10px 14px; border-bottom:1px solid rgba(0,212,255,0.04); }
+.rtbl tr:hover td { background:var(--ink2); }
+
+/* ── TOAST ── */
+.toast-wrap {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  display:flex; flex-direction:column; gap:8px;
+  pointer-events:none;
+}
+.toast {
+  background:var(--ink2); border:1px solid var(--line2);
+  border-radius:12px; padding:11px 18px;
+  font-size:12px; color:var(--text);
+  box-shadow:0 8px 28px rgba(0,0,0,0.5);
+  display:flex; align-items:center; gap:10px;
+  transform:translateX(120px); opacity:0;
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  max-width:300px;
+}
+.toast.t-show { transform:none; opacity:1; }
+.toast-bar { width:3px; height:100%; position:absolute; left:0; top:0; border-radius:2px; }
+
+/* ── EMPTY STATE ── */
+.empty-st {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  flex:1; gap:14px; padding:48px 20px;
+}
+.empty-st-ico { font-size:52px; opacity:0.4; }
+.empty-st-txt { font-size:14px; color:var(--text3); text-align:center; max-width:280px; line-height:1.6; }
+
+/* ── SIDEBAR OVERLAY ── */
+.sb-overlay {
+  display:none; position:fixed; inset:0; z-index:49;
+  background:rgba(0,0,0,0.6);
+}
+.sb-overlay.sb-ov-on { display:block; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .sidebar {
+    position:fixed; left:0; top:0; height:100%;
+    z-index:50; transform:translateX(-100%);
+  }
+  .sidebar.sb-open { transform:none; }
+  .hamburger-btn { display:flex; }
+  .chart-grid { grid-template-columns:1fr; }
+  .main-pad { padding:14px; }
+  .toolbar { padding:0 12px; }
+  .t-btn-label { display:none; }
+  .t-btn { padding:8px 12px; }
+  .col-hdr { padding:14px; }
+}
+@media(max-width:480px) {
+  :root { --topbar:52px; --toolbar:58px; }
+  .col-metrics { gap:16px; }
+  .col-metric-val { font-size:18px; }
+  .topbar-date { display:none; }
+}
+
+/* ── PRINT ── */
+@media print {
+  .sidebar, .topbar, .toolbar, .no-print, .sb-overlay { display:none!important; }
+  .main { overflow:visible; }
+  body { background:#fff; color:#000; overflow:visible; }
+  .ptbl th { background:#f0f0f0; color:#333; }
+  .ptbl td.ptbl-cr-cell { background:#fff; }
+  .card { border:1px solid #ddd; break-inside:avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN SCREEN ═══════ -->
+<div id="loginScreen">
+  <div class="login-gfx"></div>
+  <div class="login-panel">
+    <div class="login-wordmark">Rx<span>Perform</span> Pro</div>
+    <div class="login-tagline">Pharmacy Performance Management</div>
+    <div class="role-tabs">
+      <button class="role-tab active" id="tabAdmin" onclick="selectRole('admin')">⚙ Administrator</button>
+      <button class="role-tab" id="tabViewer" onclick="selectRole('viewer')">👁 View Only</button>
+    </div>
+    <label class="fi-label" id="loginRoleHint">Administrator access — full edit rights</label>
+    <div class="fi-wrap">
+      <span class="fi-icon">🔑</span>
+      <input class="fi" type="password" id="loginPass" placeholder="Enter password…" autocomplete="current-password">
+    </div>
+    <div class="fi-hint" id="loginHint">Admin: <b style="color:var(--amber)">admin123</b> &nbsp;|&nbsp; Viewer: <b style="color:var(--cyan)">view456</b></div>
+    <button class="login-btn" onclick="doLogin()" style="margin-top:18px">Sign In →</button>
+    <div class="login-err" id="loginErr">⚠ Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="hamburger-btn" onclick="toggleSb()">☰</button>
+    <div class="topbar-logo">Rx<span>Perform</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-date" id="topDate"></div>
+    <div class="user-chip" onclick="logoutConfirm()" title="Sign out">
+      <div class="user-ava" id="userAva" style="background:var(--ink4)">A</div>
+      <span class="user-name" id="userName">Admin</span>
+      <span id="userBadge"></span>
+    </div>
+  </div>
+
+  <!-- TOOL BAR -->
+  <div class="toolbar no-print">
+    <button class="t-btn t-active" id="tb-entry" onclick="setView('entry')">
+      <span class="t-ico">📋</span><span class="t-btn-label">Data Entry</span>
+    </button>
+    <button class="t-btn" id="tb-stats" onclick="setView('stats')">
+      <span class="t-ico">📊</span><span class="t-btn-label">Statistics</span>
+    </button>
+    <button class="t-btn" id="tb-charts" onclick="setView('charts')">
+      <span class="t-ico">📈</span><span class="t-btn-label">Charts</span>
+    </button>
+    <button class="t-btn" id="tb-filter" onclick="setView('filter')">
+      <span class="t-ico">🔍</span><span class="t-btn-label">Filter</span>
+    </button>
+    <div class="t-divider"></div>
+    <button class="t-btn" onclick="doPrint()"><span class="t-ico">🖨</span><span class="t-btn-label">Print</span></button>
+    <button class="t-btn admin-only" onclick="doExport()"><span class="t-ico">⬇</span><span class="t-btn-label">Export</span></button>
+    <button class="t-btn admin-only" onclick="doImport()"><span class="t-ico">⬆</span><span class="t-btn-label">Import</span></button>
+    <div id="viewerNote" class="viewer-note" style="display:none">👁 Preview Mode — Read Only</div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-row">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <div class="sb-title">Team Members</div>
+        <div class="sb-search-wrap">
+          <span class="sb-search-icon">🔎</span>
+          <input class="sb-search" type="text" placeholder="Search colleague…" id="sbSearch" oninput="filterSb(this.value)">
+        </div>
+      </div>
+      <div class="sb-list" id="sbList"></div>
+      <div class="sb-foot admin-only">
+        <button class="sb-add-btn" onclick="openColleagueModal(null)">
+          <span>＋</span> Add Colleague
+        </button>
+      </div>
+    </div>
+    <div class="sb-overlay" id="sbOverlay" onclick="toggleSb()"></div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainArea">
+      <div class="main-pad" id="mainPad">
+
+        <!-- ENTRY VIEW -->
+        <div class="view v-on" id="view-entry">
+          <div id="entryContent">
+            <div class="empty-st">
+              <div class="empty-st-ico">💊</div>
+              <div class="empty-st-txt">Select a team member from the sidebar to view and enter their performance data.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATS VIEW -->
+        <div class="view" id="view-stats">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white)">Team Statistics</div>
+          <div class="stat-grid" id="statsGrid"></div>
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Monthly Overview — All Colleagues</div>
+                <div class="card-sub">Average scores per person per month</div>
+              </div>
+            </div>
+            <div style="overflow-x:auto"><table class="rtbl" id="overviewTbl"></table></div>
+          </div>
+        </div>
+
+        <!-- CHARTS VIEW -->
+        <div class="view" id="view-charts">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white)">Performance Charts</div>
+          <div class="chart-grid" id="chartsGrid"></div>
+        </div>
+
+        <!-- FILTER VIEW -->
+        <div class="view" id="view-filter">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white)">Filter & Report</div>
+          <div class="filter-box">
+            <div class="fg">
+              <label class="fg-label">Colleague</label>
+              <select class="fg-sel" id="fCol" style="min-width:160px"></select>
+            </div>
+            <div class="fg">
+              <label class="fg-label">Month</label>
+              <select class="fg-sel" id="fMon" style="min-width:130px"></select>
+            </div>
+            <div class="fg">
+              <label class="fg-label">Criterion</label>
+              <select class="fg-sel" id="fCrit" style="min-width:160px"></select>
+            </div>
+            <div class="fg">
+              <label class="fg-label">Min Avg</label>
+              <input class="fg-inp" id="fMin" type="number" min="0" max="5" step="0.1" placeholder="0" style="width:72px">
+            </div>
+            <div class="fg">
+              <label class="fg-label">Max Avg</label>
+              <input class="fg-inp" id="fMax" type="number" min="0" max="5" step="0.1" placeholder="5" style="width:72px">
+            </div>
+            <button class="btn btn-primary" onclick="applyFilter()">Apply Filter</button>
+            <button class="btn" onclick="resetFilter()">Reset</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Filter Results</div></div>
+            <div style="overflow-x:auto"><table class="rtbl" id="filterTbl"></table></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ═══ MODAL: COLLEAGUE ═══ -->
+<div class="modal-bg" id="mColleague">
+  <div class="modal">
+    <div class="modal-title" id="mColTitle">Add Colleague</div>
+    <div class="form-g">
+      <label class="form-lbl">Full Name</label>
+      <input class="form-in" id="mColName" type="text" placeholder="e.g. Dr. Sarah Johnson">
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Job Title / Role</label>
+      <input class="form-in" id="mColRole" type="text" placeholder="e.g. Senior Clinical Pharmacist">
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Color</label>
+      <div class="color-grid" id="colorGrid"></div>
+    </div>
+    <div class="m-actions">
+      <button class="btn" onclick="closeModal('mColleague')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveColleague()">Save Colleague</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: CRITERION ═══ -->
+<div class="modal-bg" id="mCriterion">
+  <div class="modal">
+    <div class="modal-title" id="mCrTitle">Add Criterion</div>
+    <div class="form-g">
+      <label class="form-lbl">Criterion Name</label>
+      <input class="form-in" id="mCrName" type="text" placeholder="e.g. Medication Dispensing Accuracy">
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Category</label>
+      <select class="form-sel" id="mCrCat">
+        <option value="Clinical">Clinical</option>
+        <option value="Service">Service Quality</option>
+        <option value="Compliance">Compliance & Safety</option>
+        <option value="Communication">Communication</option>
+        <option value="Teamwork">Teamwork</option>
+        <option value="Documentation">Documentation</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Weight</label>
+      <select class="form-sel" id="mCrWeight">
+        <option value="1">Standard (×1)</option>
+        <option value="1.5">Important (×1.5)</option>
+        <option value="2">Critical (×2)</option>
+      </select>
+    </div>
+    <div class="m-actions">
+      <button class="btn" onclick="closeModal('mCriterion')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCriterion()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: SCORE ═══ -->
+<div class="modal-bg" id="mScore">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" id="mScTitle">Enter Score</div>
+    <div style="color:var(--text2);font-size:12px;margin-bottom:20px" id="mScSub"></div>
+    <div class="score-picker" id="mScPicker"></div>
+    <div style="margin-top:20px">
+      <label class="form-lbl">Note (optional)</label>
+      <input class="form-in" id="mScNote" type="text" placeholder="Add observation…">
+    </div>
+    <div class="m-actions">
+      <button class="btn btn-sm btn-danger" onclick="clearScore()">Clear</button>
+      <button class="btn btn-sm" onclick="closeModal('mScore')">Cancel</button>
+      <button class="btn btn-sm btn-primary" onclick="confirmScore()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: BULK ═══ -->
+<div class="modal-bg" id="mBulk">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">Bulk Score Entry</div>
+    <div class="form-g">
+      <label class="form-lbl">Day of Month</label>
+      <input class="form-in" id="mBulkDay" type="number" min="1" max="31" placeholder="e.g. 15">
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Score for All Criteria</label>
+      <div class="score-picker" id="mBulkPicker"></div>
+    </div>
+    <div class="form-g">
+      <label class="form-lbl">Note (optional)</label>
+      <input class="form-in" id="mBulkNote" type="text" placeholder="General note for this day…">
+    </div>
+    <div class="m-actions">
+      <button class="btn" onclick="closeModal('mBulk')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmBulk()">Apply to All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   DATA LAYER
+════════════════════════════════════════════ */
+const PASSWORDS = { admin: 'admin123', viewer: 'view456' };
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const COLORS_PALETTE = [
+  '#00d4ff','#00e5c4','#ffb340','#ff4d6d','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6','#4ade80'
+];
+const SCORE_COLORS = { 1:'#ff4d6d', 2:'#ff7832', 3:'#ffb340', 4:'#38d9a9', 5:'#00c896' };
+const CAT_COLORS = {
+  Clinical:'#00d4ff', Service:'#00e5c4', Compliance:'#ff4d6d',
+  Communication:'#a78bfa', Teamwork:'#ffb340', Documentation:'#60a5fa', Other:'#94a3b8'
+};
+
+let db = { colleagues: [], criteria: [], scores: {} };
+let role = 'viewer'; // 'admin' | 'viewer'
+let selRole = 'admin';
+let curColId = null;
+let curMonth = null;
+let pendingSc = null;
+let bulkScore = null;
+let editColId = null;
+let editCrId = null;
+let selColor = COLORS_PALETTE[0];
+let charts = {};
+
+/* ─── SEED DATA ─── */
+function seedData() {
+  db.colleagues = [
+    {id:'c1',name:'Dr. Sarah Al-Mansouri',role:'Senior Clinical Pharmacist',color:'#00d4ff'},
+    {id:'c2',name:'Omar Hassan',role:'Dispensing Pharmacist',color:'#00e5c4'},
+    {id:'c3',name:'Nadia Khalil',role:'Clinical Pharmacist',color:'#a78bfa'},
+    {id:'c4',name:'Karim Youssef',role:'Pharmacy Technician',color:'#ffb340'},
+  ];
+  db.criteria = [
+    {id:'cr1',name:'Patient Consultation Quality',category:'Clinical',weight:2},
+    {id:'cr2',name:'Dispensing Accuracy',category:'Clinical',weight:2},
+    {id:'cr3',name:'Prescription Processing Speed',category:'Service',weight:1},
+    {id:'cr4',name:'Documentation & Records',category:'Documentation',weight:1},
+    {id:'cr5',name:'Team Communication',category:'Communication',weight:1},
+    {id:'cr6',name:'Regulatory Compliance',category:'Compliance',weight:1.5},
+    {id:'cr7',name:'Customer Satisfaction',category:'Service',weight:1},
+    {id:'cr8',name:'Inventory Management',category:'Compliance',weight:1},
+  ];
+  const now = new Date();
+  for(let back=2; back>=0; back--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-back, 1);
+    const m = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const dim = new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    const maxDay = back===0 ? now.getDate() : dim;
+    db.colleagues.forEach(c => {
+      db.scores[c.id] = db.scores[c.id] || {};
+      db.scores[c.id][m] = db.scores[c.id][m] || {};
+      db.criteria.forEach(cr => {
+        db.scores[c.id][m][cr.id] = {};
+        for(let day=1; day<=maxDay; day++) {
+          if(Math.random() > 0.1) {
+            const base = c.id==='c1' ? 4 : c.id==='c4' ? 3 : 3.5;
+            const sc = Math.max(1,Math.min(5,Math.round(base + (Math.random()-0.3)*2)));
+            db.scores[c.id][m][cr.id][day] = { score:sc, note:'' };
+          }
+        }
+      });
+    });
+  }
+  save();
+}
+function save() { try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e){} }
+function load() { try { const s=localStorage.getItem('rxp_db'); if(s) db=JSON.parse(s); } catch(e){} }
+
+/* ════════════════════════════════════════════
+   AUTH
+════════════════════════════════════════════ */
+function selectRole(r) {
+  selRole = r;
+  document.getElementById('tabAdmin').classList.toggle('active', r==='admin');
+  document.getElementById('tabViewer').classList.toggle('active', r==='viewer');
+  document.getElementById('loginRoleHint').textContent =
+    r==='admin' ? 'Administrator — full edit & manage rights' : 'Viewer — read-only preview mode';
+  document.getElementById('loginPass').value = '';
+}
+function doLogin() {
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  if(pass === PASSWORDS[selRole]) {
+    role = selRole;
+    err.style.display='none';
+    document.getElementById('loginScreen').style.opacity='0';
+    document.getElementById('loginScreen').style.transition='opacity 0.4s';
+    setTimeout(()=>{ document.getElementById('loginScreen').style.display='none'; },400);
+    document.getElementById('app').style.display='flex';
+    initApp();
+  } else {
+    err.style.display='flex';
+    document.getElementById('loginPass').focus();
+  }
+}
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter') {
+    if(document.getElementById('loginScreen').style.display!=='none') doLogin();
+  }
+});
+function logoutConfirm() {
+  if(confirm('Sign out of RxPerform Pro?')) location.reload();
+}
+
+/* ════════════════════════════════════════════
+   APP INIT
+════════════════════════════════════════════ */
+function initApp() {
+  const now = new Date();
+  curMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // User chip
+  const isAdmin = role==='admin';
+  document.getElementById('userAva').textContent = isAdmin ? 'A' : 'V';
+  document.getElementById('userAva').style.background = isAdmin ? 'var(--amber)33' : 'var(--cyan3)';
+  document.getElementById('userAva').style.color = isAdmin ? 'var(--amber)' : 'var(--cyan)';
+  document.getElementById('userName').textContent = isAdmin ? 'Admin' : 'Viewer';
+  document.getElementById('userBadge').innerHTML = isAdmin ?
+    '<span class="role-badge badge-admin">Admin</span>' :
+    '<span class="role-badge badge-viewer">Viewer</span>';
+
+  // Hide admin-only elements for viewer
+  if(!isAdmin) {
+    document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+    document.getElementById('viewerNote').style.display='flex';
+  }
+
+  // Date
+  document.getElementById('topDate').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+  renderSidebar();
+  populateFilterDropdowns();
+  renderStats();
+
+  // Auto-select first
+  if(db.colleagues.length) selectColleague(db.colleagues[0].id);
+}
+
+/* ════════════════════════════════════════════
+   VIEW SWITCHING
+════════════════════════════════════════════ */
+function setView(v) {
+  ['entry','stats','charts','filter'].forEach(x=>{
+    document.getElementById(`view-${x}`).classList.toggle('v-on', x===v);
+    document.getElementById(`tb-${x}`)?.classList.toggle('t-active', x===v);
+  });
+  if(v==='stats') renderStats();
+  if(v==='charts') renderAllCharts();
+  if(v==='filter') populateFilterDropdowns();
+}
+
+/* ════════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════════ */
+function renderSidebar(q='') {
+  const list = document.getElementById('sbList');
+  const cols = db.colleagues.filter(c=>c.name.toLowerCase().includes(q.toLowerCase()));
+  list.innerHTML = cols.map(c => {
+    const avg = colMonthAvg(c.id, curMonth);
+    const sc = avg===0 ? 'na' : avg>=4 ? 'hi' : avg>=3 ? 'md' : 'lo';
+    const ini = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="sb-item${c.id===curColId?' sb-active':''}" onclick="selectColleague('${c.id}')">
+      <div class="sb-ava" style="background:${c.color}22;color:${c.color}">${ini}</div>
+      <div class="sb-info">
+        <div class="sb-name">${c.name}</div>
+        <div class="sb-role">${c.role}</div>
+      </div>
+      <div class="sb-score sc-${sc}">${avg>0?avg.toFixed(1):'—'}</div>
+    </div>`;
+  }).join('');
+}
+function filterSb(q) { renderSidebar(q); }
+function toggleSb() {
+  document.getElementById('sidebar').classList.toggle('sb-open');
+  document.getElementById('sbOverlay').classList.toggle('sb-ov-on');
+}
+
+/* ════════════════════════════════════════════
+   SELECT COLLEAGUE
+════════════════════════════════════════════ */
+function selectColleague(id) {
+  curColId = id;
+  renderSidebar(document.getElementById('sbSearch').value);
+  setView('entry');
+  renderColleagueView();
+  if(window.innerWidth<900) toggleSb();
+}
+
+/* ════════════════════════════════════════════
+   COLLEAGUE VIEW
+════════════════════════════════════════════ */
+function renderColleagueView() {
+  const c = db.colleagues.find(x=>x.id===curColId);
+  if(!c) return;
+  const wrap = document.getElementById('entryContent');
+  const avg = colMonthAvg(c.id, curMonth);
+  const cnt = countScores(c.id, curMonth);
+  const ini = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const scC = avg===0?'var(--text3)':avg>=4?'var(--emerald)':avg>=3?'var(--amber)':'var(--rose)';
+  const months = availMonths();
+
+  wrap.innerHTML = `
+    <div class="col-hdr" id="colHdr">
+      <div class="col-hdr-left">
+        <div class="col-hdr-ava" style="background:${c.color}22;color:${c.color}">${ini}</div>
+        <div>
+          <div class="col-hdr-name">${c.name}</div>
+          <div class="col-hdr-role">${c.role}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap" id="crTagsRow"></div>
+        </div>
+      </div>
+      <div class="col-metrics">
+        <div class="col-metric">
+          <div class="col-metric-val" style="color:${scC}" id="hdAvg">${avg>0?avg.toFixed(2):'—'}</div>
+          <div class="col-metric-lbl">Month Avg</div>
+        </div>
+        <div class="col-metric">
+          <div class="col-metric-val" style="color:var(--cyan)" id="hdCnt">${cnt}</div>
+          <div class="col-metric-lbl">Entries</div>
+        </div>
+        <div class="col-metric">
+          <div class="col-metric-val" style="color:var(--amber)">${db.criteria.length}</div>
+          <div class="col-metric-lbl">Criteria</div>
+        </div>
+      </div>
+      <div class="col-hdr-actions admin-only no-print">
+        <button class="btn btn-sm" onclick="openColleagueModal('${c.id}')">✏ Edit</button>
+        <button class="btn btn-sm admin-only" onclick="openCriterionModal(null)">＋ Criterion</button>
+        <button class="btn btn-sm btn-primary admin-only" onclick="openBulk()">⚡ Bulk Fill</button>
+        <button class="btn btn-sm btn-danger admin-only" onclick="deleteColleague('${c.id}')">🗑</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div class="month-pills" id="monthPills"></div>
+      <div class="month-actions admin-only no-print">
+        <button class="btn btn-sm" onclick="copyPrevMonth()" title="Copy previous month's data">↶ Copy Prev</button>
+        <button class="btn btn-sm" onclick="clearMonth()" title="Clear all scores for this month">✕ Clear Month</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title" id="tblTitle">Performance Matrix — ${fmtMonth(curMonth)}</div>
+          <div class="card-sub">Click any cell to enter/edit score${role==='admin'?' • Cyan dot = has note':''}</div>
+        </div>
+      </div>
+      <div class="perf-scroll" id="perfScroll"></div>
+    </div>
+
+    <div class="chart-grid" id="colCharts" style="margin-top:0"></div>
+  `;
+
+  // Category tags
+  const cats = [...new Set(db.criteria.map(cr=>cr.category))];
+  document.getElementById('crTagsRow').innerHTML = cats.map(cat =>
+    `<span style="font-size:9px;padding:2px 8px;border-radius:4px;background:${CAT_COLORS[cat]||'#64748b'}22;color:${CAT_COLORS[cat]||'#64748b'};text-transform:uppercase;letter-spacing:0.5px">${cat}</span>`
+  ).join('');
+
+  if(!role==='admin') {
+    document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  }
+
+  renderMonthPills();
+  renderPerfTable();
+  renderColCharts();
+}
+
+function renderMonthPills() {
+  const m = availMonths();
+  document.getElementById('monthPills').innerHTML = m.map(mo=>
+    `<button class="m-pill${mo===curMonth?' m-on':''}" onclick="changeMonth('${mo}')">${fmtMonth(mo)}</button>`
+  ).join('');
+}
+
+function changeMonth(m) {
+  curMonth=m;
+  renderMonthPills();
+  renderPerfTable();
+  renderColCharts();
+  const avg = colMonthAvg(curColId, curMonth);
+  const cnt = countScores(curColId, curMonth);
+  const scC = avg===0?'var(--text3)':avg>=4?'var(--emerald)':avg>=3?'var(--amber)':'var(--rose)';
+  const hdAvg = document.getElementById('hdAvg');
+  const hdCnt = document.getElementById('hdCnt');
+  if(hdAvg) { hdAvg.textContent=avg>0?avg.toFixed(2):'—'; hdAvg.style.color=scC; }
+  if(hdCnt) hdCnt.textContent=cnt;
+  const t = document.getElementById('tblTitle');
+  if(t) t.textContent=`Performance Matrix — ${fmtMonth(curMonth)}`;
+  renderSidebar();
+}
+
+function renderPerfTable() {
+  const wrap = document.getElementById('perfScroll');
+  if(!wrap) return;
+  const [y,m] = curMonth.split('-').map(Number);
+  const dim = new Date(y,m,0).getDate();
+  const days = Array.from({length:dim},(_,i)=>i+1);
+  const scores = db.scores[curColId]?.[curMonth]||{};
+  const ro = role!=='admin';
+
+  let colSums = new Array(dim).fill(0), colCounts = new Array(dim).fill(0);
+  let rows='';
+
+  db.criteria.forEach(cr=>{
+    let rSum=0,rCnt=0;
+    const cells = days.map((d,di)=>{
+      const e=scores[cr.id]?.[d];
+      if(e?.score){rSum+=e.score*cr.weight;rCnt+=cr.weight;colSums[di]+=e.score;colCounts[di]++;}
+      const cls=e?.score?`sc-${e.score}`:'';
+      const noteAttr=e?.note?'has-note':'';
+      const roClass=ro?' readonly':'';
+      const click=ro?'':`onclick="openScore('${cr.id}',${d})"`;
+      return `<td><div class="sc-dot ${cls} ${noteAttr}${roClass}" ${click} title="${e?.note||''}">${e?.score||''}</div></td>`;
+    }).join('');
+    const avg=rCnt?rSum/rCnt:0;
+    const avgC=avg?avg>=4?'var(--emerald)':avg>=3?'var(--amber)':'var(--rose)':'var(--text3)';
+    const catC=CAT_COLORS[cr.category]||'#64748b';
+    rows+=`<tr>
+      <td class="ptbl-cr-cell">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:3px;height:16px;border-radius:1px;background:${catC};flex-shrink:0"></div>
+          <span>${cr.name}</span>
+          <span class="cr-cat-badge" style="color:${catC}">${cr.category}</span>
+          ${role==='admin'?`<button onclick="openCriterionModal('${cr.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;padding:0 2px" title="Edit">✏</button>`:''}
+        </div>
+      </td>
+      ${cells}
+      <td class="row-avg" style="color:${avgC}">${avg?avg.toFixed(1):'—'}</td>
+    </tr>`;
+  });
+
+  // Day averages
+  const dayAvgs=days.map((_,di)=>
+    colCounts[di]?`<td class="col-avg-v" style="color:${(colSums[di]/colCounts[di])>=4?'var(--emerald)':(colSums[di]/colCounts[di])>=3?'var(--amber)':'var(--rose)'}">${(colSums[di]/colCounts[di]).toFixed(1)}</td>`:
+    '<td class="col-avg-v" style="color:var(--text3)">—</td>'
+  ).join('');
+
+  wrap.innerHTML=`<table class="ptbl">
+    <thead><tr>
+      <th class="ptbl-cr">Criterion / Day →</th>
+      ${days.map(d=>`<th>${d}</th>`).join('')}
+      <th>Avg</th>
+    </tr></thead>
+    <tbody>${rows}
+    <tr class="trow-total">
+      <td class="ptbl-cr-cell" style="color:var(--cyan);font-weight:600">Daily Average</td>
+      ${dayAvgs}
+      <td></td>
+    </tr>
+    </tbody>
+  </table>`;
+}
+
+/* ════════════════════════════════════════════
+   SCORE ENTRY
+════════════════════════════════════════════ */
+function openScore(crId, day) {
+  if(role!=='admin') return;
+  const cr = db.criteria.find(x=>x.id===crId);
+  const e = db.scores[curColId]?.[curMonth]?.[crId]?.[day];
+  pendingSc = {crId, day, cur: e?.score};
+
+  document.getElementById('mScTitle').textContent = cr.name;
+  document.getElementById('mScSub').textContent = `Day ${day}  •  ${fmtMonth(curMonth)}`;
+  document.getElementById('mScNote').value = e?.note||'';
+
+  const picker = document.getElementById('mScPicker');
+  picker.innerHTML = '';
+  [1,2,3,4,5].forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className=`sp-o${e?.score===s?' sp-sel':''}`;
+    btn.style.background=SCORE_COLORS[s]+'33';
+    btn.style.color=SCORE_COLORS[s];
+    btn.textContent=s+'★';
+    btn.dataset.s=s;
+    btn.onclick=()=>{
+      picker.querySelectorAll('.sp-o').forEach(b=>b.classList.remove('sp-sel'));
+      btn.classList.add('sp-sel');
+      pendingSc.newScore=s;
+    };
+    picker.appendChild(btn);
+  });
+  pendingSc.newScore = e?.score||null;
+  openModal('mScore');
+}
+
+function confirmScore() {
+  if(!pendingSc?.newScore){ toast('⚠ Select a score first','#ffb340'); return; }
+  const {crId,day,newScore} = pendingSc;
+  const note = document.getElementById('mScNote').value.trim();
+  ensure(curColId,curMonth,crId);
+  db.scores[curColId][curMonth][crId][day] = {score:newScore, note};
+  save();
+  closeModal('mScore');
+  renderPerfTable();
+  renderSidebar();
+  updateHdrMetrics();
+  toast('Score saved');
+}
+
+function clearScore() {
+  if(!pendingSc) return;
+  const {crId,day} = pendingSc;
+  if(db.scores[curColId]?.[curMonth]?.[crId]?.[day]) {
+    delete db.scores[curColId][curMonth][crId][day];
+    save();
+  }
+  closeModal('mScore');
+  renderPerfTable();
+  renderSidebar();
+  updateHdrMetrics();
+  toast('Score cleared');
+}
+
+function ensure(cId,month,crId) {
+  if(!db.scores[cId]) db.scores[cId]={};
+  if(!db.scores[cId][month]) db.scores[cId][month]={};
+  if(!db.scores[cId][month][crId]) db.scores[cId][month][crId]={};
+}
+
+function updateHdrMetrics() {
+  const avg=colMonthAvg(curColId,curMonth);
+  const cnt=countScores(curColId,curMonth);
+  const scC=avg===0?'var(--text3)':avg>=4?'var(--emerald)':avg>=3?'var(--amber)':'var(--rose)';
+  const hdAvg=document.getElementById('hdAvg');
+  const hdCnt=document.getElementById('hdCnt');
+  if(hdAvg){ hdAvg.textContent=avg>0?avg.toFixed(2):'—'; hdAvg.style.color=scC; }
+  if(hdCnt) hdCnt.textContent=cnt;
+}
+
+/* ════════════════════════════════════════════
+   BULK FILL
+════════════════════════════════════════════ */
+function openBulk() {
+  bulkScore=null;
+  document.getElementById('mBulkDay').value='';
+  document.getElementById('mBulkNote').value='';
+  const picker=document.getElementById('mBulkPicker');
+  picker.innerHTML='';
+  [1,2,3,4,5].forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='sp-o';
+    btn.style.background=SCORE_COLORS[s]+'33';
+    btn.style.color=SCORE_COLORS[s];
+    btn.textContent=s+'★';
+    btn.onclick=()=>{
+      picker.querySelectorAll('.sp-o').forEach(b=>b.classList.remove('sp-sel'));
+      btn.classList.add('sp-sel');
+      bulkScore=s;
+    };
+    picker.appendChild(btn);
+  });
+  openModal('mBulk');
+}
+
+function confirmBulk() {
+  const [y,m]=curMonth.split('-').map(Number);
+  const dim=new Date(y,m,0).getDate();
+  const day=parseInt(document.getElementById('mBulkDay').value);
+  const note=document.getElementById('mBulkNote').value.trim();
+  if(!day||day<1||day>dim){ toast('⚠ Enter valid day (1–'+dim+')','#ffb340'); return; }
+  if(!bulkScore){ toast('⚠ Select a score','#ffb340'); return; }
+  db.criteria.forEach(cr=>{ ensure(curColId,curMonth,cr.id); db.scores[curColId][curMonth][cr.id][day]={score:bulkScore,note}; });
+  save();
+  closeModal('mBulk');
+  renderPerfTable();
+  updateHdrMetrics();
+  renderSidebar();
+  toast(`Day ${day} — all criteria set to ${bulkScore}★`);
+}
+
+/* ════════════════════════════════════════════
+   COPY / CLEAR
+════════════════════════════════════════════ */
+function copyPrevMonth() {
+  const [y,m]=curMonth.split('-').map(Number);
+  const prev=new Date(y,m-2,1);
+  const pKey=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
+  if(!db.scores[curColId]?.[pKey]){ toast('⚠ No data in previous month','#ffb340'); return; }
+  if(!confirm(`Copy all data from ${fmtMonth(pKey)} → ${fmtMonth(curMonth)}?\nThis overwrites existing entries.`)) return;
+  db.scores[curColId][curMonth]=JSON.parse(JSON.stringify(db.scores[curColId][pKey]));
+  save(); renderPerfTable(); updateHdrMetrics(); toast('Previous month data copied');
+}
+function clearMonth() {
+  if(!confirm(`Clear ALL scores for ${fmtMonth(curMonth)}?`)) return;
+  if(db.scores[curColId]) db.scores[curColId][curMonth]={};
+  save(); renderPerfTable(); updateHdrMetrics(); renderSidebar(); toast('Month cleared');
+}
+
+/* ════════════════════════════════════════════
+   COLLEAGUE CRUD
+════════════════════════════════════════════ */
+function openColleagueModal(id) {
+  editColId=id;
+  const c=db.colleagues.find(x=>x.id===id);
+  document.getElementById('mColTitle').textContent=id?'Edit Colleague':'Add Colleague';
+  document.getElementById('mColName').value=c?.name||'';
+  document.getElementById('mColRole').value=c?.role||'';
+  selColor=c?.color||COLORS_PALETTE[Math.floor(Math.random()*COLORS_PALETTE.length)];
+  renderColorGrid();
+  openModal('mColleague');
+}
+function renderColorGrid() {
+  document.getElementById('colorGrid').innerHTML=COLORS_PALETTE.map(cl=>
+    `<div class="c-swatch${cl===selColor?' c-sel':''}" style="background:${cl}" onclick="pickColor('${cl}',this)"></div>`
+  ).join('');
+}
+function pickColor(c,el) {
+  selColor=c;
+  document.querySelectorAll('.c-swatch').forEach(e=>e.classList.remove('c-sel'));
+  el.classList.add('c-sel');
+}
+function saveColleague() {
+  const name=document.getElementById('mColName').value.trim();
+  const role2=document.getElementById('mColRole').value.trim();
+  if(!name){ toast('⚠ Name required','#ffb340'); return; }
+  if(editColId) {
+    const c=db.colleagues.find(x=>x.id===editColId);
+    c.name=name; c.role=role2; c.color=selColor;
+  } else {
+    db.colleagues.push({id:'c'+Date.now(),name,role:role2,color:selColor});
+  }
+  save(); closeModal('mColleague'); renderSidebar();
+  if(editColId===curColId) renderColleagueView();
+  toast(editColId?'Colleague updated':'Colleague added');
+}
+function deleteColleague(id) {
+  if(!confirm('Delete this colleague and all their data?')) return;
+  db.colleagues=db.colleagues.filter(c=>c.id!==id);
+  delete db.scores[id];
+  if(curColId===id){
+    curColId=null;
+    document.getElementById('entryContent').innerHTML=`<div class="empty-st"><div class="empty-st-ico">💊</div><div class="empty-st-txt">Colleague deleted. Select another from the sidebar.</div></div>`;
+  }
+  save(); renderSidebar(); toast('Colleague deleted');
+}
+
+/* ════════════════════════════════════════════
+   CRITERION CRUD
+════════════════════════════════════════════ */
+function openCriterionModal(id) {
+  editCrId=id;
+  const cr=db.criteria.find(x=>x.id===id);
+  document.getElementById('mCrTitle').textContent=id?'Edit Criterion':'Add Criterion';
+  document.getElementById('mCrName').value=cr?.name||'';
+  document.getElementById('mCrCat').value=cr?.category||'Clinical';
+  document.getElementById('mCrWeight').value=cr?.weight||'1';
+  openModal('mCriterion');
+}
+function saveCriterion() {
+  const name=document.getElementById('mCrName').value.trim();
+  const category=document.getElementById('mCrCat').value;
+  const weight=parseFloat(document.getElementById('mCrWeight').value);
+  if(!name){ toast('⚠ Name required','#ffb340'); return; }
+  if(editCrId) {
+    const cr=db.criteria.find(x=>x.id===editCrId);
+    cr.name=name; cr.category=category; cr.weight=weight;
+  } else {
+    db.criteria.push({id:'cr'+Date.now(),name,category,weight});
+  }
+  save(); closeModal('mCriterion');
+  if(curColId) renderPerfTable();
+  toast(editCrId?'Criterion updated':'Criterion added');
+}
+
+/* ════════════════════════════════════════════
+   STATISTICS
+════════════════════════════════════════════ */
+function renderStats() {
+  const cols=db.colleagues;
+  const avgs=cols.map(c=>colMonthAvg(c.id,curMonth)).filter(Boolean);
+  const teamAvg=avgs.length?(avgs.reduce((a,b)=>a+b,0)/avgs.length):0;
+  const best=cols.slice().sort((a,b)=>colMonthAvg(b.id,curMonth)-colMonthAvg(a.id,curMonth))[0];
+  const totalEntries=cols.reduce((s,c)=>s+countScores(c.id,curMonth),0);
+
+  document.getElementById('statsGrid').innerHTML=[
+    {ico:'👥',val:cols.length,lbl:'Team Size',color:'var(--cyan)'},
+    {ico:'⭐',val:teamAvg?teamAvg.toFixed(2):'—',lbl:'Team Avg Score',color:teamAvg>=4?'var(--emerald)':teamAvg>=3?'var(--amber)':'var(--rose)'},
+    {ico:'🏆',val:best?best.name.split(' ').slice(-1)[0]:'—',lbl:'Top Performer',color:'var(--amber)'},
+    {ico:'📝',val:totalEntries,lbl:'Total Entries',color:'var(--teal)'},
+    {ico:'📋',val:db.criteria.length,lbl:'Active Criteria',color:'var(--amber)'},
+    {ico:'📅',val:fmtMonth(curMonth),lbl:'Current Period',color:'var(--text2)'},
+  ].map(s=>`<div class="stat-card">
+    <div class="stat-icon">${s.ico}</div>
+    <div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>
+  </div>`).join('');
+
+  // Overview table
+  const months=availMonths();
+  const tbl=document.getElementById('overviewTbl');
+  if(!tbl) return;
+  tbl.innerHTML=`<thead><tr><th>Colleague</th><th>Role</th>${months.map(m=>`<th>${fmtMonth(m)}</th>`).join('')}<th>Overall</th></tr></thead>
+  <tbody>${cols.map(c=>{
+    const mAvgs=months.map(m=>{
+      const a=colMonthAvg(c.id,m);
+      const col=a>=4?'var(--emerald)':a>=3?'var(--amber)':a>0?'var(--rose)':'var(--text3)';
+      return a?`<td style="color:${col};font-family:'Geist Mono',monospace;font-weight:600">${a.toFixed(2)}</td>`:'<td style="color:var(--text3)">—</td>';
+    }).join('');
+    const all=months.map(m=>colMonthAvg(c.id,m)).filter(Boolean);
+    const ov=all.length?(all.reduce((a,b)=>a+b,0)/all.length):0;
+    const ovc=ov>=4?'var(--emerald)':ov>=3?'var(--amber)':ov>0?'var(--rose)':'var(--text3)';
+    const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:30px;height:30px;border-radius:8px;background:${c.color}22;color:${c.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${ini}</div>
+        ${c.name}
+      </div></td>
+      <td style="color:var(--text3)">${c.role}</td>
+      ${mAvgs}
+      <td style="color:${ovc};font-family:'Geist Mono',monospace;font-weight:700">${ov?ov.toFixed(2):'—'}</td>
+    </tr>`;
+  }).join('')}</tbody>`;
+}
+
+/* ════════════════════════════════════════════
+   CHARTS
+════════════════════════════════════════════ */
+const CHART_BASE = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'#7a8fa6',font:{family:'Instrument Sans',size:11}}}},
+  scales:{
+    x:{ticks:{color:'#4a5568',font:{size:10}},grid:{color:'rgba(0,212,255,0.04)'},border:{color:'transparent'}},
+    y:{ticks:{color:'#4a5568',font:{size:10}},grid:{color:'rgba(0,212,255,0.06)'},border:{color:'transparent'},min:0,max:5}
+  }
+};
+
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function renderAllCharts() {
+  const g=document.getElementById('chartsGrid');
+  g.innerHTML=`
+    <div class="chart-card"><div class="chart-card-title">Team Comparison</div><div class="chart-card-sub">Current month average score per colleague</div><div class="chart-wrap"><canvas id="chTeam"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Criteria Performance</div><div class="chart-card-sub">Team-wide average per criterion</div><div class="chart-wrap"><canvas id="chCriteria"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Monthly Trend</div><div class="chart-card-sub">Average scores over time — all colleagues</div><div class="chart-wrap"><canvas id="chTrend"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Score Distribution</div><div class="chart-card-sub">Breakdown of score values this month</div><div class="chart-wrap"><canvas id="chDist"></canvas></div></div>
+  `;
+  setTimeout(()=>{ buildChTeam(); buildChCriteria(); buildChTrend(); buildChDist(); },30);
+}
+
+function buildChTeam() {
+  destroyChart('chTeam');
+  charts['chTeam']=new Chart(document.getElementById('chTeam'),{
+    type:'bar',
+    data:{
+      labels:db.colleagues.map(c=>c.name.split(' ').slice(-1)[0]),
+      datasets:[{
+        label:'Monthly Avg',
+        data:db.colleagues.map(c=>colMonthAvg(c.id,curMonth)||0),
+        backgroundColor:db.colleagues.map(c=>c.color+'bb'),
+        borderRadius:8, borderSkipped:false
+      }]
+    },
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,legend:{display:false}}}
+  });
+}
+
+function buildChCriteria() {
+  destroyChart('chCriteria');
+  const labels=db.criteria.map(cr=>cr.name.length>20?cr.name.slice(0,20)+'…':cr.name);
+  const data=db.criteria.map(cr=>{
+    let s=0,n=0;
+    db.colleagues.forEach(c=>{
+      const sc=db.scores[c.id]?.[curMonth]?.[cr.id]||{};
+      Object.values(sc).forEach(e=>{if(e.score){s+=e.score;n++;}});
+    });
+    return n?parseFloat((s/n).toFixed(2)):0;
+  });
+  charts['chCriteria']=new Chart(document.getElementById('chCriteria'),{
+    type:'radar',
+    data:{labels,datasets:[{label:'Team Avg',data,backgroundColor:'rgba(0,212,255,0.08)',borderColor:'#00d4ff',pointBackgroundColor:'#00d4ff',pointRadius:4,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{r:{ticks:{color:'#4a5568',backdropColor:'transparent',font:{size:9}},grid:{color:'rgba(0,212,255,0.08)'},pointLabels:{color:'#7a8fa6',font:{size:9}},min:0,max:5}},
+      plugins:{legend:{labels:{color:'#7a8fa6'}}}}
+  });
+}
+
+function buildChTrend() {
+  destroyChart('chTrend');
+  const months=availMonths();
+  charts['chTrend']=new Chart(document.getElementById('chTrend'),{
+    type:'line',
+    data:{
+      labels:months.map(fmtMonth),
+      datasets:db.colleagues.map(c=>({
+        label:c.name.split(' ').slice(-1)[0],
+        data:months.map(m=>colMonthAvg(c.id,m)||null),
+        borderColor:c.color, backgroundColor:c.color+'18',
+        tension:0.4, pointRadius:5, borderWidth:2, spanGaps:true,
+        fill:false
+      }))
+    },
+    options:{...CHART_BASE}
+  });
+}
+
+function buildChDist() {
+  destroyChart('chDist');
+  const dist=[1,2,3,4,5].map(s=>{
+    let n=0;
+    db.colleagues.forEach(c=>{
+      Object.values(db.scores[c.id]?.[curMonth]||{}).forEach(cr=>{
+        Object.values(cr).forEach(e=>{if(e.score===s)n++;});
+      });
+    });
+    return n;
+  });
+  charts['chDist']=new Chart(document.getElementById('chDist'),{
+    type:'doughnut',
+    data:{
+      labels:['1★','2★','3★','4★','5★'],
+      datasets:[{data:dist,backgroundColor:Object.values(SCORE_COLORS).map(c=>c+'aa'),borderWidth:0,hoverOffset:10}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a8fa6',padding:14,font:{size:11}}}}}
+  });
+}
+
+function renderColCharts() {
+  const wrap=document.getElementById('colCharts');
+  if(!wrap) return;
+  const c=db.colleagues.find(x=>x.id===curColId);
+  if(!c) return;
+  wrap.innerHTML=`
+    <div class="chart-card"><div class="chart-card-title">Daily Performance — ${fmtMonth(curMonth)}</div><div class="chart-card-sub">Score average across all criteria per day</div><div class="chart-wrap"><canvas id="cDaily"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Criteria Breakdown</div><div class="chart-card-sub">Average score per criterion this month</div><div class="chart-wrap"><canvas id="cCrit"></canvas></div></div>
+  `;
+  setTimeout(()=>{
+    destroyChart('cDaily'); destroyChart('cCrit');
+    const [y,m]=curMonth.split('-').map(Number);
+    const dim=new Date(y,m,0).getDate();
+    const days=Array.from({length:dim},(_,i)=>i+1);
+    const scores=db.scores[c.id]?.[curMonth]||{};
+
+    const dailyData=days.map(d=>{
+      let s=0,n=0;
+      db.criteria.forEach(cr=>{const e=scores[cr.id]?.[d];if(e?.score){s+=e.score;n++;}});
+      return n?parseFloat((s/n).toFixed(2)):null;
+    });
+
+    charts['cDaily']=new Chart(document.getElementById('cDaily'),{
+      type:'line',
+      data:{labels:days,datasets:[{
+        label:'Daily Avg',data:dailyData,borderColor:c.color,
+        backgroundColor:c.color+'1a',fill:true,tension:0.35,
+        pointRadius:3,borderWidth:2,spanGaps:true
+      }]},
+      options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,legend:{display:false}}}
+    });
+
+    const crLabels=db.criteria.map(cr=>cr.name.length>18?cr.name.slice(0,18)+'…':cr.name);
+    const crData=db.criteria.map(cr=>{
+      const s=scores[cr.id]||{};
+      const vals=Object.values(s).map(e=>e.score).filter(Boolean);
+      return vals.length?parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)):0;
+    });
+    const crColors=db.criteria.map(cr=>CAT_COLORS[cr.category]||'#64748b');
+
+    charts['cCrit']=new Chart(document.getElementById('cCrit'),{
+      type:'bar',
+      data:{labels:crLabels,datasets:[{label:'Avg',data:crData,backgroundColor:crColors.map(x=>x+'99'),borderRadius:6,borderSkipped:false}]},
+      options:{...CHART_BASE,indexAxis:'y',
+        plugins:{...CHART_BASE.plugins,legend:{display:false}},
+        scales:{x:{...CHART_BASE.scales.x,min:0,max:5},y:{ticks:{color:'#7a8fa6',font:{size:10}},grid:{color:'rgba(0,212,255,0.04)'},border:{color:'transparent'}}}}
+    });
+  },30);
+}
+
+/* ════════════════════════════════════════════
+   FILTER
+════════════════════════════════════════════ */
+function populateFilterDropdowns() {
+  const fc=document.getElementById('fCol');
+  const fm=document.getElementById('fMon');
+  const fcr=document.getElementById('fCrit');
+  if(!fc||!fm||!fcr) return;
+  fc.innerHTML='<option value="">All Colleagues</option>'+db.colleagues.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const months=availMonths();
+  fm.innerHTML='<option value="">All Months</option>'+months.map(m=>`<option value="${m}">${fmtMonth(m)}</option>`).join('');
+  fcr.innerHTML='<option value="">All Criteria</option>'+db.criteria.map(cr=>`<option value="${cr.id}">${cr.name}</option>`).join('');
+}
+
+function applyFilter() {
+  const cId=document.getElementById('fCol').value;
+  const mon=document.getElementById('fMon').value;
+  const crId=document.getElementById('fCrit').value;
+  const minV=parseFloat(document.getElementById('fMin').value)||0;
+  const maxV=parseFloat(document.getElementById('fMax').value)||5;
+
+  const cols=cId?db.colleagues.filter(c=>c.id===cId):db.colleagues;
+  const months=mon?[mon]:availMonths();
+  const crs=crId?db.criteria.filter(cr=>cr.id===crId):db.criteria;
+
+  let rows=[];
+  cols.forEach(c=>{
+    months.forEach(m=>{
+      crs.forEach(cr=>{
+        const sc=db.scores[c.id]?.[m]?.[cr.id]||{};
+        const vals=Object.values(sc).map(e=>e.score).filter(Boolean);
+        if(!vals.length) return;
+        const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+        if(avg>=minV&&avg<=maxV)
+          rows.push({colleague:c.name,month:fmtMonth(m),criterion:cr.name,avg,entries:vals.length,min:Math.min(...vals),max:Math.max(...vals)});
+      });
+    });
+  });
+
+  const tbl=document.getElementById('filterTbl');
+  if(!rows.length){
+    tbl.innerHTML='<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text3)">No results match the filter criteria.</td></tr>';
+    toast('No matching results','#ffb340'); return;
+  }
+  tbl.innerHTML=`<thead><tr><th>Colleague</th><th>Month</th><th>Criterion</th><th>Avg Score</th><th>Entries</th><th>Min</th><th>Max</th></tr></thead>
+  <tbody>${rows.map(r=>{
+    const c=r.avg>=4?'var(--emerald)':r.avg>=3?'var(--amber)':'var(--rose)';
+    return `<tr><td>${r.colleague}</td><td>${r.month}</td><td>${r.criterion}</td>
+    <td style="color:${c};font-family:'Geist Mono',monospace;font-weight:600">${r.avg.toFixed(2)}</td>
+    <td>${r.entries}</td>
+    <td style="color:var(--rose)">${r.min}</td>
+    <td style="color:var(--emerald)">${r.max}</td></tr>`;
+  }).join('')}</tbody>`;
+  toast(`${rows.length} result${rows.length!==1?'s':''} found`);
+}
+function resetFilter() {
+  ['fCol','fMon','fCrit'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['fMin','fMax'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('filterTbl').innerHTML='';
+  toast('Filter reset');
+}
+
+/* ════════════════════════════════════════════
+   EXPORT / IMPORT / PRINT
+════════════════════════════════════════════ */
+function doExport() {
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`rxperform_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Data exported');
+}
+function doImport() {
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.json';
+  inp.onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        if(!d.colleagues||!d.criteria) throw new Error();
+        db=d; save(); renderSidebar(); renderStats();
+        if(curColId) renderColleagueView();
+        populateFilterDropdowns();
+        toast('Data imported successfully');
+      } catch{ toast('⚠ Invalid file format','#ff4d6d'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function doPrint() { window.print(); }
+
+/* ════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════ */
+function availMonths() {
+  const now=new Date(), months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  }
+  return months;
+}
+function fmtMonth(m) {
+  const [y,mo]=m.split('-').map(Number);
+  return `${MONTHS_SHORT[mo-1]} ${y}`;
+}
+function colMonthAvg(id,month) {
+  const sc=db.scores[id]?.[month]; if(!sc) return 0;
+  let sum=0,cnt=0;
+  db.criteria.forEach(cr=>{
+    const cr_sc=sc[cr.id]||{};
+    Object.values(cr_sc).forEach(e=>{ if(e.score){sum+=e.score*cr.weight;cnt+=cr.weight;} });
+  });
+  return cnt?sum/cnt:0;
+}
+function countScores(id,month) {
+  let n=0;
+  const sc=db.scores[id]?.[month]||{};
+  Object.values(sc).forEach(cr=>Object.values(cr).forEach(e=>{if(e.score)n++;}));
+  return n;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('m-open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('m-open'); }
+document.querySelectorAll('.modal-bg').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('m-open'); });
+});
+
+let toastTimer=[];
+function toast(msg,color) {
+  const wrap=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=`<span>${msg}</span>`;
+  if(color) el.style.borderColor=color+'55';
+  wrap.appendChild(el);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ el.classList.add('t-show'); }); });
+  setTimeout(()=>{ el.classList.remove('t-show'); setTimeout(()=>el.remove(),400); },2600);
+}
+
+/* ════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════ */
+load();
+if(!db.colleagues.length) seedData();
+</script>
+</body>
+</html>
