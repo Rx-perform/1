@@ -1412,7 +1412,7 @@ function seedData() {
 /* ════════════════════════════════════════════
    GOOGLE SHEETS SYNC  (JSONP — works across all devices)
 ════════════════════════════════════════════ */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2orgaSEcoJ5S8XeqkFIrGi5X2Fo4ERgirUfS_Ldc/dev'; // ← PASTE YOUR APPS SCRIPT URL HERE
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqGuX23C4N85M3ZHUCMI5HT97U0lDu2Sr1lag6LTLEPV2yvENZBzGCyPPkJe-migO0/exec'; // ← PASTE YOUR APPS SCRIPT URL HERE
 
 let _syncTimer = null;
 let _syncDirty = false;
@@ -1430,22 +1430,24 @@ function pushToSheets() {
     return;
   }
   setSyncStatus('⏳', 'Saving…', 'var(--cyan)');
-  const payload = JSON.stringify({ action: 'save', data: JSON.stringify(db) });
-  const ok = () => {
-    _syncDirty = false;
-    const t = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    setSyncStatus('✅', 'Saved ' + t, 'var(--emerald)');
-  };
-  try {
-    if(navigator.sendBeacon) {
-      navigator.sendBeacon(SCRIPT_URL, new Blob([payload], {type:'text/plain'}));
-      ok();
-    } else {
-      fetch(SCRIPT_URL, {method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain'}, body:payload})
-        .then(ok).catch(() => setSyncStatus('⚠','Save failed','var(--rose)'));
-    }
-  } catch(e) { setSyncStatus('⚠','Save error','var(--rose)'); }
+  const url = SCRIPT_URL
+    + (SCRIPT_URL.includes('?') ? '&' : '?')
+    + 'action=save&data=' + encodeURIComponent(JSON.stringify(db));
+  fetch(url, { method:'GET', cache:'no-store' })
+    .then(r => r.json())
+    .then(json => {
+      if(json && json.ok) {
+        _syncDirty = false;
+        const t = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        setSyncStatus('✅', 'Saved ' + t, 'var(--emerald)');
+      } else {
+        setSyncStatus('⚠', 'Save failed — check Script URL', 'var(--rose)');
+      }
+    })
+    .catch(e => {
+      setSyncStatus('⚠', 'Save error: ' + e.message, 'var(--rose)');
+      console.warn('RxPerform pushToSheets:', e);
+    });
 }
 
 /* ── READ: JSONP GET — actually receives the data back ── */
@@ -1455,61 +1457,39 @@ function pullFromSheets() {
     return Promise.resolve(false);
   }
   setSyncStatus('⏳', 'Loading from cloud…', 'var(--cyan)');
-  return new Promise((resolve) => {
-    const cbName = '__rxpCb' + Date.now();
-    const script  = document.createElement('script');
-    let   settled = false;
-
-    const done = (success) => {
-      if(settled) return;
-      settled = true;
-      clearTimeout(timer);
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
-      resolve(success);
-    };
-
-    const timer = setTimeout(() => {
-      setSyncStatus('⚠', 'Cloud timeout — using local data', 'var(--amber)');
-      done(false);
-    }, 12000);
-
-    window[cbName] = function(json) {
-      try {
-        if(json && json.data && json.data.length > 2) {
-          const remote = JSON.parse(json.data);
-          if(remote && remote.colleagues && remote.criteria) {
-            // Cloud is ALWAYS the source of truth.
-            // Only skip if the cloud sheet is completely empty (fresh setup).
-            const cloudEmpty = remote.colleagues.length === 0
-              && remote.criteria.length === 0
-              && Object.keys(remote.scores||{}).length === 0
-              && ((remote.notes||{}).positive||[]).length === 0
-              && ((remote.notes||{}).negative||[]).length === 0;
-            if(!cloudEmpty) {
-              db = remote;
-              if(!db.notes)    db.notes    = { positive:[], negative:[] };
-              if(!db.settings) db.settings = { cycleStart:16 };
-              try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
-            }
-            const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-            setSyncStatus('✅', 'Synced ' + t, 'var(--emerald)');
-            done(true); return;
+  const url = SCRIPT_URL
+    + (SCRIPT_URL.includes('?') ? '&' : '?')
+    + 'action=load';
+  return fetch(url, { method:'GET', cache:'no-store' })
+    .then(r => r.json())
+    .then(json => {
+      if(json && json.data && json.data.length > 2) {
+        const remote = JSON.parse(json.data);
+        if(remote && remote.colleagues && remote.criteria) {
+          const cloudEmpty = remote.colleagues.length === 0
+            && remote.criteria.length === 0
+            && Object.keys(remote.scores||{}).length === 0
+            && ((remote.notes||{}).positive||[]).length === 0
+            && ((remote.notes||{}).negative||[]).length === 0;
+          if(!cloudEmpty) {
+            db = remote;
+            if(!db.notes)    db.notes    = { positive:[], negative:[] };
+            if(!db.settings) db.settings = { cycleStart:16 };
+            try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
           }
+          const t = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+          setSyncStatus('✅', 'Synced ' + t, 'var(--emerald)');
+          return true;
         }
-      } catch(e) { console.warn('RxPerform: bad cloud data', e); }
+      }
       setSyncStatus('⚠', 'Bad cloud data — using local', 'var(--amber)');
-      done(false);
-    };
-
-    script.onerror = () => {
-      setSyncStatus('⚠', 'Cloud unreachable — using local data', 'var(--amber)');
-      done(false);
-    };
-    const sep = SCRIPT_URL.includes('?') ? '&' : '?';
-    script.src = SCRIPT_URL + sep + 'action=load&callback=' + cbName;
-    document.head.appendChild(script);
-  });
+      return false;
+    })
+    .catch(e => {
+      setSyncStatus('⚠', 'Cloud error: ' + e.message, 'var(--rose)');
+      console.warn('RxPerform pullFromSheets:', e);
+      return false;
+    });
 }
 
 /* ── save(): instant localStorage + debounced cloud push ── */
@@ -1553,19 +1533,20 @@ function loadLocal() {
 }
 
 /* ── loadAndInit(): show local instantly, then pull cloud ── */
-async function loadAndInit() {
+function loadAndInit() {
   loadLocal();
   if(!db.colleagues.length) seedData();
   applyMode();
   applyLang();
   if(SCRIPT_URL) {
-    const synced = await pullFromSheets();
-    if(synced) {
-      applyLang();
-      if(typeof renderSidebar        === 'function') renderSidebar();
-      if(typeof renderStats          === 'function') renderStats();
-      if(curColId && typeof renderColleagueView === 'function') renderColleagueView();
-    }
+    pullFromSheets().then(synced => {
+      if(synced) {
+        applyLang();
+        if(typeof renderSidebar        === 'function') renderSidebar();
+        if(typeof renderStats          === 'function') renderStats();
+        if(curColId && typeof renderColleagueView === 'function') renderColleagueView();
+      }
+    });
   } else {
     setSyncStatus('💾', 'Local only — paste Script URL to enable cloud sync', 'var(--amber)');
   }
@@ -3585,7 +3566,7 @@ function exportNotesExcel() {
 /* ════════════════════════════════════════════
    BOOT
 ════════════════════════════════════════════ */
-loadAndInit(); // async: loads local first, then syncs from cloud
+loadAndInit(); // loads local first, then syncs from cloud
 </script>
 </body>
 </html>
