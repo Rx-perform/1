@@ -1401,23 +1401,112 @@ function seedData() {
   save();
 }
 /* ════════════════════════════════════════════
-   GOOGLE SHEETS SYNC
-   Set SCRIPT_URL to your deployed Apps Script Web App URL.
-   Leave blank → app works offline only (localStorage).
+   GOOGLE SHEETS SYNC  (JSONP — works across all devices)
 ════════════════════════════════════════════ */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3Clkcl5OyChsK83oIljChFP4E-jn0cF0pH6Va-pWULbS--1WXzRIeBNjx8EkQAp71/exec'; // ← PASTE YOUR APPS SCRIPT URL HERE
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvvm0JYLzONjKiD8vT0bu3ae90A7cxNyT883YqhTLE_F2dok29bWacNOYqA4U4HcoT/exec'; // ← PASTE YOUR APPS SCRIPT URL HERE
 
-let _syncTimer  = null;   // debounce handle
-let _syncDirty  = false;  // unsaved changes flag
-let _syncBusy   = false;  // in-flight request flag
+let _syncTimer = null;
+let _syncDirty = false;
 
 function setSyncStatus(icon, msg, color) {
   const el = document.getElementById('syncStatus');
-  if(el) { el.textContent = icon + ' ' + msg; el.style.color = color||'var(--text2)'; }
+  if(el) { el.textContent = icon + ' ' + msg; el.style.color = color || 'var(--text2)'; }
 }
 
-// Called every time data changes — immediate localStorage write,
-// then debounce the network push by 2 s so rapid edits don't spam the sheet.
+/* ── WRITE: POST to Apps Script (no-cors + sendBeacon) ── */
+function pushToSheets() {
+  if(!SCRIPT_URL) {
+    setSyncStatus('💾', 'Saved locally', 'var(--amber)');
+    _syncDirty = false;
+    return;
+  }
+  setSyncStatus('⏳', 'Saving…', 'var(--cyan)');
+  const payload = JSON.stringify({ action: 'save', data: JSON.stringify(db) });
+  const ok = () => {
+    _syncDirty = false;
+    const t = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    setSyncStatus('✅', 'Saved ' + t, 'var(--emerald)');
+  };
+  try {
+    if(navigator.sendBeacon) {
+      navigator.sendBeacon(SCRIPT_URL, new Blob([payload], {type:'text/plain'}));
+      ok();
+    } else {
+      fetch(SCRIPT_URL, {method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain'}, body:payload})
+        .then(ok).catch(() => setSyncStatus('⚠','Save failed','var(--rose)'));
+    }
+  } catch(e) { setSyncStatus('⚠','Save error','var(--rose)'); }
+}
+
+/* ── READ: JSONP GET — actually receives the data back ── */
+function pullFromSheets() {
+  if(!SCRIPT_URL) {
+    setSyncStatus('💾', 'No cloud URL — using local data', 'var(--amber)');
+    return Promise.resolve(false);
+  }
+  setSyncStatus('⏳', 'Loading from cloud…', 'var(--cyan)');
+  return new Promise((resolve) => {
+    const cbName = '__rxpCb' + Date.now();
+    const script  = document.createElement('script');
+    let   settled = false;
+
+    const done = (success) => {
+      if(settled) return;
+      settled = true;
+      clearTimeout(timer);
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+      resolve(success);
+    };
+
+    const timer = setTimeout(() => {
+      setSyncStatus('⚠', 'Cloud timeout — using local data', 'var(--amber)');
+      done(false);
+    }, 12000);
+
+    window[cbName] = function(json) {
+      try {
+        if(json && json.data && json.data.length > 2) {
+          const remote = JSON.parse(json.data);
+          if(remote && remote.colleagues && remote.criteria) {
+            // Use cloud data if it has more score entries (richer = newer)
+            const localRaw = localStorage.getItem('rxp_db');
+            let use = true;
+            if(localRaw) {
+              try {
+                const local = JSON.parse(localRaw);
+                use = JSON.stringify(remote.scores||{}).length
+                    >= JSON.stringify(local.scores||{}).length;
+              } catch(e) {}
+            }
+            if(use) {
+              db = remote;
+              if(!db.notes)    db.notes    = { positive:[], negative:[] };
+              if(!db.settings) db.settings = { cycleStart:16 };
+              try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
+            }
+            const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            setSyncStatus('✅', 'Synced ' + t, 'var(--emerald)');
+            done(true); return;
+          }
+        }
+      } catch(e) { console.warn('RxPerform: bad cloud data', e); }
+      setSyncStatus('⚠', 'Bad cloud data — using local', 'var(--amber)');
+      done(false);
+    };
+
+    script.onerror = () => {
+      setSyncStatus('⚠', 'Cloud unreachable — using local data', 'var(--amber)');
+      done(false);
+    };
+    const sep = SCRIPT_URL.includes('?') ? '&' : '?';
+    script.src = SCRIPT_URL + sep + 'action=load&callback=' + cbName;
+    document.head.appendChild(script);
+  });
+}
+
+/* ── save(): instant localStorage + debounced cloud push ── */
 function save() {
   try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
   _syncDirty = true;
@@ -1425,87 +1514,16 @@ function save() {
   _syncTimer = setTimeout(pushToSheets, 2000);
 }
 
-// Explicit "Save Online" button — skip debounce, push immediately
+/* ── saveDataNow(): skip debounce, push immediately ── */
 function saveDataNow() {
   try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
-  _syncDirty = true;
   clearTimeout(_syncTimer);
   pushToSheets();
 }
 
-// Push DB to Google Sheets via Apps Script
-function pushToSheets() {
-  if(!SCRIPT_URL) {
-    setSyncStatus('💾','Saved locally (no cloud URL set)','var(--amber)');
-    _syncDirty = false;
-    return;
-  }
-  if(_syncBusy) { _syncTimer = setTimeout(pushToSheets, 1500); return; }
-  _syncBusy = true;
-  setSyncStatus('⏳','Saving…','var(--cyan)');
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',   // Apps Script requires no-cors
-    headers: {'Content-Type':'text/plain'},
-    body: JSON.stringify({ action:'save', data: JSON.stringify(db) })
-  })
-  .then(() => {
-    _syncBusy  = false;
-    _syncDirty = false;
-    const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    setSyncStatus('✅', 'Saved online ' + t, 'var(--emerald)');
-  })
-  .catch(err => {
-    _syncBusy = false;
-    setSyncStatus('⚠', 'Cloud save failed — data kept locally', 'var(--rose)');
-    console.warn('RxPerform sync error:', err);
-  });
-}
-
-// Pull latest DB from Google Sheets (called on app load)
-async function pullFromSheets() {
-  if(!SCRIPT_URL) return false;
-  setSyncStatus('⏳','Loading from cloud…','var(--cyan)');
+/* ── loadLocal(): read URL hash or localStorage ── */
+function loadLocal() {
   try {
-    const res  = await fetch(SCRIPT_URL + '?action=load', { cache:'no-store' });
-    const json = await res.json();
-    if(json && json.data) {
-      const remote = JSON.parse(json.data);
-      if(remote && remote.colleagues && remote.criteria) {
-        // Merge: take whichever version has more scores
-        const localRaw = localStorage.getItem('rxp_db');
-        let useRemote  = true;
-        if(localRaw) {
-          try {
-            const local   = JSON.parse(localRaw);
-            const lScores = JSON.stringify(local.scores||{}).length;
-            const rScores = JSON.stringify(remote.scores||{}).length;
-            // prefer whichever has more data (simple heuristic)
-            useRemote = rScores >= lScores;
-          } catch(e) {}
-        }
-        if(useRemote) {
-          db = remote;
-          if(!db.notes)    db.notes    = { positive:[], negative:[] };
-          if(!db.settings) db.settings = { cycleStart:16 };
-          try { localStorage.setItem('rxp_db', JSON.stringify(db)); } catch(e) {}
-        }
-        const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-        setSyncStatus('✅', 'Synced ' + t, 'var(--emerald)');
-        return true;
-      }
-    }
-  } catch(e) {
-    setSyncStatus('⚠','Could not reach cloud — using local data','var(--amber)');
-    console.warn('RxPerform pull error:', e);
-  }
-  return false;
-}
-
-
-function load() {
-  try {
-    // 1. URL hash (import via shared link)
     if(location.hash && location.hash.length > 2) {
       try {
         const d = JSON.parse(atob(location.hash.slice(1)));
@@ -1519,7 +1537,6 @@ function load() {
         }
       } catch(e) {}
     }
-    // 2. localStorage cache (instant, offline)
     const s = localStorage.getItem('rxp_db');
     if(s) {
       db = JSON.parse(s);
@@ -1527,27 +1544,24 @@ function load() {
       if(!db.settings) db.settings = { cycleStart:16 };
     }
   } catch(e) {}
-  // 3. Cloud pull happens after app launches (see loadAndInit)
 }
 
+/* ── loadAndInit(): show local instantly, then pull cloud ── */
 async function loadAndInit() {
-  // Show local data instantly for fast startup
-  load();
+  loadLocal();
   if(!db.colleagues.length) seedData();
   applyMode();
   applyLang();
-  // Then pull fresh data from Google Sheets in background
   if(SCRIPT_URL) {
     const synced = await pullFromSheets();
     if(synced) {
-      // Refresh the UI with cloud data
-      if(typeof applyLang === 'function') applyLang();
-      if(typeof renderSidebar === 'function') renderSidebar();
-      if(typeof renderStats === 'function') renderStats();
+      applyLang();
+      if(typeof renderSidebar        === 'function') renderSidebar();
+      if(typeof renderStats          === 'function') renderStats();
       if(curColId && typeof renderColleagueView === 'function') renderColleagueView();
     }
   } else {
-    setSyncStatus('💾','Local only — add Script URL to enable cloud sync','var(--amber)');
+    setSyncStatus('💾', 'Local only — paste Script URL to enable cloud sync', 'var(--amber)');
   }
 }
 function generateShareLink() {
