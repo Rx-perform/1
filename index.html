@@ -1085,7 +1085,15 @@ body.lang-ar .note-del { right:auto; left:8px; }
               <div id="notesViewTitle" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white)">Team Notes</div>
               <div id="notesViewSub" style="font-size:12px;color:var(--text3);margin-top:2px">Collective observations — positive strengths &amp; areas to improve</div>
             </div>
-            <button class="btn btn-sm btn-excel" onclick="exportNotesExcel()" id="notesExportBtn">Export Notes to Excel</button>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:7px">
+                <label style="font-size:11px;color:var(--text3);white-space:nowrap">📅 Period</label>
+                <select id="notesMonthFilter" class="form-sel" style="padding:5px 10px;font-size:12px;min-width:160px" onchange="renderNotesView()">
+                  <option value="">All periods</option>
+                </select>
+              </div>
+              <button class="btn btn-sm btn-excel" onclick="exportNotesExcel()" id="notesExportBtn">Export Notes</button>
+            </div>
           </div>
           <div class="notes-2col">
 
@@ -1404,7 +1412,7 @@ function seedData() {
 /* ════════════════════════════════════════════
    GOOGLE SHEETS SYNC  (JSONP — works across all devices)
 ════════════════════════════════════════════ */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvvm0JYLzONjKiD8vT0bu3ae90A7cxNyT883YqhTLE_F2dok29bWacNOYqA4U4HcoT/exec'; // ← PASTE YOUR APPS SCRIPT URL HERE
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2orgaSEcoJ5S8XeqkFIrGi5X2Fo4ERgirUfS_Ldc/dev'; // ← PASTE YOUR APPS SCRIPT URL HERE
 
 let _syncTimer = null;
 let _syncDirty = false;
@@ -1471,17 +1479,14 @@ function pullFromSheets() {
         if(json && json.data && json.data.length > 2) {
           const remote = JSON.parse(json.data);
           if(remote && remote.colleagues && remote.criteria) {
-            // Use cloud data if it has more score entries (richer = newer)
-            const localRaw = localStorage.getItem('rxp_db');
-            let use = true;
-            if(localRaw) {
-              try {
-                const local = JSON.parse(localRaw);
-                use = JSON.stringify(remote.scores||{}).length
-                    >= JSON.stringify(local.scores||{}).length;
-              } catch(e) {}
-            }
-            if(use) {
+            // Cloud is ALWAYS the source of truth.
+            // Only skip if the cloud sheet is completely empty (fresh setup).
+            const cloudEmpty = remote.colleagues.length === 0
+              && remote.criteria.length === 0
+              && Object.keys(remote.scores||{}).length === 0
+              && ((remote.notes||{}).positive||[]).length === 0
+              && ((remote.notes||{}).negative||[]).length === 0;
+            if(!cloudEmpty) {
               db = remote;
               if(!db.notes)    db.notes    = { positive:[], negative:[] };
               if(!db.settings) db.settings = { cycleStart:16 };
@@ -3441,35 +3446,72 @@ function populateNoteSelects() {
 
 function renderNotesView() {
   populateNoteSelects();
+  // Populate month filter with periods that have notes
+  const sel = document.getElementById('notesMonthFilter');
+  if(sel) {
+    const allNotes = [...(db.notes&&db.notes.positive||[]), ...(db.notes&&db.notes.negative||[])];
+    const months = [...new Set(allNotes.map(n=>n.month).filter(Boolean))].sort().reverse();
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All periods</option>'
+      + months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${periodLabel(m)}</option>`).join('');
+  }
   renderNotesList('positive');
   renderNotesList('negative');
 }
 
 function renderNotesList(type) {
-  const isPos = type === 'positive';
-  const listEl = document.getElementById(isPos ? 'posNotesList' : 'negNotesList');
-  const cntEl  = document.getElementById(isPos ? 'posCnt' : 'negCnt');
+  const isPos   = type === 'positive';
+  const listEl  = document.getElementById(isPos ? 'posNotesList' : 'negNotesList');
+  const cntEl   = document.getElementById(isPos ? 'posCnt' : 'negCnt');
   if(!listEl) return;
-  const notes = (db.notes && db.notes[type]) ? db.notes[type] : [];
-  if(cntEl) cntEl.textContent = notes.length;
+  const allNotes    = (db.notes && db.notes[type]) ? db.notes[type] : [];
+  const filterMonth = document.getElementById('notesMonthFilter')?.value || '';
+  // Filter by selected month (or show all)
+  const notes = filterMonth
+    ? allNotes.filter(n => (n.month || '') === filterMonth)
+    : allNotes;
+  if(cntEl) cntEl.textContent = notes.length + (filterMonth ? '' : '');
   const t = appLang==='ar' ? AR : EN;
   if(!notes.length) {
-    listEl.innerHTML = `<div class="notes-empty-msg">${t.noNotes}</div>`;
+    listEl.innerHTML = `<div class="notes-empty-msg">${filterMonth ? 'No notes for this period' : t.noNotes}</div>`;
     return;
   }
   const accentColor = isPos ? 'var(--emerald)' : 'var(--rose)';
   const isAdmin = role === 'admin';
-  listEl.innerHTML = [...notes].reverse().map((n, ri) => {
-    const realIdx = notes.length - 1 - ri;
-    const colleague = n.colId ? db.colleagues.find(c=>c.id===n.colId) : null;
-    const colName  = colleague ? colleague.name : t.allTeam;
-    const colColor = colleague ? colleague.color : 'var(--text3)';
-    const safeText = n.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<div class="note-card" style="border-left:3px solid ${accentColor}">
-      ${isAdmin ? `<button class="note-del" onclick="deleteNote('${type}',${realIdx})" title="Delete">✕</button>` : ''}
-      <div class="note-card-who" style="color:${colColor}">${colName}</div>
-      <div class="note-card-text">${safeText}</div>
-      ${n.date ? `<div class="note-card-meta">${n.date}</div>` : ''}
+
+  // Group by month (newest first)
+  const groups = {};
+  [...notes].reverse().forEach((n, ri) => {
+    const realIdx = allNotes.indexOf(n);
+    const mKey = n.month || 'unknown';
+    if(!groups[mKey]) groups[mKey] = [];
+    groups[mKey].push({ n, realIdx });
+  });
+
+  // Sort groups newest first
+  const sortedMonths = Object.keys(groups).sort().reverse();
+
+  listEl.innerHTML = sortedMonths.map(mKey => {
+    const label = mKey !== 'unknown' ? periodLabel(mKey) : 'No period';
+    const cards = groups[mKey].map(({ n, realIdx }) => {
+      const colleague = n.colId ? db.colleagues.find(c=>c.id===n.colId) : null;
+      const colName   = colleague ? colleague.name : t.allTeam;
+      const colColor  = colleague ? colleague.color : 'var(--text3)';
+      const safeText  = n.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<div class="note-card" style="border-left:3px solid ${accentColor}">
+        ${isAdmin ? `<button class="note-del" onclick="deleteNote('${type}',${realIdx})" title="Delete">✕</button>` : ''}
+        <div class="note-card-who" style="color:${colColor}">${colName}</div>
+        <div class="note-card-text">${safeText}</div>
+        ${n.date ? `<div class="note-card-meta">${n.date}</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:6px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+                  color:${accentColor};padding:4px 8px;margin-bottom:4px;
+                  border-bottom:1px solid ${accentColor}44;opacity:0.85">
+        📅 ${label}
+      </div>
+      ${cards}
     </div>`;
   }).join('');
 }
@@ -3483,7 +3525,8 @@ function addNote(type) {
   if(!text) { toast('Please enter a note', '#ffb340'); return; }
   if(!db.notes) db.notes = { positive:[], negative:[] };
   if(!db.notes[type]) db.notes[type] = [];
-  db.notes[type].push({ colId, text, date, ts: Date.now() });
+  const notePeriod = curMonth || (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; })();
+  db.notes[type].push({ colId, text, date, month: notePeriod, ts: Date.now() });
   save();
   document.getElementById(isPos ? 'posTextInp' : 'negTextInp').value = '';
   document.getElementById(isPos ? 'posDateInp' : 'negDateInp').value = '';
