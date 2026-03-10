@@ -1034,6 +1034,30 @@ body.lang-ar .note-del { right:auto; left:8px; }
 .pos-submit:hover { background:rgba(0,200,150,0.2); }
 .neg-submit { background:rgba(255,77,109,0.1); color:var(--rose); border-color:rgba(255,77,109,0.2); }
 .neg-submit:hover { background:rgba(255,77,109,0.2); }
+
+/* ── User Menu ── */
+.umenu-item {
+  width:100%;padding:9px 12px;border:none;background:none;
+  color:var(--text2);font-size:13px;font-family:'Syne',sans-serif;
+  font-weight:500;cursor:pointer;border-radius:9px;
+  display:flex;align-items:center;gap:10px;transition:background 0.15s;text-align:left;
+}
+.umenu-item:hover{background:var(--ink3);color:var(--white);}
+.umenu-ico{font-size:15px;flex-shrink:0;width:20px;text-align:center;}
+.umenu-arrow{margin-left:auto;color:var(--text3);font-size:16px;line-height:1;}
+.umenu-danger{color:var(--rose);}
+.umenu-danger:hover{background:rgba(255,77,109,0.08);color:var(--rose);}
+@keyframes notifSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.notif-item{padding:10px 12px;border-radius:10px;margin-bottom:4px;background:var(--ink2);border:1px solid var(--line);}
+.notif-item:hover{background:var(--ink3);}
+.notif-item-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.notif-item-desc{font-size:11px;color:var(--text3);line-height:1.4;}
+
+@keyframes celebIn  { from{opacity:0;transform:translateX(-50%) translateY(-30px) scale(0.8)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
+@keyframes celebOut { from{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} to{opacity:0;transform:translateX(-50%) translateY(-20px) scale(0.9)} }
+/* PIP badge */
+.pip-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:rgba(255,179,64,0.12);border:1px solid rgba(255,179,64,0.3);border-radius:20px;font-size:11px;color:var(--amber);font-weight:600;cursor:pointer;transition:background 0.15s; }
+.pip-badge:hover { background:rgba(255,179,64,0.2); }
 </style>
 </head>
 <body>
@@ -1098,14 +1122,76 @@ body.lang-ar .note-del { right:auto; left:8px; }
     <div class="topbar-sep"></div>
     <div class="topbar-date" id="topDate"></div>
     <div id="liveClock" style="font-family:monospace;font-size:12px;color:var(--text3);letter-spacing:1px;white-space:nowrap"></div>
-    <button class="tb-ctrl" id="langBtn" onclick="toggleLang()" title="Switch language">EN | ع</button>
-    <button class="tb-ctrl" id="modeBtn" onclick="toggleMode()">☀ Day Mode</button>
-    <div class="user-chip" onclick="logoutConfirm()" title="Sign out">
+    <!-- Notification Bell -->
+    <div style="position:relative;flex-shrink:0">
+      <button class="tb-ctrl" id="notifBtn" onclick="toggleNotifPanel()" title="Notifications"
+        style="position:relative;width:34px;height:34px;padding:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px">
+        🔔<span id="notifDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#ff4d6d;border:2px solid var(--ink1)"></span>
+      </button>
+      <div id="notifPanel" style="display:none;position:fixed;top:52px;right:10px;width:310px;max-height:420px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif">🔔 Notifications</span>
+          <button onclick="clearAllNotifs()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 6px;border-radius:6px" onmouseover="this.style.background='var(--ink3)'" onmouseout="this.style.background='none'">Clear All</button>
+        </div>
+        <div id="notifList" style="overflow-y:auto;max-height:340px;padding:8px"></div>
+      </div>
+    </div>
+    <!-- User Chip -->
+    <div class="user-chip" id="userChip" onclick="toggleUserMenu()" title="Profile">
       <div class="user-ava" id="userAva" style="background:var(--ink4)">A</div>
-      <span class="user-name" id="userName">Admin</span>
+      <span class="user-name" id="userName">Abdullah Tharwat</span>
       <span id="userBadge"></span>
     </div>
+    <!-- User Dropdown -->
+    <div id="userMenu" style="display:none;position:fixed;top:56px;right:10px;width:230px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+        <div class="user-ava" id="menuAva" style="width:38px;height:38px;border-radius:11px;font-size:15px;flex-shrink:0"></div>
+        <div style="min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="menuName">Abdullah Tharwat</div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:1px" id="menuRole">Administrator</div>
+        </div>
+      </div>
+      <div style="padding:6px">
+        <button onclick="toggleMode();closeUserMenu();" class="umenu-item" id="umenuModeBtn">
+          <span class="umenu-ico">☀</span><span id="umenuModeLabel">Day Mode</span><span class="umenu-arrow">›</span>
+        </button>
+        <button onclick="toggleLang();closeUserMenu();" class="umenu-item" id="umenuLangBtn">
+          <span class="umenu-ico">🌐</span><span id="umenuLangLabel">Switch to Arabic</span><span class="umenu-arrow">›</span>
+        </button>
+        <div style="height:1px;background:var(--line);margin:4px 0"></div>
+        <button onclick="openChangePassword();closeUserMenu();" class="umenu-item">
+          <span class="umenu-ico">🔑</span><span>Change Password</span><span class="umenu-arrow">›</span>
+        </button>
+        <div style="height:1px;background:var(--line);margin:4px 0"></div>
+        <button onclick="logoutConfirm();closeUserMenu();" class="umenu-item umenu-danger">
+          <span class="umenu-ico">🚪</span><span>Sign Out</span>
+        </button>
+      </div>
+    </div>
   </div>
+    <!-- Viewer Menu -->
+    <div id="viewerMenu" style="display:none;position:fixed;top:56px;right:10px;width:210px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px">
+        <div class="user-ava" style="width:32px;height:32px;border-radius:9px;font-size:13px;background:var(--ink4);flex-shrink:0">V</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--white)">View Only</div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Read access</div>
+        </div>
+      </div>
+      <div style="padding:6px">
+        <button onclick="toggleMode();closeViewerMenu();" class="umenu-item" id="vmenuModeBtn">
+          <span class="umenu-ico">☀</span><span id="vmenuModeLabel">Day Mode</span><span class="umenu-arrow">›</span>
+        </button>
+        <button onclick="toggleLang();closeViewerMenu();" class="umenu-item">
+          <span class="umenu-ico">🌐</span><span id="vmenuLangLabel">Switch to Arabic</span><span class="umenu-arrow">›</span>
+        </button>
+        <div style="height:1px;background:var(--line);margin:4px 0"></div>
+        <button onclick="logoutConfirm();closeViewerMenu();" class="umenu-item umenu-danger">
+          <span class="umenu-ico">🚪</span><span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+
 
   <!-- TOOL BAR -->
   <div class="toolbar no-print">
@@ -1317,20 +1403,142 @@ body.lang-ar .note-del { right:auto; left:8px; }
   </div>
 </div>
 
+
+
+<!-- ═══ MODAL: SHARE ═══ -->
+<div class="modal-bg" id="mShare">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title" id="shareModalTitle">📤 Share Report</div>
+    <input type="hidden" id="shareSubject">
+    <div class="form-g">
+      <label class="form-lbl">Preview</label>
+      <textarea id="shareText" rows="10" readonly style="background:var(--ink2);color:var(--text2);border:1px solid var(--line2);border-radius:10px;padding:12px;font-family:monospace;font-size:11px;width:100%;resize:vertical;line-height:1.6"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
+      <button id="shareWABtn" class="btn btn-primary" style="background:linear-gradient(135deg,#25D366,#128C7E);border-color:#25D366;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.552 4.116 1.516 5.845L0 24l6.335-1.492A11.931 11.931 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-1.946 0-3.775-.528-5.348-1.444l-.383-.228-3.976.937.997-3.875-.249-.398A9.774 9.774 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        WhatsApp
+      </button>
+      <button id="shareMailBtn" class="btn" style="display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700">
+        ✉ Email
+      </button>
+      <button id="shareCopyBtn" class="btn" style="display:flex;align-items:center;justify-content:center;gap:6px">
+        📋 Copy
+      </button>
+    </div>
+    <div class="m-actions" style="margin-top:12px">
+      <button class="btn" onclick="closeModal('mShare')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: PIP ═══ -->
+<div class="modal-bg" id="mPIP">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title" id="mPIPTitle">New Improvement Plan</div>
+    <div style="background:rgba(255,179,64,0.08);border:1px solid rgba(255,179,64,0.2);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--amber)">
+      📋 Improvement plan for: <strong id="pipColName"></strong>
+    </div>
+    <input type="hidden" id="pipColId">
+    <input type="hidden" id="pipId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Start Date *</label>
+        <input class="form-in" id="pipStartDate" type="date">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">End Date *</label>
+        <input class="form-in" id="pipEndDate" type="date">
+      </div>
+      <div class="form-g" style="margin:0;grid-column:1/-1">
+        <label class="form-lbl">Performance Target (avg score to achieve)</label>
+        <input class="form-in" id="pipTarget" type="number" min="1" max="10" step="0.5" value="7.0" style="max-width:120px">
+      </div>
+      <div class="form-g" style="margin:0;grid-column:1/-1">
+        <label class="form-lbl">Reason / Background *</label>
+        <textarea class="form-in" id="pipReason" rows="2" placeholder="e.g. Consistently below 5.0 for 3 periods, missed dispensing accuracy targets…" style="resize:vertical"></textarea>
+      </div>
+      <div class="form-g" style="margin:0;grid-column:1/-1">
+        <label class="form-lbl">Action Steps</label>
+        <textarea class="form-in" id="pipActions" rows="3" placeholder="e.g. Weekly 1:1 check-ins, shadow senior pharmacist on Tuesdays, complete dispensing accuracy module by March 15…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="m-actions">
+      <button class="btn" onclick="closeModal('mPIP')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePIP()">Save Plan</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- ═══ MODAL: COLLEAGUE ═══ -->
 <div class="modal-bg" id="mColleague">
-  <div class="modal">
+  <div class="modal" style="max-width:560px">
     <div class="modal-title" id="mColTitle">Add Colleague</div>
-    <div class="form-g">
-      <label class="form-lbl">Full Name</label>
-      <input class="form-in" id="mColName" type="text" placeholder="e.g. Dr. Sarah Johnson">
-    </div>
-    <div class="form-g">
-      <label class="form-lbl">Job Title / Role</label>
-      <input class="form-in" id="mColRole" type="text" placeholder="e.g. Senior Clinical Pharmacist">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-g" style="margin:0;grid-column:1/-1">
+        <label class="form-lbl">Full Name *</label>
+        <input class="form-in" id="mColName" type="text" placeholder="e.g. Dr. Sarah Johnson">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Job Title / Role *</label>
+        <input class="form-in" id="mColRole" type="text" placeholder="e.g. Senior Clinical Pharmacist">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Department</label>
+        <select class="form-sel" id="mColDept">
+          <option value="">— Select —</option>
+          <option>Clinical Pharmacy</option>
+          <option>Dispensary</option>
+          <option>Outpatient</option>
+          <option>Inpatient</option>
+          <option>ICU</option>
+          <option>Oncology</option>
+          <option>Pediatrics</option>
+          <option>Management</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Shift</label>
+        <select class="form-sel" id="mColShift">
+          <option value="">— Select —</option>
+          <option>Morning</option>
+          <option>Evening</option>
+          <option>Night</option>
+          <option>Rotating</option>
+          <option>On-Call</option>
+        </select>
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Contract Type</label>
+        <select class="form-sel" id="mColContract">
+          <option value="">— Select —</option>
+          <option>Full-Time</option>
+          <option>Part-Time</option>
+          <option>Contract</option>
+          <option>Intern</option>
+          <option>Locum</option>
+        </select>
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Join Date</label>
+        <input class="form-in" id="mColJoin" type="date">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Phone / Extension</label>
+        <input class="form-in" id="mColPhone" type="text" placeholder="e.g. +966-5xx or ext. 123">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label class="form-lbl">Email</label>
+        <input class="form-in" id="mColEmail" type="email" placeholder="colleague@hospital.com">
+      </div>
+      <div class="form-g" style="margin:0;grid-column:1/-1">
+        <label class="form-lbl">Internal Notes (not shown to colleague)</label>
+        <textarea class="form-in" id="mColNotes" rows="2" placeholder="e.g. currently on probation, strong in counselling…" style="resize:vertical;min-height:56px"></textarea>
+      </div>
     </div>
     <div class="form-g">
       <label class="form-lbl">Color</label>
@@ -1519,7 +1727,7 @@ const CAT_COLORS = {
   Communication:'#a78bfa', Teamwork:'#ffb340', Documentation:'#60a5fa', Other:'#94a3b8'
 };
 
-let db = { colleagues: [], criteria: [], scores: {}, notes: { positive: [], negative: [] }, settings: { cycleStart: 16 } };
+let db = { colleagues: [], criteria: [], scores: {}, notes: { positive: [], negative: [] }, settings: { cycleStart: 16, adminDisplayName: 'Abdullah Tharwat' } };
 let appLang = localStorage.getItem('rxp_lang') || 'en';
 let appMode = localStorage.getItem('rxp_mode') || 'night';
 let role = 'viewer'; // 'admin' | 'viewer'
@@ -1724,6 +1932,9 @@ function loadLocal() {
       db = JSON.parse(s);
       if(!db.notes)    db.notes    = { positive:[], negative:[] };
       if(!db.settings) db.settings = { cycleStart:16 };
+      // Restore UI prefs saved in db
+      if(db.settings.appMode) { appMode = db.settings.appMode; try{localStorage.setItem('rxp_mode',appMode);}catch(e){} }
+      if(db.settings.appLang) { appLang = db.settings.appLang; try{localStorage.setItem('rxp_lang',appLang);}catch(e){} }
     }
   } catch(e) {}
 }
@@ -1798,6 +2009,7 @@ function launchApp() {
       renderStats();
       if(curColId) renderColleagueView();
     }
+    setTimeout(generatePerfNotifications, 1800);
   });
   // Re-sync every 30 seconds so mobile↔PC stay in sync
   clearInterval(window._syncInterval);
@@ -1837,13 +2049,20 @@ function initApp() {
 
   // User chip
   const isAdmin = role==='admin';
-  document.getElementById('userAva').textContent = isAdmin ? 'A' : 'V';
+  const _dispName = isAdmin ? (db.settings?.adminDisplayName || 'Abdullah Tharwat') : 'Viewer';
+  document.getElementById('userAva').textContent = _dispName[0].toUpperCase();
   document.getElementById('userAva').style.background = isAdmin ? 'var(--amber)33' : 'var(--cyan3)';
   document.getElementById('userAva').style.color = isAdmin ? 'var(--amber)' : 'var(--cyan)';
-  document.getElementById('userName').textContent = isAdmin ? 'Admin' : 'Viewer';
-  document.getElementById('userBadge').innerHTML = isAdmin ?
-    '<span class="role-badge badge-admin">Admin</span>' :
-    '<span class="role-badge badge-viewer">Viewer</span>';
+  document.getElementById('userName').textContent = _dispName;
+  document.getElementById('userBadge').innerHTML = '';
+  const _mAva = document.getElementById('menuAva');
+  const _mName = document.getElementById('menuName');
+  const _mRole = document.getElementById('menuRole');
+  if(_mAva){_mAva.textContent=_dispName[0].toUpperCase();_mAva.style.background=isAdmin?'var(--amber)33':'var(--cyan3)';_mAva.style.color=isAdmin?'var(--amber)':'var(--cyan)';}
+  if(_mName) _mName.textContent = _dispName;
+  if(_mRole) _mRole.textContent = isAdmin ? 'Administrator' : 'Viewer';
+  const _uc = document.getElementById('userChip');
+  if(_uc) _uc.style.cursor = isAdmin ? 'pointer' : 'default';
 
   // Hide admin-only elements for viewer
   if(!isAdmin) {
@@ -2084,7 +2303,14 @@ function renderColleagueView() {
         <div>
           <div class="col-hdr-name">${c.name}</div>
           <div class="col-hdr-role">${c.role}</div>
-          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap" id="crTagsRow"></div>
+          <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;align-items:center">
+            ${c.dept?`<span style="font-size:10px;padding:2px 8px;background:var(--cyan3);color:var(--cyan);border-radius:10px;border:1px solid var(--line2)">🏥 ${c.dept}</span>`:''}
+            ${c.shift?`<span style="font-size:10px;padding:2px 8px;background:rgba(255,179,64,0.10);color:var(--amber);border-radius:10px;border:1px solid rgba(255,179,64,0.2)">⏰ ${c.shift}</span>`:''}
+            ${c.contract?`<span style="font-size:10px;padding:2px 8px;background:rgba(0,200,150,0.08);color:var(--emerald);border-radius:10px;border:1px solid rgba(0,200,150,0.15)">${c.contract}</span>`:''}
+            ${c.joinDate?`<span style="font-size:10px;padding:2px 8px;background:var(--ink3);color:var(--text2);border-radius:10px;border:1px solid var(--line)">📅 Since ${new Date(c.joinDate).toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</span>`:''}
+            ${c.phone?`<span style="font-size:10px;padding:2px 8px;background:var(--ink3);color:var(--text2);border-radius:10px;border:1px solid var(--line)">📞 ${c.phone}</span>`:''}
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap" id="crTagsRow"></div>
         </div>
       </div>
       <div class="col-metrics">
@@ -2101,14 +2327,18 @@ function renderColleagueView() {
           <div class="col-metric-val" style="color:var(--amber)">${getActiveCriteria(c.id).length}</div>
           <div class="col-metric-lbl">Criteria</div>
         </div>
+        ${renderPercentileBadge(c.id, curMonth)}
       </div>
       <div class="col-hdr-actions admin-only no-print">
         <button class="btn btn-sm" onclick="openColleagueModal('${c.id}')">Edit</button>
         <button class="btn btn-sm admin-only" onclick="openCriterionModal(null)">Add Criterion</button>
         <button class="btn btn-sm btn-primary admin-only" onclick="openBulk()">Bulk Fill</button>
+        <button class="btn btn-sm admin-only" onclick="openPIPModal('${c.id}')" style="background:rgba(255,179,64,0.12);color:var(--amber);border-color:rgba(255,179,64,0.3)" title="Improvement Plan">📋 PIP</button>
+        <button class="btn btn-sm" onclick="shareColleagueReport('${c.id}')" style="background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)" title="Share monthly report">📤 Share</button>
         <button class="btn btn-sm btn-danger admin-only" onclick="deleteColleague('${c.id}')">Delete</button>
       </div>
     </div>
+    ${renderPIPStatus(c.id)}
 
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div class="month-pills" id="monthPills"></div>
@@ -2141,6 +2371,10 @@ function renderColleagueView() {
   renderPerfTable();
   renderColCharts();
   enforceRole();
+  // Today dashboard
+  setTimeout(renderTodayDashboard, 50);
+  // Check milestones
+  setTimeout(()=>checkMilestones(curColId, curMonth), 800);
 }
 
 // Ensure all admin-only elements are hidden/shown based on role
@@ -2484,6 +2718,13 @@ function openColleagueModal(id) {
   document.getElementById('mColTitle').textContent=id?'Edit Colleague':'Add Colleague';
   document.getElementById('mColName').value=c?.name||'';
   document.getElementById('mColRole').value=c?.role||'';
+  document.getElementById('mColDept').value=c?.dept||'';
+  document.getElementById('mColShift').value=c?.shift||'';
+  document.getElementById('mColContract').value=c?.contract||'';
+  document.getElementById('mColJoin').value=c?.joinDate||'';
+  document.getElementById('mColPhone').value=c?.phone||'';
+  document.getElementById('mColEmail').value=c?.email||'';
+  document.getElementById('mColNotes').value=c?.internalNotes||'';
   selColor=c?.color||COLORS_PALETTE[Math.floor(Math.random()*COLORS_PALETTE.length)];
   renderColorGrid();
   openModal('mColleague');
@@ -2502,11 +2743,21 @@ function saveColleague() {
   const name=document.getElementById('mColName').value.trim();
   const role2=document.getElementById('mColRole').value.trim();
   if(!name){ toast('⚠ Name required','#ffb340'); return; }
+  const extra = {
+    dept: document.getElementById('mColDept').value,
+    shift: document.getElementById('mColShift').value,
+    contract: document.getElementById('mColContract').value,
+    joinDate: document.getElementById('mColJoin').value,
+    phone: document.getElementById('mColPhone').value.trim(),
+    email: document.getElementById('mColEmail').value.trim(),
+    internalNotes: document.getElementById('mColNotes').value.trim(),
+  };
   if(editColId) {
     const c=db.colleagues.find(x=>x.id===editColId);
     c.name=name; c.role=role2; c.color=selColor;
+    Object.assign(c, extra);
   } else {
-    db.colleagues.push({id:'c'+Date.now(),name,role:role2,color:selColor});
+    db.colleagues.push({id:'c'+Date.now(),name,role:role2,color:selColor,...extra});
   }
   save(); closeModal('mColleague'); renderSidebar();
   if(editColId===curColId) renderColleagueView();
@@ -4024,7 +4275,9 @@ const EN = {
 function toggleLang() {
   appLang = appLang==='en' ? 'ar' : 'en';
   try{ localStorage.setItem('rxp_lang', appLang); }catch(e){}
+  if(db && db.settings) { db.settings.appLang = appLang; save(); }
   applyLang();
+  syncMenuLabels();
 }
 function applyLang() {
   const t = appLang==='ar' ? AR : EN;
@@ -4136,9 +4389,11 @@ function applyLang() {
 function toggleMode() {
   appMode = appMode==='night' ? 'day' : 'night';
   try{ localStorage.setItem('rxp_mode', appMode); }catch(e){}
+  if(db && db.settings) { db.settings.appMode = appMode; save(); }
   applyMode();
 }
 function applyMode() {
+  syncMenuLabels();
   const isDay = appMode==='day';
   document.body.classList.toggle('day-mode', isDay);
   const t = appLang==='ar' ? AR : EN;
@@ -4515,6 +4770,687 @@ function installPWA() {
       toast('Open in Chrome and tap the menu → "Add to Home Screen"', 4000);
     }
   }
+}
+
+
+/* ════════════════════════════════════════════
+   TODAY DASHBOARD (Feature #1 & #8)
+   Injected above the performance table when entry view loads
+════════════════════════════════════════════ */
+function renderTodayDashboard() {
+  const existing = document.getElementById('todayDashboard');
+  if(existing) existing.remove();
+  if(role !== 'admin') return;
+
+  const now = new Date();
+  const todayName = now.toLocaleDateString('en-US',{weekday:'long'});
+  const todayFull = now.toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'});
+
+  // Who hasn't been scored today in current period
+  const cs = getCycleStart();
+  const [py,pm] = curMonth.split('-').map(Number);
+  const periodStart = new Date(py,pm-1,cs);
+  const todayPDay = Math.round((now - periodStart)/86400000) + 1;
+  const dim = periodDayCount(curMonth);
+
+  if(todayPDay < 1 || todayPDay > dim) return; // not in current period
+
+  const missing = db.colleagues.filter(c => {
+    const criteria = getActiveCriteria(c.id);
+    if(!criteria.length) return false;
+    const sc = db.scores[c.id]?.[curMonth] || {};
+    return !criteria.some(cr => sc[cr.id]?.[todayPDay]?.score);
+  });
+
+  const teamAvg = (() => {
+    const avgs = db.colleagues.map(c => colMonthAvg(c.id, curMonth)).filter(a => a > 0);
+    return avgs.length ? avgs.reduce((a,b)=>a+b,0)/avgs.length : 0;
+  })();
+
+  // Trend vs yesterday
+  const yDay = todayPDay - 1;
+  const todayTeamAvg = yDay > 0 ? (() => {
+    let s=0,n=0;
+    db.colleagues.forEach(c => {
+      const sc = db.scores[c.id]?.[curMonth] || {};
+      getActiveCriteria(c.id).forEach(cr => {
+        const e = sc[cr.id]?.[yDay];
+        if(e?.score){ s+=e.score; n++; }
+      });
+    });
+    return n ? s/n : 0;
+  })() : 0;
+
+  // Top/bottom today
+  const todayScores = db.colleagues.map(c => {
+    const sc = db.scores[c.id]?.[curMonth] || {};
+    let s=0,n=0;
+    getActiveCriteria(c.id).forEach(cr => {
+      const e = sc[cr.id]?.[todayPDay];
+      if(e?.score){ s+=e.score; n++; }
+    });
+    return { c, avg: n?s/n:0, filled:n>0 };
+  }).filter(x=>x.filled);
+
+  const topToday = todayScores.sort((a,b)=>b.avg-a.avg)[0];
+
+  const dashEl = document.createElement('div');
+  dashEl.id = 'todayDashboard';
+  dashEl.style.cssText = 'margin-bottom:16px';
+
+  const trendIcon = todayTeamAvg > 0
+    ? (teamAvg > todayTeamAvg+0.2 ? '📈' : teamAvg < todayTeamAvg-0.2 ? '📉' : '➡️')
+    : '➡️';
+
+  const missingHtml = missing.length
+    ? missing.map(c=>{
+        const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<span onclick="selectColleague('${c.id}')" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:20px;font-size:11px;color:var(--rose);cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,77,109,0.15)'" onmouseout="this.style.background='rgba(255,77,109,0.08)'">
+          <span style="width:18px;height:18px;border-radius:5px;background:${c.color}22;color:${c.color};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">${ini}</span>
+          ${c.name.split(' ')[0]}
+        </span>`;
+      }).join('')
+    : '<span style="color:var(--emerald);font-size:12px;font-weight:600">✅ All entries complete for today</span>';
+
+  dashEl.innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--ink2) 0%,var(--ink3) 100%);border:1px solid var(--line2);border-radius:14px;padding:14px 18px;margin-bottom:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);font-weight:700">Today</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif">${todayName}, ${todayFull}</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="text-align:center;padding:8px 14px;background:var(--ink1);border-radius:10px;border:1px solid var(--line)">
+            <div style="font-size:18px;font-weight:800;color:${teamAvg>=8?'var(--emerald)':teamAvg>=6?'var(--amber)':'var(--rose)'};font-family:'Syne',sans-serif">${teamAvg?teamAvg.toFixed(1):'—'}</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Period Avg</div>
+          </div>
+          <div style="text-align:center;padding:8px 14px;background:var(--ink1);border-radius:10px;border:1px solid var(--line)">
+            <div style="font-size:18px;font-weight:800;color:var(--rose);font-family:'Syne',sans-serif">${missing.length}</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Missing Today</div>
+          </div>
+          ${topToday?`<div style="text-align:center;padding:8px 14px;background:var(--ink1);border-radius:10px;border:1px solid var(--line)">
+            <div style="font-size:13px;font-weight:800;color:${topToday.c.color};font-family:'Syne',sans-serif">${topToday.c.name.split(' ')[0]}</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">${trendIcon} Best Today</div>
+          </div>`:''}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⏳ Not yet scored today (Day ${todayPDay})</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${missingHtml}</div>
+      </div>
+    </div>`;
+
+  const entryContent = document.getElementById('entryContent');
+  if(entryContent) entryContent.prepend(dashEl);
+}
+
+/* ════════════════════════════════════════════
+   PERCENTILE RANKING (Feature #3 & #13)
+════════════════════════════════════════════ */
+function getPercentile(colId, month) {
+  const myAvg = colMonthAvg(colId, month);
+  if(!myAvg) return null;
+  const allAvgs = db.colleagues
+    .map(c => colMonthAvg(c.id, month))
+    .filter(a => a > 0)
+    .sort((a,b) => a-b);
+  if(allAvgs.length < 2) return null;
+  const below = allAvgs.filter(a => a < myAvg).length;
+  return Math.round((below / (allAvgs.length-1)) * 100);
+}
+
+/* Inject percentile into renderStats table */
+function addPercentilestoStats() {
+  // Patch the stats grid to show percentile badges — called after renderStats
+  db.colleagues.forEach(c => {
+    const pct = getPercentile(c.id, curMonth);
+    if(pct === null) return;
+    const color = pct>=80?'var(--emerald)':pct>=50?'var(--cyan)':pct>=25?'var(--amber)':'var(--rose)';
+  });
+}
+
+/* ════════════════════════════════════════════
+   IMPROVEMENT PLAN — PIP (Feature #11 & #12)
+════════════════════════════════════════════ */
+function getPIPs() {
+  if(!db.settings.pips) db.settings.pips = [];
+  return db.settings.pips;
+}
+
+function openPIPModal(colId) {
+  const c = db.colleagues.find(x=>x.id===colId);
+  if(!c) return;
+  const existing = getPIPs().find(p=>p.colId===colId && p.status==='active');
+
+  document.getElementById('pipColName').textContent = c.name;
+  document.getElementById('pipColId').value = colId;
+  document.getElementById('pipStartDate').value = existing?.startDate || new Date().toISOString().slice(0,10);
+  document.getElementById('pipEndDate').value = existing?.endDate || '';
+  document.getElementById('pipTarget').value = existing?.target || '7.0';
+  document.getElementById('pipReason').value = existing?.reason || '';
+  document.getElementById('pipActions').value = existing?.actions || '';
+  document.getElementById('pipId').value = existing?.id || '';
+  document.getElementById('mPIPTitle').textContent = existing ? 'Edit Improvement Plan' : 'New Improvement Plan';
+  openModal('mPIP');
+}
+
+function savePIP() {
+  const colId = document.getElementById('pipColId').value;
+  const startDate = document.getElementById('pipStartDate').value;
+  const endDate = document.getElementById('pipEndDate').value;
+  const target = parseFloat(document.getElementById('pipTarget').value)||7;
+  const reason = document.getElementById('pipReason').value.trim();
+  const actions = document.getElementById('pipActions').value.trim();
+  const existingId = document.getElementById('pipId').value;
+
+  if(!startDate||!endDate){ toast('⚠ Start and end dates required','#ffb340'); return; }
+  if(!reason){ toast('⚠ Reason for plan required','#ffb340'); return; }
+
+  if(!db.settings.pips) db.settings.pips = [];
+
+  if(existingId) {
+    const pip = db.settings.pips.find(p=>p.id===existingId);
+    if(pip){ pip.startDate=startDate;pip.endDate=endDate;pip.target=target;pip.reason=reason;pip.actions=actions; }
+  } else {
+    db.settings.pips.push({ id:'pip'+Date.now(), colId, startDate, endDate, target, reason, actions, status:'active', createdAt:new Date().toISOString() });
+  }
+  save();
+  closeModal('mPIP');
+  if(curColId===colId) renderColleagueView();
+  toast('✅ Improvement plan saved');
+}
+
+function closePIP(pipId) {
+  const pip = getPIPs().find(p=>p.id===pipId);
+  if(!pip) return;
+  // Show inline confirm instead of browser confirm() (blocked on mobile)
+  openClosePIPConfirm(pipId);
+}
+
+function openClosePIPConfirm(pipId) {
+  const el = document.getElementById('closePIPConfirm');
+  if(el) el.remove();
+  const d = document.createElement('div');
+  d.id = 'closePIPConfirm';
+  d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
+  const inner = document.createElement('div');
+  inner.style.cssText = 'background:var(--ink1);border:1px solid var(--line2);border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center';
+  inner.innerHTML = '<div style="font-size:22px;margin-bottom:10px">✅</div>'
+    + '<div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px">Mark Plan as Completed?</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-bottom:20px">This moves the plan to history and records the outcome.</div>'
+    + '<div style="display:flex;gap:10px;justify-content:center" id="closePIPBtns"></div>';
+  d.appendChild(inner);
+  document.body.appendChild(d);
+  const btns = document.getElementById('closePIPBtns');
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => d.remove();
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn btn-primary';
+  confirmBtn.textContent = 'Yes, Complete';
+  confirmBtn.onclick = () => confirmClosePIP(pipId);
+  btns.appendChild(cancelBtn);
+  btns.appendChild(confirmBtn);
+}
+
+
+function confirmClosePIP(pipId) {
+  const el = document.getElementById('closePIPConfirm');
+  if(el) el.remove();
+  const pip = getPIPs().find(p=>p.id===pipId);
+  if(!pip) return;
+  pip.status = 'completed';
+  pip.completedAt = new Date().toISOString();
+  save();
+  renderColleagueView();
+  toast('✅ Plan marked as completed — saved to history');
+}
+
+/* ════════════════════════════════════════════
+   MILESTONE CELEBRATIONS (Feature #20)
+════════════════════════════════════════════ */
+let _celebratedMilestones = new Set(JSON.parse(localStorage.getItem('rxp_celebrated')||'[]'));
+
+function checkMilestones(colId, month) {
+  const c = db.colleagues.find(x=>x.id===colId); if(!c) return;
+  const avg = colMonthAvg(colId, month);
+  const cnt = countScores(colId, month);
+  const months = availMonths();
+  const prevAvg = months[1] ? colMonthAvg(colId, months[1]) : 0;
+
+  const milestones = [
+    { id:`perfect_${colId}_${month}`, check: avg>=9.5&&cnt>=10, msg:`🏆 ${c.name.split(' ')[0]} hit ${avg.toFixed(1)}/10 — Outstanding!`, color:'var(--amber)' },
+    { id:`bigimprove_${colId}_${month}`, check: prevAvg>0&&avg-prevAvg>=2, msg:`📈 ${c.name.split(' ')[0]} improved +${(avg-prevAvg).toFixed(1)} pts this period!`, color:'var(--emerald)' },
+    { id:`firstperfect_${colId}_${month}`, check: avg===10, msg:`🌟 Perfect 10! ${c.name.split(' ')[0]} achieved a flawless period!`, color:'#ffd700' },
+    { id:`comeback_${colId}_${month}`, check: prevAvg>0&&prevAvg<5&&avg>=7, msg:`💪 ${c.name.split(' ')[0]} is back! Great comeback this period.`, color:'var(--cyan)' },
+  ];
+
+  milestones.forEach(m => {
+    if(m.check && !_celebratedMilestones.has(m.id)) {
+      _celebratedMilestones.add(m.id);
+      try{ localStorage.setItem('rxp_celebrated', JSON.stringify([..._celebratedMilestones])); }catch(e){}
+      setTimeout(()=>{ triggerCelebration(m.msg, m.color); }, 600);
+    }
+  });
+}
+
+function triggerCelebration(msg, color) {
+  // Confetti burst
+  launchConfetti(color);
+  // Banner
+  const banner = document.createElement('div');
+  banner.style.cssText = `position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+    background:linear-gradient(135deg,var(--ink1),var(--ink3));
+    border:2px solid ${color};border-radius:16px;padding:14px 28px;
+    font-size:15px;font-weight:700;color:${color};font-family:'Syne',sans-serif;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 40px ${color}44;
+    z-index:9999;text-align:center;max-width:90vw;
+    animation:celebIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards`;
+  banner.textContent = msg;
+  document.body.appendChild(banner);
+  setTimeout(()=>{
+    banner.style.animation='celebOut 0.4s ease forwards';
+    setTimeout(()=>banner.remove(),400);
+  }, 3500);
+  addNotification('milestone_'+Date.now(), '🎉 Milestone!', msg, color);
+}
+
+function launchConfetti(color) {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9998';
+  document.body.appendChild(canvas);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const pieces = Array.from({length:80},()=>({
+    x: Math.random()*canvas.width,
+    y: -10 - Math.random()*200,
+    vx: (Math.random()-0.5)*6,
+    vy: 2+Math.random()*4,
+    r: 4+Math.random()*6,
+    color: [color,'#ffd700','#00d4ff','#ff4d6d','#00c896'][Math.floor(Math.random()*5)],
+    rot: Math.random()*360,
+    vr: (Math.random()-0.5)*8,
+    shape: Math.random()>0.5?'rect':'circle'
+  }));
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.rot+=p.vr;
+      if(p.y>canvas.height) return;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-frame/90);
+      if(p.shape==='rect'){ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);}
+      else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    });
+    frame++;
+    if(frame<100) requestAnimationFrame(draw);
+    else canvas.remove();
+  }
+  draw();
+}
+
+/* ════════════════════════════════════════════
+   PERCENTILE DISPLAY IN COLLEAGUE HEADER
+════════════════════════════════════════════ */
+
+function renderPIPStatus(colId) {
+  const allPIPs = getPIPs().filter(p => p.colId === colId);
+  const active    = allPIPs.filter(p => p.status === 'active');
+  const completed = allPIPs.filter(p => p.status === 'completed');
+  if(!allPIPs.length) return '';
+  // Show even if no active plans, as long as there's history
+
+  function pipCard(pip, isActive) {
+    const start = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const end   = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const daysLeft = Math.ceil((new Date(pip.endDate) - new Date()) / 86400000);
+    const avg = colMonthAvg(colId, curMonth);
+    const onTrack = avg >= pip.target;
+    const pct = avg ? Math.min(100, Math.round(avg / pip.target * 100)) : 0;
+    const barColor = onTrack ? 'var(--emerald)' : 'var(--rose)';
+
+    if(isActive) {
+      const trackStyle = onTrack
+        ? 'background:rgba(0,200,150,0.12);color:var(--emerald);border:1px solid rgba(0,200,150,0.2)'
+        : 'background:rgba(255,77,109,0.10);color:var(--rose);border:1px solid rgba(255,77,109,0.2)';
+      const daysStr = daysLeft > 0 ? daysLeft + ' days left' : 'Overdue';
+      return '<div style="margin-bottom:14px;background:linear-gradient(135deg,rgba(255,179,64,0.06),rgba(255,179,64,0.02));border:1px solid rgba(255,179,64,0.25);border-left:4px solid var(--amber);border-radius:12px;padding:14px 18px">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
+          + '<div style="display:flex;align-items:center;gap:8px">'
+            + '<span style="font-size:16px">📋</span>'
+            + '<div>'
+              + '<div style="font-size:13px;font-weight:700;color:var(--amber)">Active Improvement Plan</div>'
+              + '<div style="font-size:11px;color:var(--text3)">' + start + ' → ' + end + ' · ' + daysStr + '</div>'
+            + '</div>'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+            + '<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;' + trackStyle + '">' + (onTrack ? '✅ On Track' : '⚠ Below Target') + '</span>'
+            + '<button onclick="closePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">✓ Complete</button>'
+            + '<button onclick="openPIPModal(\'' + colId + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">Edit</button>'
+            + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)">📤 Share</button>'
+          + '</div>'
+        + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Goal: Reach <strong>' + pip.target + '/10</strong> avg · Current: <strong style="color:' + barColor + '">' + (avg ? avg.toFixed(1) : 'No data') + '/10</strong></div>'
+        + '<div style="height:6px;background:var(--ink4);border-radius:3px;overflow:hidden;margin-bottom:8px">'
+          + '<div style="width:' + pct + '%;height:100%;background:' + barColor + ';border-radius:3px;transition:width 1s ease"></div>'
+        + '</div>'
+        + (pip.reason ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px"><strong style="color:var(--text2)">Reason:</strong> ' + pip.reason + '</div>' : '')
+        + (pip.actions ? '<div style="font-size:11px;color:var(--text3)"><strong style="color:var(--text2)">Actions:</strong> ' + pip.actions + '</div>' : '')
+        + '</div>';
+    } else {
+      // Completed plan — show as history card with outcome
+      const completedDate = pip.completedAt ? new Date(pip.completedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Unknown';
+      // Find the avg at time of completion — use best month's data as proxy
+      const months = availMonths();
+      const endMonth = pip.endDate ? pip.endDate.slice(0,7) : curMonth;
+      const finalAvg = colMonthAvg(colId, endMonth) || colMonthAvg(colId, curMonth);
+      const achieved = finalAvg >= pip.target;
+      const outcomeColor = achieved ? 'var(--emerald)' : 'var(--rose)';
+      const outcomeLabel = achieved ? '✅ Goal Achieved' : '❌ Goal Not Met';
+      const duration = Math.round((new Date(pip.endDate) - new Date(pip.startDate)) / (86400000 * 7));
+
+      return '<div style="margin-bottom:8px;background:var(--ink2);border:1px solid var(--line);border-left:4px solid var(--text3);border-radius:10px;padding:12px 14px;opacity:0.85">'
+        + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+          + '<div>'
+            + '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:3px">📁 Completed Plan</div>'
+            + '<div style="font-size:10px;color:var(--text3)">' + start + ' → ' + end + ' · ' + duration + ' weeks · Closed: ' + completedDate + '</div>'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+            + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;background:' + outcomeColor + '18;color:' + outcomeColor + ';border:1px solid ' + outcomeColor + '33">' + outcomeLabel + '</span>'
+            + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ink3);color:var(--text2);border:1px solid var(--line)">Target: ' + pip.target + '/10 · Final: ' + (finalAvg ? finalAvg.toFixed(1) : '—') + '/10</span>'
+            + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px;background:rgba(0,212,255,0.06);color:var(--cyan);border-color:rgba(0,212,255,0.15)">📤</button>'
+          + '</div>'
+        + '</div>'
+        + (pip.reason ? '<div style="font-size:10px;color:var(--text3);margin-top:6px"><strong>Reason:</strong> ' + pip.reason + '</div>' : '')
+        + (pip.actions ? '<div style="font-size:10px;color:var(--text3);margin-top:2px"><strong>Actions taken:</strong> ' + pip.actions + '</div>' : '')
+        + '</div>';
+    }
+  }
+
+  let html = '';
+  active.forEach(pip => { html += pipCard(pip, true); });
+
+  if(completed.length) {
+    html += '<div style="margin-bottom:6px">'
+      + '<button onclick="togglePIPHistory(\'' + colId + '\')" style="width:100%;background:none;border:none;border-top:1px solid var(--line);padding:8px 0;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:6px" id="pipHistBtn_' + colId + '">'
+      + '📂 Plan History (' + completed.length + ' completed) <span id="pipHistArrow_' + colId + '">▼</span></button>'
+      + '<div id="pipHistory_' + colId + '" style="display:none">';
+    completed.slice().reverse().forEach(pip => { html += pipCard(pip, false); });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function togglePIPHistory(colId) {
+  const el = document.getElementById('pipHistory_' + colId);
+  const arrow = document.getElementById('pipHistArrow_' + colId);
+  if(!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if(arrow) arrow.textContent = open ? '▼' : '▲';
+}
+
+
+function renderPercentileBadge(colId, month) {
+  const pct = getPercentile(colId, month);
+  if(pct === null) return '';
+  const total = db.colleagues.filter(c => colMonthAvg(c.id, month) > 0).length;
+  const betterThan = Math.round((pct / 100) * (total - 1));
+  const color = pct>=80?'var(--emerald)':pct>=50?'var(--cyan)':pct>=25?'var(--amber)':'var(--rose)';
+  const label = pct>=80?'🏆 Top performer':pct>=50?'⬆ Above average':pct>=25?'⬇ Below average':'⚠ Needs attention';
+  const sub = total > 1 ? 'Better than ' + betterThan + ' of ' + (total-1) + ' colleagues' : 'Only member';
+  return '<div class="col-metric" title="Ranked by average score vs the rest of the team this period" style="cursor:help">'
+    + '<div class="col-metric-val" style="color:' + color + ';font-size:11px;font-weight:800;white-space:nowrap">' + label + '</div>'
+    + '<div class="col-metric-lbl" style="font-size:9px;color:var(--text3)">' + sub + '</div>'
+    + '</div>';
+}
+
+/* ════════════════════════════════════════════
+   LANG LABEL SYNC
+════════════════════════════════════════════ */
+function syncMenuLabels() {
+  // viewer menu labels
+  const vml = document.getElementById('vmenuModeLabel');
+  const vll = document.getElementById('vmenuLangLabel');
+  if(vml) vml.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
+  if(vll) vll.textContent = appLang==='en' ? 'Switch to Arabic' : 'Switch to English';
+  const lbl = document.getElementById('umenuLangLabel');
+  if(lbl) lbl.textContent = appLang==='en' ? 'Switch to Arabic' : 'Switch to English';
+  const modeLbl = document.getElementById('umenuModeLabel');
+  const modeIco = document.querySelector('#umenuModeBtn .umenu-ico');
+  if(modeLbl) modeLbl.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
+  if(modeIco) modeIco.textContent = appMode==='night' ? '☀' : '☾';
+}
+
+
+/* ════════════════════════════════════════════
+   SHARE VIA WHATSAPP / EMAIL
+════════════════════════════════════════════ */
+function sharePIP(pipId) {
+  const pip = getPIPs().find(p => p.id === pipId);
+  if(!pip) return;
+  const c = db.colleagues.find(x => x.id === pip.colId);
+  if(!c) return;
+
+  const start = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const end   = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const isCompleted = pip.status === 'completed';
+  const endMonth = pip.endDate ? pip.endDate.slice(0,7) : curMonth;
+  const finalAvg = colMonthAvg(pip.colId, endMonth) || colMonthAvg(pip.colId, curMonth);
+  const achieved = isCompleted && finalAvg >= pip.target;
+
+  const lines = [
+    '📋 *Performance Improvement Plan*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '*Staff:* ' + c.name,
+    '*Role:* ' + c.role,
+    '*Period:* ' + start + ' → ' + end,
+    '*Target Score:* ' + pip.target + '/10',
+    '',
+    '*Reason:*',
+    pip.reason || '—',
+    '',
+    '*Action Steps:*',
+    pip.actions || '—',
+    '',
+  ];
+
+  if(isCompleted) {
+    lines.push('*Outcome:* ' + (achieved ? '✅ Goal Achieved' : '❌ Goal Not Met'));
+    if(finalAvg) lines.push('*Final Score:* ' + finalAvg.toFixed(1) + '/10');
+    const closedDate = pip.completedAt ? new Date(pip.completedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : '';
+    if(closedDate) lines.push('*Closed:* ' + closedDate);
+  } else {
+    const curAvg = colMonthAvg(pip.colId, curMonth);
+    lines.push('*Current Score:* ' + (curAvg ? curAvg.toFixed(1) + '/10' : 'No data'));
+    lines.push('*Status:* ' + (curAvg >= pip.target ? '✅ On Track' : '⚠ Below Target'));
+  }
+
+  lines.push('', '— Sent from RxPerform Pro');
+  const text = lines.join('\n');
+
+  openShareModal(text, c.name + ' — Improvement Plan', 'pip');
+}
+
+function shareColleagueReport(colId) {
+  const c = db.colleagues.find(x => x.id === colId);
+  if(!c) return;
+  const avg = colMonthAvg(colId, curMonth);
+  const cnt = countScores(colId, curMonth);
+  const months = availMonths();
+  const prevAvg = months[1] ? colMonthAvg(colId, months[1]) : 0;
+  const delta = (avg && prevAvg) ? (avg - prevAvg) : null;
+  const pct = getPercentile(colId, curMonth);
+  const total = db.colleagues.filter(c2 => colMonthAvg(c2.id, curMonth) > 0).length;
+  const betterThan = pct !== null ? Math.round((pct/100)*(total-1)) : null;
+
+  // Per-criterion breakdown
+  const sc = db.scores[colId]?.[curMonth] || {};
+  const crLines = getActiveCriteria(colId).map(cr => {
+    const vals = Object.values(sc[cr.id]||{}).map(e=>e.score).filter(Boolean);
+    const crAvg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    const bar = crAvg ? '█'.repeat(Math.round(crAvg)) + '░'.repeat(10-Math.round(crAvg)) : '—';
+    return '  • ' + cr.name + ': ' + (crAvg ? crAvg.toFixed(1) + '/10' : 'No data');
+  });
+
+  const statusIcon = avg>=8?'🟢':avg>=6?'🟡':avg>0?'🔴':'⚪';
+  const lines = [
+    '📊 *Monthly Performance Report*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '*Name:* ' + c.name,
+    '*Role:* ' + c.role,
+    (c.dept ? '*Dept:* ' + c.dept : ''),
+    '*Period:* ' + periodLabel(curMonth),
+    '',
+    '*Overall Score:* ' + statusIcon + ' ' + (avg ? avg.toFixed(2) + '/10' : 'No data'),
+    '*Entries recorded:* ' + cnt,
+    (delta !== null ? '*vs Last period:* ' + (delta>=0?'+':'') + delta.toFixed(1) + ' pts' : ''),
+    (betterThan !== null ? '*Team standing:* Better than ' + betterThan + ' of ' + (total-1) + ' colleagues' : ''),
+    '',
+    '*Criteria Breakdown:*',
+    ...crLines,
+    '',
+    '— Sent from RxPerform Pro',
+  ].filter(l => l !== '');
+
+  const text = lines.join('\n');
+  openShareModal(text, c.name + ' — Monthly Report', 'report');
+}
+
+function openShareModal(text, subject, type) {
+  document.getElementById('shareText').value = text;
+  document.getElementById('shareSubject').value = subject;
+  document.getElementById('shareModalTitle').textContent = type === 'pip' ? '📋 Share Improvement Plan' : '📊 Share Performance Report';
+
+  const waBtn = document.getElementById('shareWABtn');
+  const mailBtn = document.getElementById('shareMailBtn');
+  const copyBtn = document.getElementById('shareCopyBtn');
+
+  waBtn.onclick = () => {
+    const encoded = encodeURIComponent(text);
+    window.open('https://wa.me/?text=' + encoded, '_blank');
+  };
+  mailBtn.onclick = () => {
+    const body = encodeURIComponent(text.replace(/\*/g,''));
+    const sub = encodeURIComponent(subject + ' — RxPerform Pro');
+    window.open('mailto:?subject=' + sub + '&body=' + body, '_blank');
+  };
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(text).then(() => toast('📋 Copied to clipboard')).catch(() => {
+      document.getElementById('shareText').select();
+      document.execCommand('copy');
+      toast('📋 Copied');
+    });
+  };
+
+  openModal('mShare');
+}
+
+/* ════════════════ USER MENU ════════════════ */
+function positionMenuBelowChip(menuId) {
+  const chip = document.getElementById('userChip');
+  const menu = document.getElementById(menuId);
+  if(!chip || !menu) return;
+  const r = chip.getBoundingClientRect();
+  // Align right edge of menu with right edge of chip
+  const menuRight = window.innerWidth - r.right;
+  menu.style.top = (r.bottom + 6) + 'px';
+  menu.style.right = Math.max(6, menuRight) + 'px';
+  menu.style.left = 'auto';
+}
+
+function toggleUserMenu() {
+  if(role !== 'admin') {
+    const vm = document.getElementById('viewerMenu');
+    if(!vm) return;
+    const isOpen = vm.style.display !== 'none';
+    vm.style.display = isOpen ? 'none' : 'block';
+    if(!isOpen) positionMenuBelowChip('viewerMenu');
+    // sync labels
+    const ml = document.getElementById('vmenuModeLabel');
+    const ll = document.getElementById('vmenuLangLabel');
+    if(ml) ml.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
+    if(ll) ll.textContent = appLang==='en' ? 'Switch to Arabic' : 'Switch to English';
+    if(!isOpen) closeNotifPanel();
+    return;
+  }
+  const m = document.getElementById('userMenu');
+  if(!m) return;
+  const isOpen = m.style.display !== 'none';
+  m.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) positionMenuBelowChip('userMenu');
+  const lbl = document.getElementById('umenuModeLabel');
+  const ico = document.querySelector('#umenuModeBtn .umenu-ico');
+  if(lbl) lbl.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
+  if(ico) ico.textContent = appMode==='night' ? '☀' : '☾';
+  if(!isOpen) closeNotifPanel();
+}
+function closeUserMenu() {
+  const m = document.getElementById('userMenu'); if(m) m.style.display='none';
+}
+function closeViewerMenu() {
+  const m = document.getElementById('viewerMenu');
+  if(m) m.style.display='none';
+}
+document.addEventListener('click', function(e) {
+  if(!e.target.closest('#userChip') && !e.target.closest('#userMenu')) closeUserMenu();
+  if(!e.target.closest('#userChip') && !e.target.closest('#viewerMenu')) closeViewerMenu();
+  if(!e.target.closest('#notifBtn') && !e.target.closest('#notifPanel')) closeNotifPanel();
+});
+
+/* ════════════════ CHANGE PASSWORD ════════════════ */
+function openChangePassword() {
+  const np = prompt('Enter new admin password (min 6 chars):');
+  if(!np) return;
+  if(np.length < 6) { toast('⚠ Password too short', '#ffb340'); return; }
+  const c2 = prompt('Confirm new password:');
+  if(np !== c2) { toast('⚠ Passwords do not match', '#ff4d6d'); return; }
+  PASSWORDS.admin = np;
+  toast('✅ Password changed for this session', 'var(--emerald)');
+}
+
+/* ════════════════ NOTIFICATIONS ════════════════ */
+let _notifications = [];
+function addNotification(id, title, desc, color) {
+  if(_notifications.find(n=>n.id===id)) return;
+  _notifications.unshift({id,title,desc,color:color||'var(--cyan)',ts:Date.now()});
+  if(_notifications.length>30) _notifications.pop();
+  renderNotifPanel(); updateNotifDot();
+}
+function renderNotifPanel() {
+  const list = document.getElementById('notifList'); if(!list) return;
+  if(!_notifications.length) {
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No new notifications</div>';
+    return;
+  }
+  list.innerHTML = _notifications.map(n=>`<div class="notif-item"><div class="notif-item-title" style="color:${n.color}">${n.title}</div><div class="notif-item-desc">${n.desc}</div></div>`).join('');
+}
+function updateNotifDot() {
+  const dot=document.getElementById('notifDot'); if(dot) dot.style.display=_notifications.length?'block':'none';
+}
+function toggleNotifPanel() {
+  const p=document.getElementById('notifPanel'); if(!p) return;
+  const open=p.style.display!=='none';
+  p.style.display=open?'none':'block';
+  if(!open){renderNotifPanel();closeUserMenu();}
+}
+function closeNotifPanel() {
+  const p=document.getElementById('notifPanel'); if(p) p.style.display='none';
+}
+function clearAllNotifs() { _notifications=[]; renderNotifPanel(); updateNotifDot(); }
+
+function generatePerfNotifications() {
+  if(!db.colleagues||!db.colleagues.length) return;
+  db.colleagues.forEach(c=>{
+    const avg=colMonthAvg(c.id,curMonth);
+    if(avg>0&&avg<5) addNotification('low_'+c.id+'_'+curMonth,'⚠ Low performance: '+c.name.split(' ')[0],'Average '+avg.toFixed(1)+'/10 — review recommended.','var(--rose)');
+    if(avg>=9) addNotification('top_'+c.id+'_'+curMonth,'🏆 Top performer: '+c.name.split(' ')[0],'Excellent average of '+avg.toFixed(1)+'/10 this period!','var(--emerald)');
+  });
 }
 </script>
 </body>
