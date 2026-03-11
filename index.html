@@ -1854,7 +1854,9 @@ function pullFromSheets() {
         return true;
       }
     }
-    setSyncStatus('✅', 'Local data', 'var(--text3)');
+    // Cloud row empty or missing — push local data up so next load syncs correctly
+    setSyncStatus('⏳', 'Uploading…', 'var(--cyan)');
+    pushToSheets();
     return false;
   })
   .catch(e => {
@@ -1939,7 +1941,7 @@ function loadAndInit() {
   applyLang();
   // Note: cloud pull happens in launchApp() after login, not here
   // This avoids the "Connecting..." hanging on the login screen
-  setSyncStatus('☁', 'Ready', 'var(--text3)');
+  setSyncStatus('⏳', 'Loading…', 'var(--cyan)');
 }
 function generateShareLink() {
   try {
