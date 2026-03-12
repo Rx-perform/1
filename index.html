@@ -1047,11 +1047,7 @@ body.lang-ar .note-del { right:auto; left:8px; }
 .umenu-arrow{margin-left:auto;color:var(--text3);font-size:16px;line-height:1;}
 .umenu-danger{color:var(--rose);}
 .umenu-danger:hover{background:rgba(255,77,109,0.08);color:var(--rose);}
-@keyframes notifSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.notif-item{padding:10px 12px;border-radius:10px;margin-bottom:4px;background:var(--ink2);border:1px solid var(--line);}
-.notif-item:hover{background:var(--ink3);}
-.notif-item-title{font-size:12px;font-weight:700;margin-bottom:2px;}
-.notif-item-desc{font-size:11px;color:var(--text3);line-height:1.4;}
+
 
 @keyframes celebIn  { from{opacity:0;transform:translateX(-50%) translateY(-30px) scale(0.8)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
 @keyframes celebOut { from{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} to{opacity:0;transform:translateX(-50%) translateY(-20px) scale(0.9)} }
@@ -1122,20 +1118,7 @@ body.lang-ar .note-del { right:auto; left:8px; }
     <div class="topbar-sep"></div>
     <div class="topbar-date" id="topDate"></div>
     <div id="liveClock" style="font-family:monospace;font-size:12px;color:var(--text3);letter-spacing:1px;white-space:nowrap"></div>
-    <!-- Notification Bell -->
-    <div style="position:relative;flex-shrink:0">
-      <button class="tb-ctrl" id="notifBtn" onclick="toggleNotifPanel()" title="Notifications"
-        style="position:relative;width:34px;height:34px;padding:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px">
-        🔔<span id="notifDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#ff4d6d;border:2px solid var(--ink1)"></span>
-      </button>
-      <div id="notifPanel" style="display:none;position:fixed;top:52px;right:10px;width:310px;max-height:420px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
-        <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:13px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif">🔔 Notifications</span>
-          <button onclick="clearAllNotifs()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 6px;border-radius:6px" onmouseover="this.style.background='var(--ink3)'" onmouseout="this.style.background='none'">Clear All</button>
-        </div>
-        <div id="notifList" style="overflow-y:auto;max-height:340px;padding:8px"></div>
-      </div>
-    </div>
+    
     <!-- User Chip -->
     <div class="user-chip" id="userChip" onclick="toggleUserMenu()" title="Profile">
       <div class="user-ava" id="userAva" style="background:var(--ink4)">A</div>
@@ -1143,7 +1126,7 @@ body.lang-ar .note-del { right:auto; left:8px; }
       <span id="userBadge"></span>
     </div>
     <!-- User Dropdown -->
-    <div id="userMenu" style="display:none;position:fixed;top:56px;left:10px;width:230px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
+    <div id="userMenu" style="display:none;position:fixed;top:56px;left:10px;width:230px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden">
       <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
         <div class="user-ava" id="menuAva" style="width:38px;height:38px;border-radius:11px;font-size:15px;flex-shrink:0"></div>
         <div style="min-width:0">
@@ -1170,7 +1153,7 @@ body.lang-ar .note-del { right:auto; left:8px; }
     </div>
   </div>
     <!-- Viewer Menu -->
-    <div id="viewerMenu" style="display:none;position:fixed;top:56px;right:10px;width:210px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden;animation:notifSlide 0.2s ease both">
+    <div id="viewerMenu" style="display:none;position:fixed;top:56px;right:10px;width:210px;background:var(--ink1);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:600;overflow:hidden">
       <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px">
         <div class="user-ava" style="width:32px;height:32px;border-radius:9px;font-size:13px;background:var(--ink4);flex-shrink:0">V</div>
         <div>
@@ -1996,7 +1979,6 @@ function launchApp() {
   setTimeout(()=>{ scr.style.display='none'; },400);
   document.getElementById('app').style.display='flex';
   initApp();
-  if(db.settings._notifications) { _notifications = db.settings._notifications; renderNotifPanel(); updateNotifDot(); }
   // Always pull fresh from cloud when app opens (catches any saves from other devices)
   pullFromSheets().then(synced => {
     if(synced) {
@@ -2004,7 +1986,6 @@ function launchApp() {
       renderStats();
       if(curColId) renderColleagueView();
     }
-    setTimeout(generatePerfNotifications, 1800);
   });
   // Re-sync every 30 seconds so mobile↔PC stay in sync
   clearInterval(window._syncInterval);
@@ -2366,11 +2347,8 @@ function renderColleagueView() {
   renderPerfTable();
   renderColCharts();
   enforceRole();
-  // Generate notifications from local data immediately
-  setTimeout(generatePerfNotifications, 200);
   // Today dashboard
   setTimeout(renderTodayDashboard, 300);
-  setTimeout(generatePerfNotifications, 500);
   // Check milestones
   setTimeout(()=>checkMilestones(curColId, curMonth), 800);
 }
@@ -3236,8 +3214,9 @@ function calcStreak(colId, periodKey) {
   const periodEnd   = new Date(y, m, cs-1);
   if(now >= periodStart && now <= periodEnd) {
     const todayPDay = Math.floor((now - periodStart)/86400000) + 1;
+    const fromDay = todayPDay > 1 ? todayPDay - 1 : todayPDay;
     let s = 0;
-    for(let d = todayPDay; d >= 1; d--) {
+    for(let d = fromDay; d >= 1; d--) {
       const has = Object.values(scores).some(cr => cr[d]?.score);
       if(has) s++; else break;
     }
@@ -4229,8 +4208,14 @@ const AR = {
   // Stats table headers
   colleague2:'الزميل', avgScore:'المتوسط', trend2:'الاتجاه', entries2:'الإدخالات',
   stdDev:'الانحراف', absent2:'غائب', busy2:'مشغول', bestDayLbl:'أفضل يوم',
-  // Notifications
-  noNotifs:'لا توجد إشعارات',
+  pipNew:'خطة تحسين جديدة', pipEdit:'تعديل خطة التحسين',
+  pipFor:'خطة تحسين لـ: ',
+  pipStartDate:'تاريخ البدء *', pipEndDate:'تاريخ الانتهاء *',
+  pipTarget:'هدف الأداء (متوسط الدرجة المطلوب تحقيقه)',
+  pipReason:'السبب / الخلفية *', pipActions:'خطوات التحسين',
+  pipSave:'حفظ الخطة', pipCancel:'إلغاء',
+  pipHistory:'سجل خطط التحسين', pipActive:'نشطة', pipCompleted:'مكتملة',
+  pipClosePlan:'إغلاق الخطة', pipCloseConfirm:'تأكيد إغلاق الخطة',
   // Stats analytics cards
   periodCompletion:'📅 نسبة الإكمال', periodCompletionSub:'% الأيام التي تحتوي على درجة مُدخلة',
   criterionSpotlight:'🔍 أبرز المعايير', criterionSpotlightSub:'أقوى وأضعف معيار لكل زميل هذه الفترة',
@@ -4462,8 +4447,6 @@ function applyLang() {
   renderNotesList('positive');
   renderNotesList('negative');
 
-  // ── Re-render notifications ──
-  renderNotifPanel();
 
   // ── Translate static UI elements ──
   translateStaticUI();
@@ -5194,7 +5177,33 @@ function openPIPModal(colId) {
   document.getElementById('pipReason').value = existing?.reason || '';
   document.getElementById('pipActions').value = existing?.actions || '';
   document.getElementById('pipId').value = existing?.id || '';
-  document.getElementById('mPIPTitle').textContent = existing ? 'Edit Improvement Plan' : 'New Improvement Plan';
+  const _pipAr = appLang === 'ar';
+  document.getElementById('mPIPTitle').textContent = _pipAr
+    ? (existing ? AR.pipEdit : AR.pipNew)
+    : (existing ? 'Edit Improvement Plan' : 'New Improvement Plan');
+  // Translate PIP form labels
+  const _pl = (id, ar, en) => { const el=document.getElementById(id); if(el) el.textContent=_pipAr?ar:en; };
+  const _plq = (sel, ar, en) => { document.querySelectorAll(sel).forEach(el=>{ if(el.textContent.trim()===en||el.textContent.trim()===ar) el.textContent=_pipAr?ar:en; }); };
+  // Labels inside the PIP modal
+  document.querySelectorAll('#mPIP .form-lbl').forEach(el => {
+    const t = el.textContent.trim();
+    if(t==='Start Date *'||t===AR.pipStartDate) el.textContent=_pipAr?AR.pipStartDate:'Start Date *';
+    else if(t==='End Date *'||t===AR.pipEndDate) el.textContent=_pipAr?AR.pipEndDate:'End Date *';
+    else if(t.startsWith('Performance Target')||t===AR.pipTarget) el.textContent=_pipAr?AR.pipTarget:'Performance Target (avg score to achieve)';
+    else if(t.startsWith('Reason')||t===AR.pipReason) el.textContent=_pipAr?AR.pipReason:'Reason / Background *';
+    else if(t==='Action Steps'||t===AR.pipActions) el.textContent=_pipAr?AR.pipActions:'Action Steps';
+  });
+  document.querySelectorAll('#mPIP .m-actions button').forEach(btn => {
+    const t = btn.textContent.trim();
+    if(t==='Cancel'||t==='إلغاء') btn.textContent=_pipAr?'إلغاء':'Cancel';
+    else if(t==='Save Plan'||t==='حفظ الخطة') btn.textContent=_pipAr?'حفظ الخطة':'Save Plan';
+  });
+  // "Improvement plan for:" prefix
+  const _pipForEl = document.querySelector('#mPIP [style*="amber"] strong');
+  if(_pipForEl && _pipForEl.parentElement) {
+    const _parent = _pipForEl.parentElement;
+    _parent.childNodes.forEach(n => { if(n.nodeType===3) n.textContent = _pipAr?AR.pipFor:'Improvement plan for: '; });
+  }
   openModal('mPIP');
 }
 
@@ -5314,7 +5323,6 @@ function triggerCelebration(msg, color) {
     banner.style.animation='celebOut 0.4s ease forwards';
     setTimeout(()=>banner.remove(),400);
   }, 3500);
-  addNotification('milestone_'+Date.now(), '🎉 Milestone!', msg, color);
 }
 
 function launchConfetti(color) {
@@ -5363,10 +5371,12 @@ function renderPIPStatus(colId) {
   const active    = allPIPs.filter(p => p.status === 'active');
   const completed = allPIPs.filter(p => p.status === 'completed');
   if(!allPIPs.length) return '';
+  const _pa = appLang === 'ar';
+  const _ploc = _pa ? 'ar-SA' : 'en-GB';
 
   function pipCard(pip, isActive) {
-    const start = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const end   = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const start = new Date(pip.startDate).toLocaleDateString(_ploc,{day:'numeric',month:'short',year:'numeric'});
+    const end   = new Date(pip.endDate).toLocaleDateString(_ploc,{day:'numeric',month:'short',year:'numeric'});
     const avg = colMonthAvg(colId, curMonth);
     if(isActive) {
       const daysLeft = Math.ceil((new Date(pip.endDate) - new Date()) / 86400000);
@@ -5376,25 +5386,25 @@ function renderPIPStatus(colId) {
       const trackStyle = onTrack
         ? 'background:rgba(0,200,150,0.12);color:var(--emerald);border:1px solid rgba(0,200,150,0.2)'
         : 'background:rgba(255,77,109,0.10);color:var(--rose);border:1px solid rgba(255,77,109,0.2)';
-      const daysStr = daysLeft > 0 ? daysLeft + ' days left' : 'Overdue';
+      const daysStr = _pa?(daysLeft>0?daysLeft+' يوم متبقٍ':'متأخرة'):(da_pa?(daysLeft>0?daysLeft+' يوم متبقٍ':'متأخرة'):(daysLeft>0?daysLeft+' days left':'Overdue'));
       return '<div style="margin-bottom:14px;background:linear-gradient(135deg,rgba(255,179,64,0.06),rgba(255,179,64,0.02));border:1px solid rgba(255,179,64,0.25);border-left:4px solid var(--amber);border-radius:12px;padding:14px 18px">'
         + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
           + '<div style="display:flex;align-items:center;gap:8px">'
             + '<span style="font-size:16px">📋</span>'
-            + '<div><div style="font-size:13px;font-weight:700;color:var(--amber)">Active Improvement Plan</div>'
+            + '<div><div style="font-size:13px;font-weight:700;color:var(--amber)">'+(_pa?'خطة تحسين نشطة':'Active Improvement Plan')+'</div>'
             + '<div style="font-size:11px;color:var(--text3)">' + start + ' → ' + end + ' · ' + daysStr + '</div></div>'
           + '</div>'
           + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-            + '<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;' + trackStyle + '">' + (onTrack ? '✅ On Track' : '⚠ Below Target') + '</span>'
+            + '<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;' + trackStyle + '">' + (_pa?(onTrack?'✅ على المسار':'⚠ دون الهدف'):(onTrack?'✅ On Track':'⚠ Below Target')) + '</span>'
             + '<button onclick="confirmClosePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">✓ Complete</button>'
-            + '<button onclick="openPIPModal(\'' + colId + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">Edit</button>'
+            + '<button onclick="openPIPModal(\'' + colId + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">'+(_pa?'تعديل':'Edit')+'</button>'
             + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)">📤 Share</button>'
           + '</div>'
         + '</div>'
         + '<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Goal: Reach <strong>' + pip.target + '/10</strong> · Current: <strong style="color:' + barColor + '">' + (avg ? avg.toFixed(1) : (appLang==="ar"?'لا بيانات':'No data')) + '/10</strong></div>'
         + '<div style="height:6px;background:var(--ink4);border-radius:3px;overflow:hidden;margin-bottom:8px"><div style="width:' + pct + '%;height:100%;background:' + barColor + ';border-radius:3px;transition:width 1s ease"></div></div>'
-        + (pip.reason ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px"><strong style="color:var(--text2)">Reason:</strong> ' + pip.reason + '</div>' : '')
-        + (pip.actions ? '<div style="font-size:11px;color:var(--text3)"><strong style="color:var(--text2)">Actions:</strong> ' + pip.actions + '</div>' : '')
+        + (pip.reason ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px"><strong style="color:var(--text2)">'+(_pa?'السبب:':'Reason:')+'</strong> ' + pip.reason + '</div>' : '')
+        + (pip.actions ? '<div style="font-size:11px;color:var(--text3)"><strong style="color:var(--text2)">'+(_pa?'الإجراءات:':'Actions:')+'</strong> ' + pip.actions + '</div>' : '')
         + '</div>';
     } else {
       const completedDate = pip.completedAt ? new Date(pip.completedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Unknown';
@@ -5405,10 +5415,10 @@ function renderPIPStatus(colId) {
       const duration = Math.round((new Date(pip.endDate) - new Date(pip.startDate)) / (86400000 * 7));
       return '<div style="margin-bottom:8px;background:var(--ink2);border:1px solid var(--line);border-left:4px solid var(--text3);border-radius:10px;padding:12px 14px;opacity:0.9">'
         + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">'
-          + '<div><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:3px">📁 Completed Plan</div>'
-          + '<div style="font-size:10px;color:var(--text3)">' + start + ' → ' + end + ' · ' + duration + ' weeks · Closed: ' + completedDate + '</div></div>'
+          + '<div><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:3px">📁 '+(_pa?'خطة مكتملة':'Completed Plan')+'</div>'
+          + '<div style="font-size:10px;color:var(--text3)">' + start + ' → ' + end + ' · ' + duration + (_pa?' أسابيع · أُغلق: ':' weeks · Closed: ') + completedDate + '</div></div>'
           + '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
-            + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;background:' + outcomeColor + '18;color:' + outcomeColor + ';border:1px solid ' + outcomeColor + '33">' + (achieved ? '✅ Goal Achieved' : '❌ Goal Not Met') + '</span>'
+            + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;background:' + outcomeColor + '18;color:' + outcomeColor + ';border:1px solid ' + outcomeColor + '33">' + (_pa?(achieved?'✅ تم تحقيق الهدف':'❌ لم يُحقق الهدف'):(achieved?'✅ Goal Achieved':'❌ Goal Not Met')) + '</span>'
             + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ink3);color:var(--text2);border:1px solid var(--line)">Target: ' + pip.target + '/10 · Final: ' + (finalAvg ? finalAvg.toFixed(1) : '—') + '/10</span>'
             + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px">📤</button>'
           + '</div>'
@@ -5424,7 +5434,8 @@ function renderPIPStatus(colId) {
   if(completed.length) {
     html += '<div style="margin-bottom:6px">'
       + '<button onclick="togglePIPHistory(\'' + colId + '\')" style="width:100%;background:none;border:none;border-top:1px solid var(--line);padding:8px 0;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:6px" id="pipHistBtn_' + colId + '">'
-      + '📂 Plan History (' + completed.length + ' completed) <span id="pipHistArrow_' + colId + '">▼</span></button>'
+      + (_pa?('📂 سجل الخطط ('+completed.length+' مكتملة) '):('📂 Plan History ('+completed.length+' completed) '))
+      + '<span id="pipHistArrow_' + colId + '">▼</span></button>'
       + '<div id="pipHistory_' + colId + '" style="display:none">';
     completed.slice().reverse().forEach(pip => { html += pipCard(pip, false); });
     html += '</div></div>';
@@ -5668,7 +5679,7 @@ function sharePIP(pipId) {
     '*Action Steps:*', pip.actions || '—','',
   ];
   if(isCompleted) {
-    lines.push('*Outcome:* ' + (achieved ? '✅ Goal Achieved' : '❌ Goal Not Met'));
+    lines.push('*Outcome:* ' + (_pa?(achieved?'✅ تم تحقيق الهدف':'❌ لم يُحقق الهدف'):(achieved?'✅ Goal Achieved':'❌ Goal Not Met')));
     if(finalAvg) lines.push('*Final Score:* ' + finalAvg.toFixed(1) + '/10');
   } else {
     const curAvg = colMonthAvg(pip.colId, curMonth);
@@ -5676,7 +5687,7 @@ function sharePIP(pipId) {
     lines.push('*Status:* ' + (curAvg >= pip.target ? '✅ On Track' : '⚠ Below Target'));
   }
   lines.push('', '— Sent from RxPerform Pro');
-  openShareModal(lines.join('\n'), c.name + ' — Improvement Plan', 'pip');
+  openShareModal(lines.join('\n'), c.name + ' — Improvement Plan', 'pip', pip.colId);
 }
 
 function shareColleagueReport(colId) {
@@ -5708,22 +5719,45 @@ function shareColleagueReport(colId) {
     '', '*Criteria Breakdown:*', ...crLines, '',
     '— Sent from RxPerform Pro',
   ].filter(l => l !== '');
-  openShareModal(lines.join('\n'), c.name + ' — Monthly Report', 'report');
+  openShareModal(lines.join('\n'), c.name + ' — Monthly Report', 'report', colId);
 }
 
-function openShareModal(text, subject, type) {
+function openShareModal(text, subject, type, colId) {
+  const _c = colId ? db.colleagues.find(x=>x.id===colId) : null;
+  const _phone = (_c && _c.phone) ? _c.phone.replace(/[^0-9+]/g,'') : null;
+  const _email = (_c && _c.email) ? _c.email : null;
+  const isAr = appLang==='ar';
+
   document.getElementById('shareText').value = text;
   document.getElementById('shareSubject').value = subject;
-  document.getElementById('shareModalTitle').textContent = type === 'pip' ? '📋 Share Improvement Plan' : '📊 Share Performance Report';
+  document.getElementById('shareModalTitle').textContent = type === 'pip'
+    ? (isAr?'📋 مشاركة خطة التحسين':'📋 Share Improvement Plan')
+    : (isAr?'📊 مشاركة تقرير الأداء':'📊 Share Performance Report');
+
   const waBtn = document.getElementById('shareWABtn');
   const mailBtn = document.getElementById('shareMailBtn');
   const copyBtn = document.getElementById('shareCopyBtn');
-  waBtn.onclick = () => { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); };
+
+  // WhatsApp — use colleague phone if available
+  const waUrl = _phone
+    ? 'https://wa.me/' + _phone + '?text=' + encodeURIComponent(text)
+    : 'https://wa.me/?text=' + encodeURIComponent(text);
+  waBtn.onclick = () => { window.open(waUrl, '_blank'); };
+
+  // Show/style WA button to indicate if phone is pre-filled
+  waBtn.title = _phone ? (_c.name + ': ' + _phone) : (isAr?'لا يوجد رقم — سيُفتح بدونه':'No phone saved — opens without number');
+  waBtn.style.opacity = _phone ? '1' : '0.6';
+
+  // Email — use colleague email if available
   mailBtn.onclick = () => {
     const body = encodeURIComponent(text.replace(/\*/g,''));
     const sub = encodeURIComponent(subject + ' — RxPerform Pro');
-    window.open('mailto:?subject=' + sub + '&body=' + body, '_blank');
+    const to = _email ? encodeURIComponent(_email) : '';
+    window.open('mailto:' + to + '?subject=' + sub + '&body=' + body, '_blank');
   };
+  mailBtn.title = _email ? (_c.name + ': ' + _email) : (isAr?'لا يوجد بريد إلكتروني':'No email saved');
+  mailBtn.style.opacity = _email ? '1' : '0.6';
+
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(text).then(() => toast('📋 Copied')).catch(() => {
       document.getElementById('shareText').select(); document.execCommand('copy'); toast('📋 Copied');
@@ -5749,7 +5783,7 @@ function toggleUserMenu() {
     if(!vm) return;
     const isOpen = vm.style.display !== 'none';
     vm.style.display = isOpen ? 'none' : 'block';
-    if(!isOpen) { positionMenuBelowChip('viewerMenu'); closeNotifPanel(); }
+    if(!isOpen) { positionMenuBelowChip('viewerMenu');  }
     const ml = document.getElementById('vmenuModeLabel');
     const ll = document.getElementById('vmenuLangLabel');
     if(ml) ml.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
@@ -5765,8 +5799,8 @@ function toggleUserMenu() {
   const ico = document.querySelector('#umenuModeBtn .umenu-ico');
   if(lbl) lbl.textContent = appMode==='night' ? 'Day Mode' : 'Night Mode';
   if(ico) ico.textContent = appMode==='night' ? '☀' : '☾';
-  if(!isOpen) closeNotifPanel();
 }
+
 function closeUserMenu() {
   const m = document.getElementById('userMenu'); if(m) m.style.display='none';
 }
@@ -5776,7 +5810,6 @@ function closeViewerMenu() {
 document.addEventListener('click', function(e) {
   if(!e.target.closest('#userChip') && !e.target.closest('#userMenu')) closeUserMenu();
     if(!e.target.closest('#userChip') && !e.target.closest('#viewerMenu')) closeViewerMenu();
-  if(!e.target.closest('#notifBtn') && !e.target.closest('#notifPanel')) closeNotifPanel();
 });
 
 /* ════════════════ CHANGE PASSWORD ════════════════ */
@@ -5790,140 +5823,6 @@ function openChangePassword() {
   toast('✅ Password changed for this session', 'var(--emerald)');
 }
 
-/* ════════════════ NOTIFICATIONS ════════════════ */
-let _notifications = [];
-function addNotification(id, title, desc, color) {
-  if(_notifications.find(n=>n.id===id)) return;
-  _notifications.unshift({id,title,desc,color:color||'var(--cyan)',ts:Date.now()});
-  if(_notifications.length>30) _notifications.pop();
-  if(db && db.settings) { db.settings._notifications = _notifications; save(); }
-  renderNotifPanel(); updateNotifDot();
-}
-function renderNotifPanel() {
-  const list = document.getElementById('notifList'); if(!list) return;
-  if(!_notifications.length) {
-    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">'+(appLang==="ar"?AR.noNotifs:'No new notifications')+'</div>';
-    return;
-  }
-  list.innerHTML = _notifications.map(n=>`
-    <div class="notif-item" style="border-left:3px solid ${n.color};padding-left:10px">
-      <div style="display:flex;align-items:flex-start;gap:8px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${n.color};flex-shrink:0;margin-top:4px"></div>
-        <div>
-          <div class="notif-item-title" style="color:${n.color}">${n.title}</div>
-          <div class="notif-item-desc">${n.desc}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${(()=>{const d=new Date(n.ts);const diff=Date.now()-n.ts;return diff<3600000?Math.round(diff/60000)+(appLang==='ar'?' د':'m ago'):d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})})()}</div>
-        </div>
-      </div>
-    </div>`).join('');
-}
-function updateNotifDot() {
-  const dot=document.getElementById('notifDot'); if(dot) dot.style.display=_notifications.length?'block':'none';
-}
-function toggleNotifPanel() {
-  const p=document.getElementById('notifPanel'); if(!p) return;
-  const open=p.style.display!=='none';
-  p.style.display=open?'none':'block';
-  if(!open){renderNotifPanel();closeUserMenu();}
-}
-function closeNotifPanel() {
-  const p=document.getElementById('notifPanel'); if(p) p.style.display='none';
-}
-function clearAllNotifs() { _notifications=[]; renderNotifPanel(); updateNotifDot(); }
-
-function generatePerfNotifications() {
-  if(!db.colleagues||!db.colleagues.length) return;
-  // Clear status-based notifications so they re-evaluate fresh each time
-  const _statusPrefixes = ['low_','top_','improved_','decline_','noentry_','weak_cr_','pip_'];
-  _notifications = _notifications.filter(n => !_statusPrefixes.some(p=>n.id.startsWith(p)));
-  const isAr = appLang==='ar';
-  const months = availMonths();
-  const prevMonth = months[1] || null;
-  let teamAvgs = [];
-
-  db.colleagues.forEach(c=>{
-    const avg = colMonthAvg(c.id, curMonth);
-    const prevAvg = prevMonth ? colMonthAvg(c.id, prevMonth) : 0;
-    if(avg > 0) teamAvgs.push(avg);
-
-    // ① Low performance
-    if(avg>0&&avg<5) {
-      addNotification('low_'+c.id+'_'+curMonth,
-        isAr?(AR.lowPerfTitle+': '+c.name.split(' ')[0]):('⚠ Low performance: '+c.name.split(' ')[0]),
-        isAr?('متوسط '+avg.toFixed(1)+'/10 — يُنصح بالمراجعة'):('Average '+avg.toFixed(1)+'/10 — review recommended.'),
-        'var(--rose)');
-    }
-    // ② Top performer (≥9)
-    if(avg>=9) {
-      addNotification('top_'+c.id+'_'+curMonth,
-        isAr?(AR.topPerfTitle+': '+c.name.split(' ')[0]):('🏆 Top performer: '+c.name.split(' ')[0]),
-        isAr?('متوسط ممتاز '+avg.toFixed(1)+'/10 هذه الفترة!'):('Excellent average of '+avg.toFixed(1)+'/10 this period!'),
-        'var(--emerald)');
-    }
-    // ③ Most improved (delta ≥ 1.5 pts)
-    if(avg>0 && prevAvg>0) {
-      const delta = avg - prevAvg;
-      if(delta >= 1.5) {
-        addNotification('improved_'+c.id+'_'+curMonth,
-          isAr?('📈 تحسّن ملحوظ: '+c.name.split(' ')[0]):('📈 Big improvement: '+c.name.split(' ')[0]),
-          isAr?('ارتفع المتوسط بمقدار +'+delta.toFixed(1)+' نقطة عن الشهر السابق'):('Score up +'+delta.toFixed(1)+'pts vs last period — great progress!'),
-          'var(--cyan)');
-      }
-      // ④ Declining (delta ≤ -1.5 pts)
-      if(delta <= -1.5) {
-        addNotification('decline_'+c.id+'_'+curMonth,
-          isAr?('📉 تراجع في الأداء: '+c.name.split(' ')[0]):('📉 Declining: '+c.name.split(' ')[0]),
-          isAr?('انخفض المتوسط بمقدار '+Math.abs(delta).toFixed(1)+' نقطة — تحتاج متابعة'):('Score dropped '+Math.abs(delta).toFixed(1)+'pts vs last period — follow up recommended.'),
-          'var(--amber)');
-      }
-    }
-    // ⑤ Active PIP – check progress
-    const activePIPs = getPIPs().filter(p => p.colId===c.id && p.status==='active');
-    activePIPs.forEach(pip => {
-      const onTrack = avg >= pip.target;
-      const daysLeft = Math.ceil((new Date(pip.endDate) - new Date()) / 86400000);
-      if(daysLeft > 0 && daysLeft <= 7) {
-        addNotification('pip_due_'+pip.id,
-          isAr?('📋 خطة تحسين تنتهي قريباً: '+c.name.split(' ')[0]):('📋 PIP ending soon: '+c.name.split(' ')[0]),
-          isAr?(daysLeft+' أيام متبقية — الحالي: '+avg.toFixed(1)+' / الهدف: '+pip.target):(daysLeft+' days left — current: '+avg.toFixed(1)+' / target: '+pip.target),
-          onTrack ? 'var(--emerald)' : 'var(--rose)');
-      }
-      if(!onTrack && avg > 0) {
-        addNotification('pip_off_'+pip.id+'_'+curMonth,
-          isAr?('⚠ دون هدف الخطة: '+c.name.split(' ')[0]):('⚠ Below PIP target: '+c.name.split(' ')[0]),
-          isAr?('الحالي '+avg.toFixed(1)+'/10 — الهدف '+pip.target+'/10'):('Current '+avg.toFixed(1)+'/10 — needs '+pip.target+'/10 to meet plan.'),
-          'var(--amber)');
-      }
-    });
-    // ⑥ Missing entries – no scores at all this period (only warn after period >25% elapsed)
-    const cnt = countScores(c.id, curMonth);
-    const [_y,_m] = curMonth.split('-').map(Number);
-    const _pStart = new Date(_y,_m-1,getCycleStart());
-    const _elapsed = Math.round((new Date()-_pStart)/86400000)+1;
-    const _dim = periodDayCount(curMonth);
-    if(cnt === 0 && _elapsed > Math.round(_dim*0.25)) {
-      addNotification('noentry_'+c.id+'_'+curMonth,
-        isAr?('📭 لا إدخالات: '+c.name.split(' ')[0]):('📭 No entries: '+c.name.split(' ')[0]),
-        isAr?('لا درجات مسجّلة هذه الفترة — '+_elapsed+' يوماً مضت'):('No scores this period — '+_elapsed+' days elapsed.'),
-        'var(--text3)');
-    }
-  });
-
-  // ⑦ Team-wide weakest criterion
-  let weakCr=null, weakVal=Infinity;
-  db.criteria.forEach(cr=>{
-    let s=0,n=0;
-    db.colleagues.forEach(c=>{ const sc=db.scores[c.id]?.[curMonth]?.[cr.id]||{}; Object.values(sc).forEach(e=>{if(e.score){s+=e.score;n++;}}); });
-    const a=n?s/n:0;
-    if(a>0&&a<weakVal){weakVal=a;weakCr=cr;}
-  });
-  if(weakCr && weakVal < 6) {
-    addNotification('weak_cr_'+weakCr.id+'_'+curMonth,
-      isAr?('🔍 معيار يحتاج اهتمام: '+weakCr.name):('🔍 Weak criterion: '+weakCr.name),
-      isAr?('متوسط الفريق '+weakVal.toFixed(1)+'/10 — يُوصى بتدريب مركّز'):('Team avg '+weakVal.toFixed(1)+'/10 — focused coaching recommended.'),
-      'var(--amber)');
-  }
-}
 </script>
 </body>
 </html>
