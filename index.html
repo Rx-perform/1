@@ -3819,6 +3819,43 @@ function executePrint() {
 
     const crCards=crData.map(({cr,avg})=>{const ac=avg2col(avg);const bp=avg?Math.round(avg/10*100):0;return`<div style="border-radius:5px;border:1px solid #e2e8f0;padding:5px 6px;border-top:2px solid ${ac};background:#fafbfc"><div style="font-size:6pt;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${cr.name}">${cr.name}</div><div style="height:3px;background:#e8edf3;border-radius:2px;overflow:hidden;margin:2px 0"><div style="width:${bp}%;height:100%;background:${ac};border-radius:2px"></div></div><div style="font-size:7pt;font-weight:700;color:${ac};text-align:right">${avg?avg.toFixed(1):'—'}</div></div>`;}).join('');
 
+    // Build PIP section for this colleague
+    const colPIPs = getPIPs().filter(function(p){ return p.colId === colId; });
+    let pipSection = '';
+    if(colPIPs.length) {
+      const activePIPs    = colPIPs.filter(function(p){ return p.status==='active'; });
+      const completedPIPs = colPIPs.filter(function(p){ return p.status==='completed'; });
+      const pipRows = colPIPs.map(function(pip) {
+        const isActive = pip.status === 'active';
+        const sDate = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        const eDate = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        const finalAvg = colMonthAvg(colId, pip.endDate ? pip.endDate.slice(0,7) : curMonth) || colMonthAvg(colId, curMonth);
+        const achieved = finalAvg >= pip.target;
+        const statusBg  = isActive ? '#fef3c7' : (achieved ? '#d1fae5' : '#fee2e2');
+        const statusCol = isActive ? '#92400e' : (achieved ? '#065f46' : '#991b1b');
+        const statusLbl = isActive ? '⏳ Active' : (achieved ? '✅ Achieved' : '❌ Not Met');
+        return '<tr>'
+          +'<td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:7pt;color:#1e293b">' + sDate + ' → ' + eDate + '</td>'
+          +'<td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:7pt;font-weight:700;color:#92400e;text-align:center">' + pip.target + '/10</td>'
+          +'<td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:7pt;color:#475569">' + (pip.reason||'—') + '</td>'
+          +'<td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:7pt;color:#475569">' + (pip.actions||'—') + '</td>'
+          +'<td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center"><span style="font-size:6pt;font-weight:700;padding:2px 7px;border-radius:8px;background:'+statusBg+';color:'+statusCol+'">'+statusLbl+'</span></td>'
+          +'</tr>';
+      }).join('');
+      pipSection = '<div style="margin-top:8px">'
+        +'<div style="font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#92400e;margin-bottom:4px;border-bottom:1px solid #fde68a;padding-bottom:3px">📋 Improvement Plans ('+activePIPs.length+' active · '+completedPIPs.length+' completed)</div>'
+        +'<table style="border-collapse:collapse;width:100%;font-size:7pt">'
+        +'<thead><tr style="background:#fffbeb">'
+        +'<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:left;font-size:6.5pt;color:#92400e">Period</th>'
+        +'<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-size:6.5pt;color:#92400e">Target</th>'
+        +'<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:left;font-size:6.5pt;color:#92400e">Reason</th>'
+        +'<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:left;font-size:6.5pt;color:#92400e">Actions</th>'
+        +'<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-size:6.5pt;color:#92400e">Status</th>'
+        +'</tr></thead>'
+        +'<tbody>'+pipRows+'</tbody></table>'
+        +'</div>';
+    }
+
     return `<div class="report-block">
 <div style="background:linear-gradient(135deg,#070c14 0%,#0f1f38 60%,#162035 100%);border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden">
   <div style="position:absolute;top:-20px;right:8px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.10) 0%,transparent 70%)"></div>
@@ -3846,6 +3883,7 @@ function executePrint() {
 <tbody>${gridRows}<tr style="background:#f0f9ff"><td style="font-size:5.5pt;font-weight:700;color:#64748b;padding:2px 4px;text-align:left;border:1px solid #e2e8f0">${isAr?'يومي':'Daily avg'}</td>${dayAvgRow}<td style="border:1px solid #e2e8f0"></td></tr></tbody></table></div>
 <div style="font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#64748b;margin-bottom:4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px">${isAr?'ملخص المعايير':'Criterion Summary'}</div>
 <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:6px">${crCards}</div>
+${pipSection}
 <div style="border-top:1px solid #e2e8f0;padding-top:4px;display:flex;justify-content:space-between;font-size:5pt;color:#94a3b8">
   <span>RxPerform Pro · ${new Date().toLocaleDateString()}</span><span style="color:#00d4ff">Confidential</span>
 </div></div>`;
@@ -5373,6 +5411,141 @@ function confirmClosePIP(pipId) {
 }
 
 
+function deletePIP(pipId) {
+  if(!confirm('Remove this PIP permanently?')) return;
+  const pips = getPIPs();
+  const idx = pips.findIndex(p => p.id === pipId);
+  if(idx === -1) return;
+  pips.splice(idx, 1);
+  save();
+  renderColleagueView();
+  toast('🗑 PIP removed', 'var(--rose)');
+}
+
+function sharePIPWhatsApp(pipId) {
+  const pip = getPIPs().find(p => p.id === pipId);
+  if(!pip) return;
+  const c = db.colleagues.find(x => x.id === pip.colId);
+  if(!c) return;
+  const isAr = appLang === 'ar';
+  const start = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const end   = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const isCompleted = pip.status === 'completed';
+  const endMonth = pip.endDate ? pip.endDate.slice(0,7) : curMonth;
+  const finalAvg = colMonthAvg(pip.colId, endMonth) || colMonthAvg(pip.colId, curMonth);
+  const achieved = isCompleted && finalAvg >= pip.target;
+  const curAvg = colMonthAvg(pip.colId, curMonth);
+  const onTrack = curAvg >= pip.target;
+  const lines = [
+    '📋 *Performance Improvement Plan*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '*' + (isAr ? 'الموظف' : 'Staff') + ':* ' + c.name,
+    '*' + (isAr ? 'المنصب' : 'Role') + ':* ' + c.role,
+    '*' + (isAr ? 'الفترة' : 'Period') + ':* ' + start + ' → ' + end,
+    '*' + (isAr ? 'الهدف' : 'Target Score') + ':* ' + pip.target + '/10',
+    '',
+    '*' + (isAr ? 'السبب' : 'Reason') + ':*',
+    pip.reason || '—',
+    '',
+    '*' + (isAr ? 'الإجراءات' : 'Action Steps') + ':*',
+    pip.actions || '—',
+    '',
+  ];
+  if(isCompleted) {
+    lines.push('*' + (isAr ? 'النتيجة' : 'Outcome') + ':* ' + (achieved ? '✅ ' + (isAr ? 'تم تحقيق الهدف' : 'Goal Achieved') : '❌ ' + (isAr ? 'لم يُحقق الهدف' : 'Goal Not Met')));
+    if(finalAvg) lines.push('*' + (isAr ? 'الدرجة النهائية' : 'Final Score') + ':* ' + finalAvg.toFixed(1) + '/10');
+  } else {
+    lines.push('*' + (isAr ? 'الدرجة الحالية' : 'Current Score') + ':* ' + (curAvg ? curAvg.toFixed(1) + '/10' : (isAr ? 'لا بيانات' : 'No data')));
+    lines.push('*' + (isAr ? 'الحالة' : 'Status') + ':* ' + (onTrack ? '✅ ' + (isAr ? 'على المسار' : 'On Track') : '⚠ ' + (isAr ? 'دون الهدف' : 'Below Target')));
+  }
+  lines.push('', '— RxPerform Pro');
+  const phone = c.phone ? c.phone.replace(/\D/g,'') : '';
+  const msg = encodeURIComponent(lines.join('\n'));
+  const url = phone ? 'https://wa.me/' + phone + '?text=' + msg : 'https://wa.me/?text=' + msg;
+  window.open(url, '_blank');
+}
+
+function printPIP(pipId) {
+  const pip = getPIPs().find(p => p.id === pipId);
+  if(!pip) return;
+  const c = db.colleagues.find(x => x.id === pip.colId);
+  if(!c) return;
+  const isAr = appLang === 'ar';
+  const start = new Date(pip.startDate).toLocaleDateString(isAr?'ar-SA':'en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const end   = new Date(pip.endDate).toLocaleDateString(isAr?'ar-SA':'en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const isCompleted = pip.status === 'completed';
+  const endMonth = pip.endDate ? pip.endDate.slice(0,7) : curMonth;
+  const finalAvg = colMonthAvg(pip.colId, endMonth) || colMonthAvg(pip.colId, curMonth);
+  const achieved = isCompleted && finalAvg >= pip.target;
+  const curAvg = colMonthAvg(pip.colId, curMonth);
+  const onTrack = curAvg >= pip.target;
+  const daysLeft = Math.ceil((new Date(pip.endDate) - new Date()) / 86400000);
+  const statusColor = isCompleted ? (achieved ? '#00c896' : '#ff4d6d') : (onTrack ? '#00c896' : '#ffb340');
+  const statusLabel = isCompleted ? (achieved ? '✅ Goal Achieved' : '❌ Goal Not Met') : (onTrack ? '✅ On Track' : '⚠ Below Target');
+  const pct = curAvg ? Math.min(100, Math.round(curAvg / pip.target * 100)) : 0;
+
+  const html = '<!DOCTYPE html><html lang="' + (isAr?'ar':'en') + '" dir="' + (isAr?'rtl':'ltr') + '">'
+    + '<head><meta charset="UTF-8">'
+    + '<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">'
+    + '<style>'
+    + '@page{size:A4 portrait;margin:15mm}'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    + 'body{font-family:Syne,system-ui,sans-serif;background:#fff;color:#1e293b;font-size:10pt}'
+    + '</style></head><body>'
+    + '<div style="background:linear-gradient(135deg,#070c14,#0f1f38);border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">'
+    +   '<div>'
+    +     '<div style="font-size:18pt;font-weight:800;color:#f0f9ff">📋 ' + (isAr?'خطة تحسين الأداء':'Performance Improvement Plan') + '</div>'
+    +     '<div style="font-size:9pt;color:#00d4ff;margin-top:4px;font-family:monospace">RxPerform Pro · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + '</div>'
+    +   '</div>'
+    +   '<div style="text-align:right">'
+    +     '<div style="font-size:10pt;font-weight:700;color:' + statusColor + ';padding:6px 14px;border-radius:20px;background:' + statusColor + '18;border:1px solid ' + statusColor + '44">' + statusLabel + '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">'
+    +   '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px">'
+    +     '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px">' + (isAr?'معلومات الموظف':'Employee Info') + '</div>'
+    +     '<div style="font-size:14pt;font-weight:800;color:#0f172a">' + c.name + '</div>'
+    +     '<div style="font-size:10pt;color:#64748b;margin-top:2px">' + c.role + '</div>'
+    +   '</div>'
+    +   '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px">'
+    +     '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px">' + (isAr?'تفاصيل الخطة':'Plan Details') + '</div>'
+    +     '<div style="font-size:10pt;color:#1e293b"><strong>' + (isAr?'الفترة':'Period') + ':</strong> ' + start + ' → ' + end + '</div>'
+    +     '<div style="font-size:10pt;color:#1e293b;margin-top:4px"><strong>' + (isAr?'الهدف':'Target') + ':</strong> ' + pip.target + '/10</div>'
+    +   '</div>'
+    + '</div>'
+    + (!isCompleted ? '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px">'
+    +   '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px">' + (isAr?'التقدم الحالي':'Current Progress') + '</div>'
+    +   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +     '<span style="font-size:10pt;color:#64748b">' + (isAr?'الدرجة الحالية':'Current Score') + ': <strong style="color:' + statusColor + '">' + (curAvg?curAvg.toFixed(1):'—') + '/10</strong></span>'
+    +     '<span style="font-size:10pt;color:#64748b">' + (isAr?'متبقٍ':'Days left') + ': <strong>' + (daysLeft>0?daysLeft+' '+(isAr?'يوم':'days'):(isAr?'متأخرة':'Overdue')) + '</strong></span>'
+    +   '</div>'
+    +   '<div style="height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:5px"></div></div>'
+    + '</div>' : '')
+    + '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px">'
+    +   '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px">' + (isAr?'سبب الخطة':'Reason for Plan') + '</div>'
+    +   '<div style="font-size:10pt;color:#1e293b;line-height:1.6">' + (pip.reason||'—') + '</div>'
+    + '</div>'
+    + '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px">'
+    +   '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px">' + (isAr?'الإجراءات المطلوبة':'Required Actions') + '</div>'
+    +   '<div style="font-size:10pt;color:#1e293b;line-height:1.6">' + (pip.actions||'—') + '</div>'
+    + '</div>'
+    + (isCompleted ? '<div style="border:1px solid ' + statusColor + '44;border-radius:10px;padding:14px 16px;margin-bottom:16px;background:' + statusColor + '08">'
+    +   '<div style="font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:' + statusColor + ';margin-bottom:8px">' + (isAr?'نتيجة الخطة':'Plan Outcome') + '</div>'
+    +   '<div style="font-size:12pt;font-weight:700;color:' + statusColor + '">' + statusLabel + '</div>'
+    +   (finalAvg ? '<div style="font-size:10pt;color:#64748b;margin-top:4px">' + (isAr?'الدرجة النهائية':'Final Score') + ': <strong style="color:' + statusColor + '">' + finalAvg.toFixed(1) + '/10</strong></div>' : '')
+    + '</div>' : '')
+    + '<div style="border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:8pt;color:#94a3b8">'
+    +   '<span>RxPerform Pro</span>'
+    +   '<span>' + (isAr?'طُبع في':'Printed') + ': ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + '</span>'
+    +   '<span style="color:#00d4ff">Confidential</span>'
+    + '</div>'
+    + '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},600);};</scr'+'ipt>'
+    + '</body></html>';
+
+  const win = window.open('', '_blank');
+  if(win) { win.document.open(); win.document.write(html); win.document.close(); }
+}
+
 /* ════════════════════════════════════════════
    MILESTONE CELEBRATIONS (Feature #20)
 ════════════════════════════════════════════ */
@@ -5482,7 +5655,7 @@ function renderPIPStatus(colId) {
       const trackStyle = onTrack
         ? 'background:rgba(0,200,150,0.12);color:var(--emerald);border:1px solid rgba(0,200,150,0.2)'
         : 'background:rgba(255,77,109,0.10);color:var(--rose);border:1px solid rgba(255,77,109,0.2)';
-      const daysStr = _pa?(daysLeft>0?daysLeft+' يوم متبقٍ':'متأخرة'):(da_pa?(daysLeft>0?daysLeft+' يوم متبقٍ':'متأخرة'):(daysLeft>0?daysLeft+' days left':'Overdue'));
+      const daysStr = _pa ? (daysLeft>0 ? daysLeft+' يوم متبقٍ' : 'متأخرة') : (daysLeft>0 ? daysLeft+' days left' : 'Overdue');
       return '<div style="margin-bottom:14px;background:linear-gradient(135deg,rgba(255,179,64,0.06),rgba(255,179,64,0.02));border:1px solid rgba(255,179,64,0.25);border-left:4px solid var(--amber);border-radius:12px;padding:14px 18px">'
         + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
           + '<div style="display:flex;align-items:center;gap:8px">'
@@ -5493,8 +5666,10 @@ function renderPIPStatus(colId) {
           + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
             + '<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;' + trackStyle + '">' + (_pa?(onTrack?'✅ على المسار':'⚠ دون الهدف'):(onTrack?'✅ On Track':'⚠ Below Target')) + '</span>'
             + '<button onclick="confirmClosePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">✓ Complete</button>'
+            + (role==='admin' ? '<button onclick="deletePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(255,77,109,0.08);color:var(--rose);border-color:rgba(255,77,109,0.2)">🗑 Remove</button>' : '')
             + '<button onclick="openPIPModal(\'' + colId + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px">'+(_pa?'تعديل':'Edit')+'</button>'
-            + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)">📤 Share</button>'
+            + '<button onclick="sharePIPWhatsApp(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(37,211,102,0.1);color:#25d366;border-color:rgba(37,211,102,0.3)">📱 WhatsApp</button>'
+            + '<button onclick="printPIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)">🖨 Print</button>'
           + '</div>'
         + '</div>'
         + '<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Goal: Reach <strong>' + pip.target + '/10</strong> · Current: <strong style="color:' + barColor + '">' + (avg ? avg.toFixed(1) : (appLang==="ar"?'لا بيانات':'No data')) + '/10</strong></div>'
@@ -5516,7 +5691,9 @@ function renderPIPStatus(colId) {
           + '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
             + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;background:' + outcomeColor + '18;color:' + outcomeColor + ';border:1px solid ' + outcomeColor + '33">' + (_pa?(achieved?'✅ تم تحقيق الهدف':'❌ لم يُحقق الهدف'):(achieved?'✅ Goal Achieved':'❌ Goal Not Met')) + '</span>'
             + '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ink3);color:var(--text2);border:1px solid var(--line)">Target: ' + pip.target + '/10 · Final: ' + (finalAvg ? finalAvg.toFixed(1) : '—') + '/10</span>'
-            + '<button onclick="sharePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px">📤</button>'
+            + '<button onclick="sharePIPWhatsApp(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px;background:rgba(37,211,102,0.1);color:#25d366;border-color:rgba(37,211,102,0.3)">📱</button>'
+            + '<button onclick="printPIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px;background:rgba(0,212,255,0.08);color:var(--cyan);border-color:rgba(0,212,255,0.2)">🖨</button>'
+            + (role==='admin' ? '<button onclick="deletePIP(\'' + pip.id + '\')" class="btn btn-sm" style="font-size:10px;padding:2px 7px;background:rgba(255,77,109,0.08);color:var(--rose);border-color:rgba(255,77,109,0.2)">🗑</button>' : '')
           + '</div>'
         + '</div>'
         + (pip.reason ? '<div style="font-size:10px;color:var(--text3);margin-top:6px"><strong>Reason:</strong> ' + pip.reason + '</div>' : '')
@@ -5759,6 +5936,7 @@ function sharePIP(pipId) {
   if(!pip) return;
   const c = db.colleagues.find(x => x.id === pip.colId);
   if(!c) return;
+  const _pa = appLang === 'ar';
   const t2 = appLang==='ar' ? AR : EN;
   const start = new Date(pip.startDate).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const end   = new Date(pip.endDate).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
