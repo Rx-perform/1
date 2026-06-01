@@ -635,7 +635,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
   <div class="tb-period" onclick="togglePeriodDropdown()"><span>📅</span><div><div class="tb-period-label" data-i18n="period">Period</div><div class="tb-period-value" id="tbPeriodVal">—</div></div><span class="tb-period-arrow">▾</span></div>
   <div class="tb-team-stat"><div><div class="tb-team-stat-label" data-i18n="team_avg">Team Avg</div><div style="display:flex;align-items:baseline;gap:2px"><span class="tb-team-stat-val" id="tbTeamAvg" style="color:var(--emerald)">—</span><span style="font-size:10px;color:var(--text2)">/10</span></div></div><canvas class="tb-spark" id="tbSparkCanvas"></canvas></div>
   <div id="shiftBadge" class="tb-shift-badge" onclick="openShiftTracker()" style="display:none"><div class="tb-shift-dot"></div><div><div class="tb-shift-time" id="shiftTimerDisplay">0:00:00</div><div class="tb-shift-label" data-i18n="on_shift">ON SHIFT</div></div></div>
-  <div class="tb-search"><span class="tb-search-icon">🔍</span><input type="text" id="searchInp" placeholder="Search… (Ctrl+K)" onkeydown="handleSearch(event)"></div>
+
   <div class="tb-actions">
     <div class="tb-icon-btn" id="rxNotifBtn" onclick="openNotifPanel()" title="الإشعارات" style="position:relative">🔔<span id="rxNotifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ff4d6d;color:#fff;font-size:8px;font-weight:800;border-radius:8px;padding:1px 4px;min-width:15px;height:15px;align-items:center;justify-content:center;border:2px solid var(--bg)">0</span></div>
     <div class="tb-lang-toggle"><div class="tb-lang-btn active" id="langEN" onclick="setLang('en')">EN</div><div class="tb-lang-btn" id="langAR" onclick="setLang('ar')">عربي</div></div>
@@ -739,7 +739,10 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div style="font-size:15px;font-weight:800">⏱ متابعة الوردية</div>
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
-            <button class="hbtn hbtn-outline" onclick="printActivitiesOnly()" title="طباعة سجل الأنشطة فقط" style="font-size:11px;padding:6px 12px">🖨 طباعة الأنشطة</button>
+            <div style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <select id="printActPeriod" style="background:var(--glass);border:none;color:var(--text);font-size:11px;padding:6px 8px;cursor:pointer;outline:none;min-width:110px"></select>
+              <button class="hbtn hbtn-outline" onclick="printActivitiesOnly()" title="طباعة سجل الأنشطة" style="font-size:11px;padding:6px 12px;border:none;border-right:none;border-radius:0;border-left:1px solid var(--border)">🖨 طباعة</button>
+            </div>
             <button class="btn btn-primary" onclick="openLogActivityModal()" style="font-size:13px;padding:8px 18px">
               + تسجيل نشاط
             </button>
@@ -1102,31 +1105,54 @@ let db={
 };
 
 const Store={
-  save(){db._localUpdated=Date.now();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
-    clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},300);},
+  save(){db._savedAt=Date.now();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
+    clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},500);},
   async push(snap){setSyncSt('⏳',t('period')+'…');
-    try{const r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(snap),updated_at:new Date().toISOString()})});
-    setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');}catch(e){setSyncSt('⚠','Offline');}},
+    const pushTime=Date.now();
+    try{const r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()})});
+    if(r.ok){db._savedAt=pushTime;}setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');}catch(e){setSyncSt('⚠','Offline');}},
   async pull(){setSyncSt('⏳','Syncing…');
     try{const r=await fetch(EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
     const rows=await r.json();
-    if(rows?.length&&rows[0].data){const rem=rows[0].data;
+    if(rows?.length&&rows[0].data){
+      const rem=rows[0].data;
       if(rem?.colleagues?.length||rem?.criteria?.length){
-        // merge: keep local activities/transactions if newer, else use remote
-        const localUpd=db._localUpdated||0;
-        const remUpd=new Date(rows[0].updated_at||0).getTime();
-        if(remUpd>localUpd){
-          // remote is newer - use remote but preserve any local-only keys
-          const localAct=db.activities||{};
-          const localTx=db.transactions||{};
-          db=rem;
-          // merge local activities not in remote
-          if(!db.activities)db.activities={};
-          if(!db.transactions)db.transactions={};
-          Object.keys(localAct).forEach(k=>{if(!db.activities[k])db.activities[k]=localAct[k];});
-          Object.keys(localTx).forEach(k=>{if(!db.transactions[k])db.transactions[k]=localTx[k];});
+        const remTime=new Date(rows[0].updated_at||0).getTime();
+        const locTime=db._savedAt||0;
+        if(locTime>remTime){
+          // local newer → push to remote, keep local
+          Store.push(JSON.stringify(db));
+        } else {
+          // remote newer or equal → use remote
+          // but merge any local shifts/scores/transactions added after last push
+          const locShifts=JSON.parse(JSON.stringify(db.shifts||{}));
+          const locScores=JSON.parse(JSON.stringify(db.scores||{}));
+          const locTx=JSON.parse(JSON.stringify(db.transactions||{}));
+          db=rem; Store.defaults();
+          // deep merge shifts history
+          Object.keys(locShifts).forEach(k=>{
+            if(!db.shifts[k])db.shifts[k]=locShifts[k];
+            else{
+              const rh=db.shifts[k].history||[];
+              const rdates=new Set(rh.map(x=>x.date));
+              (locShifts[k].history||[]).forEach(e=>{if(!rdates.has(e.date))rh.push(e);});
+              db.shifts[k].history=rh.sort((a,b)=>a.date<b.date?1:-1);
+            }
+          });
+          // merge scores
+          Object.keys(locScores).forEach(col=>{
+            if(!db.scores[col])db.scores[col]=locScores[col];
+            else Object.assign(db.scores[col],locScores[col]);
+          });
+          // merge transactions
+          Object.keys(locTx).forEach(k=>{if(!db.transactions[k])db.transactions[k]=locTx[k];});
+          try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
+          // push merged result back
+          Store.push(JSON.stringify(db));
         }
-        Store.defaults();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}}
+      } else {
+        if(db.colleagues&&db.colleagues.length)Store.push(JSON.stringify(db));
+      }
       setSyncSt('✅','Synced '+now12());return true;}
     if(!db.colleagues.length)Store.seed();Store.push(JSON.stringify(db));return false;}
     catch(e){setSyncSt('⚠','Offline');return false;}},
@@ -1224,6 +1250,25 @@ function now12(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:
 ══════════════════════════════════════ */
 function cs(){return db.settings?.cycleStart||16;}
 function availMonths(){const now=new Date();const cutoff='2026-01';return Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}).filter(m=>m>=cutoff);}
+function getPeriodLabel(m){
+  const[y,mo]=m.split('-').map(Number);
+  const C=cs();
+  // Period: from C of prev month to C-1 of current month
+  const ps=new Date(y,mo-2,C);
+  const pe=new Date(y,mo-1,C-1);
+  const fmt=d=>d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
+  return fmt(ps)+' — '+fmt(pe);
+}
+function populatePrintPeriodDropdown(){
+  var sel=document.getElementById('printActPeriod');
+  if(!sel)return;
+  var months=availMonths();
+  sel.innerHTML=months.map(function(m){
+    return '<option value="'+m+'">'+getPeriodLabel(m)+'</option>';
+  }).join('');
+  // default to curMonth
+  if(typeof curMonth!=='undefined'&&curMonth)sel.value=curMonth;
+}
 function fmtMonth(ym){if(!ym)return'—';const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString(lang==='ar'?'ar-EG':'en-US',{month:'short',year:'numeric'});}
 function periodLabel(ym){if(!ym)return'—';const c=cs();const[y,m]=ym.split('-').map(Number);const d1=new Date(y,m-1,c),d2=new Date(y,m,c-1);const locale=lang==='ar'?'ar-EG':'en-US';return`${d1.toLocaleDateString(locale,{day:'numeric',month:'short'})} – ${d2.toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}`;}
 function ini(n){return(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
@@ -1297,9 +1342,10 @@ function showAdminPanel(){document.getElementById('adminPanel').classList.add('s
 function enterAsViewer(){role='viewer';localStorage.setItem('rxp_role','viewer');launch();}
 function doAdminLogin(){const pw=document.getElementById('adminPwdInp').value,stored=localStorage.getItem('rxp_admin_pw')||'Anonymous@1151';if(pw===stored){role='admin';localStorage.setItem('rxp_role','admin');launch();}else{document.getElementById('loginErr').style.display='block';}}
 window.addEventListener('beforeunload',function(){
-  if(db&&Object.keys(db).length){
-    const s=JSON.stringify(db);
-    fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(s),updated_at:new Date().toISOString()}),keepalive:true});
+  if(db&&db.colleagues&&db.colleagues.length){
+    db._savedAt=Date.now();
+    fetch(EP,{method:'PATCH',keepalive:true,headers:SH,
+      body:JSON.stringify({data:db,updated_at:new Date().toISOString()})}).catch(()=>{});
   }
 });
 function launch(){
@@ -1314,7 +1360,7 @@ function launch(){
   // auto-open first colleague
   if(db.colleagues.length){selectTab(db.colleagues[0].id);}
   Store.pull().then(()=>{if(!db.colleagues.length)Store.seed();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(!curColId&&db.colleagues.length)selectTab(db.colleagues[0].id);});
-  setInterval(()=>Store.pull().then(ok=>{if(ok){updateTopbar();renderTabs();if(curColId)renderWorkspace();}}),30000);
+  // periodic pull disabled - push-only sync to avoid overwriting local data
 }
 function launchApp(){ launch(); }
 
@@ -1733,11 +1779,11 @@ function toggleShift(){
 
 /* ═══ Shift activity types ═══ */
 const SHIFT_ACTS=[
-  {id:'inventory',   icon:'📋', label:'جرد',              color:'#00d4ff'},
-  {id:'expiry',      icon:'📦', label:'اكسباير',          color:'#ffb340'},
-  {id:'stocking',    icon:'🗂', label:'رص وترتيب',        color:'#a78bfa'},
-  {id:'dispensing',  icon:'💊', label:'صرف أدوية',        color:'#00c896'},
-  {id:'other',       icon:'📌', label:'أخرى',             color:'#94a3b8'},
+  {id:'inventory',     icon:'📋', label:'جرد',              color:'#00d4ff'},
+  {id:'expiry',        icon:'📦', label:'اكسباير',          color:'#ffb340'},
+  {id:'stocking',      icon:'🗂', label:'رص وترتيب',        color:'#a78bfa'},
+  {id:'price_change',  icon:'🏷', label:'تغيير اسعار',      color:'#f43f5e'},
+  {id:'other',         icon:'📌', label:'أخرى',             color:'#94a3b8'},
 ];
 function getActColor(id){return(SHIFT_ACTS.find(a=>a.id===id)||{color:'#94a3b8'}).color;}
 function getActLabel(id){return(SHIFT_ACTS.find(a=>a.id===id)||{label:id}).label;}
@@ -1764,7 +1810,7 @@ function shiftSummaryBar(bd,totalSec){
   }).join('');
 }
 
-function renderShiftTab(){
+function renderShiftTab(){populatePrintPeriodDropdown();
   const c=db.colleagues.find(x=>x.id===curColId);
   const statsEl=document.getElementById('shiftStats');
   const tableEl=document.getElementById('shiftTable');
@@ -1777,11 +1823,16 @@ function renderShiftTab(){
   const hist=(sh.history||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(day=>{
     if(!curMonth||curMonth==='all')return true;
     if(!day.date)return true;
-    // Check if day falls within the selected period
-    const[y,mo]=curMonth.split('-').map(Number);
-    const C=cs();
-    const ps=new Date(y,mo-1,C),pe=new Date(y,mo,C-1);
-    const d=new Date(day.date);
+    // Period: from cycleStart of prev month to cycleStart-1 of current month
+    const[y,mo]=curMonth.split('-').map(Number); // mo is 1-based
+    const C=cs(); // e.g. 16
+    // Period start: day C of month (mo-1), e.g. 16 May
+    // Period end: day C-1 of month mo, e.g. 15 Jun
+    // new Date(y, mo-2, C) = 16th of month before curMonth
+    // new Date(y, mo-1, C-1) = (C-1)th of curMonth
+    const ps=new Date(y,mo-2,C);
+    const pe=new Date(y,mo-1,C-1);
+    const d=new Date(day.date+'T00:00:00');
     return d>=ps&&d<=pe;
   });
 
@@ -1813,9 +1864,9 @@ function renderShiftTab(){
   const dispPct=totalSec?Math.round(dispSec/totalSec*100):0;
   if(statsEl)statsEl.innerHTML=`
     <div class="bento-cell" style="min-height:0;padding:12px;text-align:center">
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">💊 صرف أدوية</div>
-      <div style="font-size:22px;font-weight:800;color:#00c896">${fmtDur(dispSec)}</div>
-      <div style="font-size:10px;color:var(--text2)">${dispPct}% من الإجمالي</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">📋 عدد الأنشطة</div>
+      <div style="font-size:22px;font-weight:800;color:#00c896">${allActs.length}</div>
+      <div style="font-size:10px;color:var(--text2)">إجمالي الأنشطة</div>
     </div>
     <div class="bento-cell" style="min-height:0;padding:12px;text-align:center">
       <div style="font-size:11px;color:var(--text2);margin-bottom:4px">📅 أيام مسجلة</div>
@@ -1825,7 +1876,7 @@ function renderShiftTab(){
     <div class="bento-cell" style="min-height:0;padding:12px;text-align:center">
       <div style="font-size:11px;color:var(--text2);margin-bottom:4px">⏱ إجمالي الوقت</div>
       <div style="font-size:22px;font-weight:800;color:#ffb340">${fmtDur(totalSec)}</div>
-      <div style="font-size:10px;color:var(--text2)">${100-dispPct}% أنشطة أخرى</div>
+      <div style="font-size:10px;color:var(--text2)">${hist.length} يوم مسجل</div>
     </div>`;
 
   if(!tableEl)return;
@@ -1857,6 +1908,16 @@ function renderShiftTab(){
       </tr>
     </thead><tbody>`;
 
+  // also collect unknown activity types not in SHIFT_ACTS
+  allActs.forEach(a=>{
+    if(groups[a.id]===undefined){
+      if(!groups['__unknown__'])groups['__unknown__']=[];
+      groups['__unknown__'].push(a);
+    }
+  });
+  if(groups['__unknown__']&&groups['__unknown__'].length){
+    SHIFT_ACTS.push({id:'__unknown__',icon:'📌',label:'أنشطة أخرى',color:'#94a3b8'});
+  }
   SHIFT_ACTS.forEach(actDef=>{
     const rows=groups[actDef.id];
     if(!rows||!rows.length)return;
@@ -1968,7 +2029,9 @@ function renderNotes(){
   document.getElementById('notesList').innerHTML=all.length?all.map(n=>{const col=db.colleagues.find(x=>x.id===n.colId);const color=n.type==='pos'?'var(--emerald)':'var(--rose)';const pc=n.priority==='critical'?'var(--rose)':n.priority==='high'?'var(--amber)':'var(--text2)';return`<div class="note-card ${n.type}"><div class="note-ava" style="background:${col?col.color+'22':'rgba(255,255,255,0.05)'};color:${col?col.color:'var(--text)'}">${col?ini(colName(col)):'👥'}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;color:${col?col.color:'var(--text)'}">${col?colName(col):t('all')}</span><span class="note-type-badge" style="background:${color}22;color:${color}">${n.type==='pos'?'✅':' ⚠'}</span>${n.priority&&n.priority!=='normal'?`<span class="note-type-badge" style="background:${pc}22;color:${pc}">${n.priority==='critical'?'🔥':'⭐'}</span>`:''} ${n.voice?`<span class="note-type-badge" style="background:var(--cyan3);color:var(--cyan)">🎙</span>`:''}</div><div class="note-text">${n.text}</div>${n.voice&&n.audioUrl?`<audio src="${n.audioUrl}" controls style="width:100%;height:28px;margin-top:6px;border-radius:4px"></audio>`:''}<div class="note-meta">${n.date||''}</div></div>${role==='admin'?`<button onclick="deleteNote('${n.type}',${n.ts})" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:3px;flex-shrink:0" title="Delete">🗑</button>`:''}</div>`;}).join(''):`<div style="color:var(--text2);text-align:center;padding:40px 0;font-size:13px">${t('no_data')}</div>`;}
 function deleteNote(type,ts){if(!confirm(t('delete')+'?'))return;snapshotUndo();db.notes[type]=(db.notes[type]||[]).filter(n=>n.ts!==ts);Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));}
 function openAddNote(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}const s=document.getElementById('noteColSel');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');document.getElementById('noteText').value='';document.getElementById('noteDate').value='';openModal('noteModal');}
-function saveNote(){const text=document.getElementById('noteText').value.trim();if(!text){toast('Enter a note','#ffb340');return;}const type=document.getElementById('noteType').value,colId=document.getElementById('noteColSel').value||null,date=document.getElementById('noteDate').value,priority=document.getElementById('notePriority').value;snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text,date,priority,ts:Date.now()});closeModal('noteModal');Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ '+t('save'));}
+function saveNote(){const text=document.getElementById('noteText').value.trim();if(!text){toast('Enter a note','#ffb340');return;}const type=document.getElementById('noteType').value,colId=document.getElementById('noteColSel').value||null,date=document.getElementById('noteDate').value,priority=document.getElementById('notePriority').value;snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text,date,priority,ts:Date.now()});closeModal('noteModal');Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ '+t('save'));
+  if(typeof RxNotifMgr!=='undefined'){const nc=colId&&db.colleagues.find(x=>x.id===colId);if(nc)RxNotifMgr.notify({title:(type==='positive'?'✅ ملاحظة إيجابية':'⚠ ملاحظة تحسين'),message:colName(nc)+': '+text.slice(0,60),icon:type==='positive'?'✅':'⚠',priority:priority==='critical'?'high':priority==='high'?'medium':'low',category:'employee'});}
+}
 
 /* VOICE NOTE */
 function openVoiceNote(){const s=document.getElementById('voiceColSelInput');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');_voiceBlob=null;_voiceChunks=[];_voiceSecs=0;document.getElementById('voiceTimer').textContent='0:00';document.getElementById('voiceStatus').textContent=t('press_record');document.getElementById('voiceRecordBtn').textContent=t('record');document.getElementById('voicePlayBtn').style.display='none';document.getElementById('voicePlayback').style.display='none';document.getElementById('voiceSaveBtn').style.display='none';document.querySelectorAll('.voice-bar').forEach(b=>b.classList.remove('animating'));openModal('voiceModal');}
@@ -2102,12 +2165,38 @@ function renderExecDashboard(){
 ══════════════════════════════════════ */
 function buildNotifications(){
   _notifications=[];const now=new Date();
+  const _pushNotif=(n)=>{
+    _notifications.push(n);
+    if(typeof RxNotifMgr!=='undefined'){
+      const id='col_'+n.cat+'_'+(n.colId||'')+'_'+(n.time||'');
+      RxNotifMgr.notify({
+        id, title:n.text, message:'', icon:n.icon,
+        priority: n.critical?'high':'medium',
+        category: n.cat==='performance'?'score':n.cat==='plan'?'employee':n.cat==='burnout'?'score':'employee',
+        action: n.colId?`openColTab('${n.colId}')`:'',
+        dedup: true
+      });
+    }
+  };
   db.colleagues.forEach(c=>{
-    const avg=colAvg(c.id,curMonth);if(avg>0&&avg<6)_notifications.push({icon:'⚠',text:`${colName(c)} ${t('notif_low_score')}`,time:fmtMonth(curMonth),colId:c.id,cat:'performance',critical:true});
-    const br=burnoutRisk(c.id,curMonth);if(br>70)_notifications.push({icon:'🔥',text:`High burnout risk for ${colName(c)} (${br}%)`,time:fmtMonth(curMonth),colId:c.id,cat:'burnout',critical:true});
-    (db.settings?.pips||[]).filter(p=>p.colId===c.id&&p.status==='active'&&p.endDate).forEach(p=>{const days=Math.ceil((new Date(p.endDate)-now)/86400000);if(days>0&&days<=7)_notifications.push({icon:'📋',text:`${colName(c)} ${t('notif_plan_ends')} ${days} ${t('notif_days')}`,time:p.endDate,colId:c.id,cat:'plan'});if(days<=0)_notifications.push({icon:'🚨',text:`${t('notif_overdue')} ${colName(c)}`,time:p.endDate,colId:c.id,cat:'plan',critical:true});});
+    const avg=colAvg(c.id,curMonth);
+    if(avg>0&&avg<6) _pushNotif({icon:'⚠',text:`${colName(c)} ${t('notif_low_score')}`,time:fmtMonth(curMonth),colId:c.id,cat:'performance',critical:true});
+    const br=burnoutRisk(c.id,curMonth);
+    if(br>70) _pushNotif({icon:'🔥',text:`خطر إرهاق مرتفع لـ ${colName(c)} (${br}%)`,time:fmtMonth(curMonth),colId:c.id,cat:'burnout',critical:true});
+    (db.settings?.pips||[]).filter(p=>p.colId===c.id&&p.status==='active'&&p.endDate).forEach(p=>{
+      const days=Math.ceil((new Date(p.endDate)-now)/86400000);
+      if(days>0&&days<=7) _pushNotif({icon:'📋',text:`${colName(c)} ${t('notif_plan_ends')} ${days} ${t('notif_days')}`,time:p.endDate,colId:c.id,cat:'plan'});
+      if(days<=0) _pushNotif({icon:'🚨',text:`${t('notif_overdue')} ${colName(c)}`,time:p.endDate,colId:c.id,cat:'plan',critical:true});
+    });
+    // score trend alert
+    const prev=colAvg(c.id,(availMonths()[1]||''));
+    if(avg>0&&prev>0&&(avg-prev)<=-2) _pushNotif({icon:'📉',text:`تراجع ملحوظ في أداء ${colName(c)}`,time:fmtMonth(curMonth),colId:c.id,cat:'performance',critical:false});
+    if(avg>=9) _pushNotif({icon:'🌟',text:`أداء متميز لـ ${colName(c)} هذه الفترة`,time:fmtMonth(curMonth),colId:c.id,cat:'performance',critical:false});
   });
-  [...(db.notes?.positive||[]),...(db.notes?.negative||[])].filter(n=>(Date.now()-(n.ts||0))<86400000*2).forEach(n=>{const c=db.colleagues.find(x=>x.id===n.colId);if(c)_notifications.push({icon:'📝',text:`${t('notif_new_note')} ${colName(c)}`,time:n.date||'Recent',colId:c.id,cat:'note'});});
+  [...(db.notes?.positive||[]),...(db.notes?.negative||[])].filter(n=>(Date.now()-(n.ts||0))<86400000*2).forEach(n=>{
+    const c=db.colleagues.find(x=>x.id===n.colId);
+    if(c) _pushNotif({icon:'📝',text:`${t('notif_new_note')} ${colName(c)}`,time:n.date||'Recent',colId:c.id,cat:'note'});
+  });
 }
 function updateNotifBadge(){const u=_notifications.filter(n=>!_notifRead.has(JSON.stringify(n))).length;if(typeof RxNotifRenderer!=='undefined')RxNotifRenderer.updateBadge();}
 function openNotifications(){openNotifPanel();}
@@ -3206,6 +3295,8 @@ function confirmLogActivity(){
   Store.save();
   closeModal('logActivityModal');
   renderShiftTab();
+  // notify
+  if(typeof RxNotifMgr!=='undefined') RxNotifMgr.notify({title:'✅ تم تسجيل نشاط',message:icon+' '+label+' — '+fmtDur(dur),icon:icon,priority:'low',category:'employee'});
   toast(icon+' '+label+' — '+fmtDur(dur)+' ✅','#00c896');
 }
 
@@ -3216,6 +3307,7 @@ function openLogActivityModal(){
   document.getElementById('logActDate').value=today;
   document.getElementById('logActStart').value='';
   document.getElementById('logActEnd').value='';
+  if(document.getElementById('logActEndDate')) document.getElementById('logActEndDate').value=today;
   if(document.getElementById('logActDesc')) document.getElementById('logActDesc').value='';
   if(document.getElementById('logActNote')) document.getElementById('logActNote').value='';
   document.getElementById('logActType').value=_lastActType||'inventory';
@@ -3238,8 +3330,10 @@ function calcLogDur(){
     prev.innerHTML='<span style="color:var(--text2)">اختر التاريخ والأوقات</span>';
     return null;
   }
+  var endDateEl=document.getElementById('logActEndDate');
+  var endDate=endDateEl&&endDateEl.value?endDateEl.value:date;
   var sMs=new Date(date+'T'+start).getTime();
-  var eMs=new Date(date+'T'+end).getTime();
+  var eMs=new Date(endDate+'T'+end).getTime();
   if(eMs<=sMs){
     prev.innerHTML='<span style="color:#ff4d6d">⚠ وقت النهاية يجب أن يكون بعد البداية</span>';
     return null;
@@ -5231,9 +5325,10 @@ function printActivitiesOnly() {
   var colId = typeof curColId !== 'undefined' ? curColId : null;
   if (!colId) { if (typeof toast === 'function') toast(ar ? 'اختر زميلاً أولاً' : 'Select a colleague first', '#ffb340'); return; }
 
-  // build period options
+  // get period from dropdown
+  var selEl = document.getElementById('printActPeriod');
   var months = availMonths();
-  var selectedMonth = typeof curMonth !== 'undefined' ? curMonth : (months[0]||'');
+  var selectedMonth = (selEl && selEl.value) ? selEl.value : (typeof curMonth !== 'undefined' ? curMonth : (months[0]||''));
   var D = (typeof RxPrint !== 'undefined' && typeof RxPrint.getData === 'function') ? RxPrint.getData(colId, selectedMonth) : null;
   if (!D) { if (typeof toast === 'function') toast(ar ? '⚠ لا توجد بيانات' : '⚠ No data', '#ffb340'); return; }
 
@@ -5247,8 +5342,9 @@ function printActivitiesOnly() {
       var hDate = new Date(h.date);
       var pParts = month.split('-').map(Number);
       var cs = (db.settings && db.settings.cycleStart) || 16;
-      var pStart = new Date(pParts[0], pParts[1] - 1, cs);
-      var pEnd = new Date(pParts[0], pParts[1], cs - 1);
+      // Period: from cs of (month-1) to cs-1 of month
+      var pStart = new Date(pParts[0], pParts[1] - 2, cs);
+      var pEnd   = new Date(pParts[0], pParts[1] - 1, cs - 1);
       if (hDate >= pStart && hDate <= pEnd) {
         (h.activities || []).forEach(function(a) {
           // id field is the type (dispensing, expiry, admin, break, other…)
@@ -6029,8 +6125,9 @@ const RxActivityTracker = (() => {
 
   function init() {
     // ── Auth events ──
-    RxEventBus.on('auth:login',  d => N({ title:'تم تسجيل الدخول', message: d.role === 'admin' ? '👑 مرحباً Admin' : '👤 وضع المشاهدة', icon:'🔐', priority:'low', category:'auth' }));
-    RxEventBus.on('auth:logout', () => N({ title:'تم تسجيل الخروج', message:'تم إنهاء الجلسة', icon:'🚪', priority:'low', category:'auth' }));
+    // auth notifications disabled
+    RxEventBus.on('auth:login',  d => {});
+    RxEventBus.on('auth:logout', () => {});
 
     // ── Score events ──
     RxEventBus.on('score:saved', d => {
@@ -6053,13 +6150,14 @@ const RxActivityTracker = (() => {
 
     // ── System events ──
     RxEventBus.on('system:saved',    () => { /* silent */ });
-    RxEventBus.on('system:exported', () => N({ title:'تم التصدير', message:'تم تصدير البيانات بنجاح', icon:'💾', priority:'low', category:'system' }));
-    RxEventBus.on('system:imported', () => N({ title:'تم الاستيراد', message:'تم استيراد البيانات بنجاح', icon:'📂', priority:'medium', category:'system' }));
+    // export/import notifications disabled
+    RxEventBus.on('system:exported', () => {});
+    RxEventBus.on('system:imported', () => {});
     RxEventBus.on('system:error',    d => N({ title:'خطأ في النظام', message:d.msg, icon:'❌', priority:'critical', category:'system', sticky:true }));
 
     // ── Report events ──
-    RxEventBus.on('report:start',   () => N({ title:'جاري تجهيز التقرير', message:'يرجى الانتظار…', icon:'🖨', priority:'passive', category:'report' }));
-    RxEventBus.on('report:success', () => N({ title:'تم تجهيز التقرير', message:'تم فتح نافذة الطباعة', icon:'✅', priority:'low', category:'report' }));
+    RxEventBus.on('report:start',   () => {});
+    RxEventBus.on('report:success', () => {});
 
     // ── Reminder engine ──
     _startReminders();
@@ -6099,6 +6197,10 @@ const RxActivityTracker = (() => {
           crName:  cr ? cr.name : pending.crId,
           score:   score
         });
+        // direct notif for low scores
+        if(score<=4 && typeof RxNotifMgr!=='undefined'){
+          RxNotifMgr.notify({title:'⚠ تقييم منخفض',message:`${c?c.name:pending.colId} — ${cr?cr.nameAr||cr.name:pending.crId}: ${score}/10`,icon:'⚠',priority:'high',category:'score'});
+        }
       }
     };
   }
@@ -6343,18 +6445,28 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
     <div style="cursor:pointer;color:var(--text2);font-size:18px;padding:2px 8px" onclick="closeModal('logActivityModal')">&#x2715;</div>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px">
-    <div>
-      <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px">التاريخ</label>
-      <input type="date" id="logActDate" class="form-input" oninput="calcLogDur()" style="width:100%">
-    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div>
-        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px">وقت البداية</label>
-        <input type="time" id="logActStart" class="form-input" oninput="calcLogDur()" style="width:100%">
+      <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg3);border-radius:10px;padding:10px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:800;color:var(--cyan);margin-bottom:2px">① البداية</div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">التاريخ</label>
+          <input type="date" id="logActDate" class="form-input" oninput="calcLogDur()" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">الوقت</label>
+          <input type="time" id="logActStart" class="form-input" oninput="calcLogDur()" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
       </div>
-      <div>
-        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px">وقت النهاية</label>
-        <input type="time" id="logActEnd" class="form-input" oninput="calcLogDur()" style="width:100%">
+      <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg3);border-radius:10px;padding:10px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:800;color:var(--emerald);margin-bottom:2px">② النهاية</div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">التاريخ</label>
+          <input type="date" id="logActEndDate" class="form-input" oninput="calcLogDur()" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">الوقت</label>
+          <input type="time" id="logActEnd" class="form-input" oninput="calcLogDur()" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
       </div>
     </div>
     <div>
@@ -6363,7 +6475,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
         <option value="inventory">📋 جرد</option>
         <option value="expiry">📦 اكسباير</option>
         <option value="stocking">🗂 رص وترتيب</option>
-        <option value="dispensing">💊 صرف أدوية</option>
+        <option value="price_change">🏷 تغيير اسعار</option>
         <option value="other">📌 أخرى</option>
       </select>
     </div>
