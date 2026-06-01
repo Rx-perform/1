@@ -1102,8 +1102,8 @@ let db={
 };
 
 const Store={
-  save(){try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
-    clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},1800);},
+  save(){db._localUpdated=Date.now();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
+    clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},300);},
   async push(snap){setSyncSt('⏳',t('period')+'…');
     try{const r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(snap),updated_at:new Date().toISOString()})});
     setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');}catch(e){setSyncSt('⚠','Offline');}},
@@ -1111,7 +1111,22 @@ const Store={
     try{const r=await fetch(EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
     const rows=await r.json();
     if(rows?.length&&rows[0].data){const rem=rows[0].data;
-      if(rem?.colleagues?.length||rem?.criteria?.length){db=rem;Store.defaults();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}}
+      if(rem?.colleagues?.length||rem?.criteria?.length){
+        // merge: keep local activities/transactions if newer, else use remote
+        const localUpd=db._localUpdated||0;
+        const remUpd=new Date(rows[0].updated_at||0).getTime();
+        if(remUpd>localUpd){
+          // remote is newer - use remote but preserve any local-only keys
+          const localAct=db.activities||{};
+          const localTx=db.transactions||{};
+          db=rem;
+          // merge local activities not in remote
+          if(!db.activities)db.activities={};
+          if(!db.transactions)db.transactions={};
+          Object.keys(localAct).forEach(k=>{if(!db.activities[k])db.activities[k]=localAct[k];});
+          Object.keys(localTx).forEach(k=>{if(!db.transactions[k])db.transactions[k]=localTx[k];});
+        }
+        Store.defaults();try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}}
       setSyncSt('✅','Synced '+now12());return true;}
     if(!db.colleagues.length)Store.seed();Store.push(JSON.stringify(db));return false;}
     catch(e){setSyncSt('⚠','Offline');return false;}},
@@ -1281,6 +1296,12 @@ function startClock(){
 function showAdminPanel(){document.getElementById('adminPanel').classList.add('show');}
 function enterAsViewer(){role='viewer';localStorage.setItem('rxp_role','viewer');launch();}
 function doAdminLogin(){const pw=document.getElementById('adminPwdInp').value,stored=localStorage.getItem('rxp_admin_pw')||'Anonymous@1151';if(pw===stored){role='admin';localStorage.setItem('rxp_role','admin');launch();}else{document.getElementById('loginErr').style.display='block';}}
+window.addEventListener('beforeunload',function(){
+  if(db&&Object.keys(db).length){
+    const s=JSON.stringify(db);
+    fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(s),updated_at:new Date().toISOString()}),keepalive:true});
+  }
+});
 function launch(){
   const ls=document.getElementById('loginScreen');ls.style.opacity='0';setTimeout(()=>ls.style.display='none',450);
   document.getElementById('app').style.display='flex';
