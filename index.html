@@ -1270,7 +1270,7 @@ function populatePrintPeriodDropdown(){
   if(typeof curMonth!=='undefined'&&curMonth)sel.value=curMonth;
 }
 function fmtMonth(ym){if(!ym)return'—';const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString(lang==='ar'?'ar-EG':'en-US',{month:'short',year:'numeric'});}
-function periodLabel(ym){if(!ym)return'—';const c=cs();const[y,m]=ym.split('-').map(Number);const d1=new Date(y,m-1,c),d2=new Date(y,m,c-1);const locale=lang==='ar'?'ar-EG':'en-US';return`${d1.toLocaleDateString(locale,{day:'numeric',month:'short'})} – ${d2.toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}`;}
+function periodLabel(ym){if(!ym)return'—';const c=cs();const[y,m]=ym.split('-').map(Number);const d1=new Date(y,m-2,c),d2=new Date(y,m-1,c-1);const locale=lang==='ar'?'ar-EG':'en-US';return`${d1.toLocaleDateString(locale,{day:'numeric',month:'short'})} – ${d2.toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}`;}
 function ini(n){return(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
 function colName(c){return lang==='ar'&&c.nameAr?c.nameAr:c.name;}
 function colRole(c){return lang==='ar'&&c.roleAr?c.roleAr:c.role;}
@@ -1475,7 +1475,7 @@ function renderMatrix(){
     return;
   }
   const crit=getActiveCr(c.id);const C=cs();const[y,mo]=curMonth.split('-').map(Number);const today=new Date();
-  const days=[];const ps=new Date(y,mo-1,C),pe=new Date(y,mo,C-1);
+  const days=[];const ps=new Date(y,mo-2,C),pe=new Date(y,mo-1,C-1);
   for(let d=new Date(ps);d<=pe;d.setDate(d.getDate()+1))days.push({day:d.getDate(),name:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()].slice(0,2),isToday:d.toDateString()===today.toDateString()});
   const scores=db.scores[c.id]?.[curMonth]||{};
   // Pre-compute locked days from dedicated store
@@ -1561,7 +1561,7 @@ function setDayStatus(st){
 }
 function handleMatrixKey(e,crId,day,ri,ci){
   const crit=getActiveCr(curColId);const c=db.colleagues.find(x=>x.id===curColId);if(!c)return;
-  const C=cs();const[y,mo]=curMonth.split('-').map(Number);const ps=new Date(y,mo-1,C),pe=new Date(y,mo,C-1);
+  const C=cs();const[y,mo]=curMonth.split('-').map(Number);const ps=new Date(y,mo-2,C),pe=new Date(y,mo-1,C-1);
   const days=[];for(let d=new Date(ps);d<=pe;d.setDate(d.getDate()+1))days.push(String(d.getDate()));
   ri=parseInt(ri);ci=parseInt(ci);
   if(e.key==='Enter'||e.key===' '){e.preventDefault();openScoreModal(crId,day);return;}
@@ -1642,9 +1642,76 @@ function clearScore(){if(!_pendingScore)return;snapshotUndo();const{colId,crId,d
 /* ══════════════════════════════════════
    BULK ENTRY
 ══════════════════════════════════════ */
-function openBulkEntry(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}const crit=getActiveCr(curColId);document.getElementById('bulkCrSel').innerHTML=crit.map(cr=>`<option value="${cr.id}">${crName(cr)}</option>`).join('');const C=cs();document.getElementById('bulkFrom').value=C;document.getElementById('bulkTo').value=C+5;_pendingBulk=null;let p='';for(let s=1;s<=10;s++)p+=`<button style="padding:6px 3px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);" class="${sClass(s)}" onclick="_pendingBulk=${s};document.querySelectorAll('#bulkScorePicker button').forEach(b=>b.style.borderColor='');this.style.borderColor='var(--cyan)'">${s}</button>`;document.getElementById('bulkScorePicker').innerHTML=p;openModal('bulkModal');}
+function openBulkEntry(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
+  const crit=getActiveCr(curColId);
+  // criteria selector removed - applies to all criteria
+  // Build day options from period
+  const days=periodDayCount(curMonth);
+  const C=cs();const[y,m]=curMonth.split('-').map(Number);
+  const locale=lang==='ar'?'ar-EG':'en-US';
+  let opts='';
+  for(let d=1;d<=days;d++){
+    const date=new Date(y,m-2,C+d-1);
+    const dayOfMonth=date.getDate();
+    const label=date.toLocaleDateString(locale,{weekday:'short',day:'numeric',month:'short'});
+    opts+=`<option value="${dayOfMonth}">${label}</option>`;
+  }
+  document.getElementById('bulkSingleDay').innerHTML=opts;
+  document.getElementById('bulkFrom').innerHTML=opts;
+  document.getElementById('bulkTo').innerHTML=opts;
+  document.getElementById('bulkSingleDay').value='1';
+  document.getElementById('bulkFrom').value='1';
+  document.getElementById('bulkTo').value='1';
+  // reset to single mode
+  document.getElementById('bulkModeSingle').checked=true;
+  onBulkModeChange();
+  _pendingBulk=null;
+  let p='';for(let s=1;s<=10;s++)p+=`<button style="padding:6px 3px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);" class="${sClass(s)}" onclick="_pendingBulk=${s};document.querySelectorAll('#bulkScorePicker button').forEach(b=>b.style.borderColor='');this.style.borderColor='var(--cyan)'">${s}</button>`;
+  document.getElementById('bulkScorePicker').innerHTML=p;
+  openModal('bulkModal');
+}
+function onBulkModeChange(){
+  const single=document.getElementById('bulkModeSingle').checked;
+  document.getElementById('bulkSingleRow').style.display=single?'block':'none';
+  document.getElementById('bulkRangeRow').style.display=single?'none':'grid';
+}
 function setBulkStatus(st){_pendingBulk=st;document.querySelectorAll('#bulkScorePicker button').forEach(b=>b.style.borderColor='');toast('Status: '+st);}
-function confirmBulk(){if(!_pendingBulk){toast(t('score'),'#ffb340');return;}const crId=document.getElementById('bulkCrSel').value,from=+document.getElementById('bulkFrom').value,to=+document.getElementById('bulkTo').value;snapshotUndo();if(!db.scores[curColId])db.scores[curColId]={};if(!db.scores[curColId][curMonth])db.scores[curColId][curMonth]={};if(!db.scores[curColId][curMonth][crId])db.scores[curColId][curMonth][crId]={};for(let d=Math.min(from,to);d<=Math.max(from,to);d++){db.scores[curColId][curMonth][crId][String(d)]=typeof _pendingBulk==='number'?{score:_pendingBulk}:{status:_pendingBulk};}closeModal('bulkModal');Store.save();renderMatrix();toast('✅ '+t('bulk_entry'));_pendingBulk=null;}
+function confirmBulk(){if(!_pendingBulk){toast(t('score'),'#ffb340');return;}
+  const single=document.getElementById('bulkModeSingle').checked;
+  let from,to;
+  if(single){
+    from=to=+document.getElementById('bulkSingleDay').value;
+  } else {
+    from=+document.getElementById('bulkFrom').value;
+    to=+document.getElementById('bulkTo').value;
+  }
+  snapshotUndo();
+  if(!db.scores[curColId])db.scores[curColId]={};
+  if(!db.scores[curColId][curMonth])db.scores[curColId][curMonth]={};
+  const crits=getActiveCr(curColId);
+  // collect all day-of-month keys in selected range using actual dates
+  const C2=cs();const[y2,m2]=curMonth.split('-').map(Number);
+  const totalDays=periodDayCount(curMonth);
+  const dayKeys=[];
+  for(let d=1;d<=totalDays;d++){
+    const date=new Date(y2,m2-2,C2+d-1);
+    const dom=date.getDate();
+    if(single){if(dom===from)dayKeys.push({dom,mo:date.getMonth()+1});}
+    else{
+      // check if date falls between from and to (by day-of-month in order)
+      const fromIdx=from,toIdx=to;
+      if(dom>=Math.min(fromIdx,toIdx)&&dom<=Math.max(fromIdx,toIdx))dayKeys.push({dom,mo:date.getMonth()+1});
+    }
+  }
+  crits.forEach(cr=>{
+    const crId=cr.id;
+    if(!db.scores[curColId][curMonth][crId])db.scores[curColId][curMonth][crId]={};
+    dayKeys.forEach(({dom})=>{
+      db.scores[curColId][curMonth][crId][String(dom)]=typeof _pendingBulk==='number'?{score:_pendingBulk}:{status:_pendingBulk};
+    });
+  });
+  closeModal('bulkModal');Store.save();renderMatrix();toast('✅ '+t('bulk_entry'));_pendingBulk=null;
+}
 
 /* ══════════════════════════════════════
    INSIGHTS
@@ -1760,7 +1827,7 @@ function renderCharts(){
   renderHeatmap(c,scores,crit);
 }
 function renderHeatmap(c,scores,crit){
-  const C=cs();const[y,mo]=curMonth.split('-').map(Number);const ps=new Date(y,mo-1,C),pe=new Date(y,mo,C-1);
+  const C=cs();const[y,mo]=curMonth.split('-').map(Number);const ps=new Date(y,mo-2,C),pe=new Date(y,mo-1,C-1);
   const days=[];for(let d=new Date(ps);d<=pe;d.setDate(d.getDate()+1))days.push({day:d.getDate(),name:['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]});
   document.getElementById('heatmapChart').innerHTML=days.map(d=>{let sum=0,cnt=0;crit.forEach(cr=>{const e=(scores[cr.id]||{})[String(d.day)]||{};if(e.score){sum+=e.score;cnt++;}});const avg=cnt?sum/cnt:null;const col=avg?sColor(avg):'var(--border)';const bg=avg?(avg>=8?'rgba(0,200,150,0.28)':avg>=5?'rgba(255,179,64,0.22)':'rgba(255,77,109,0.22)'):'rgba(255,255,255,0.025)';return`<div title="${t('cycle_day')} ${d.day} (${d.name}): ${avg?avg.toFixed(1):t('no_data')}" style="width:34px;height:34px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:${bg};border:1px solid ${avg?col+'44':'var(--border)'};font-size:9px;font-weight:700;font-family:var(--mono);color:${col}">${d.day}<span style="font-size:7px;font-weight:400;color:var(--text2)">${avg?avg.toFixed(1):''}</span></div>`;}).join('');}
 
@@ -2784,14 +2851,16 @@ function periodDayCount(periodKey) {
   const [y,m] = periodKey.split('-').map(Number);
   const cs = getCycleStart();
   if(cs===1) return new Date(y,m,0).getDate();
-  const start = new Date(y,m-1,cs);
-  const end   = new Date(y,m,cs-1);
+  // Period: from cs of (m-1) to cs-1 of m
+  const start = new Date(y,m-2,cs);
+  const end   = new Date(y,m-1,cs-1);
   return Math.round((end-start)/86400000)+1;
 }
 function periodDayToDate(periodKey, d) {
   const [y,m] = periodKey.split('-').map(Number);
   const cs = getCycleStart();
-  return new Date(y, m-1, cs + d - 1);
+  // Day 1 = cs of month (m-1)
+  return new Date(y, m-2, cs + d - 1);
 }
 
 
@@ -4491,8 +4560,8 @@ function _p5(D){
   var allTx=Object.values((db.transactions&&db.transactions[D.c.id])||{});
   var pParts=D.month.split('-').map(Number);
   var cs=(db.settings&&db.settings.cycleStart)||16;
-  var pStart=new Date(pParts[0],pParts[1]-1,cs);
-  var pEnd=new Date(pParts[0],pParts[1],cs-1);
+  var pStart=new Date(pParts[0],pParts[1]-2,cs);
+  var pEnd=new Date(pParts[0],pParts[1]-1,cs-1);
   var txList=allTx.filter(function(tx){
     if(!tx.date) return false;
     var d=new Date(tx.date);
@@ -4708,8 +4777,8 @@ function _p6(D){
     var pParts=periodYM.split('-').map(Number);
     var cs=(db.settings&&db.settings.cycleStart)||16;
     /* الفترة: من cs/pM/pY إلى (cs-1)/(pM+1)/pY */
-    var pStart=new Date(pParts[0],pParts[1]-1,cs);
-    var pEnd=new Date(pParts[0],pParts[1],cs-1);
+    var pStart=new Date(pParts[0],pParts[1]-2,cs);
+    var pEnd=new Date(pParts[0],pParts[1]-1,cs-1);
     if(hDate>=pStart&&hDate<=pEnd){
       (h.activities||[]).forEach(function(a){
         allActs.push({
@@ -6430,7 +6499,46 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 <div class="modal-overlay" id="crManagerModal"></div>
 <div class="modal-overlay" id="disableCrModal"></div>
 <div class="modal-overlay" id="scoreModal"><div class="modal-box" style="max-width:340px"><div class="modal-title" id="scoreModalTitle">Enter Score</div><div id="scoreModalSub" style="font-size:11px;color:var(--text2);margin-bottom:12px"></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:14px" id="scorePicker"></div><div class="form-group"><label class="form-label" data-i18n="note_optional">Note (optional)</label><input class="form-input" type="text" id="scoreNote" placeholder="Add a note…"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('scoreModal')" data-i18n="cancel">Cancel</button><button class="btn btn-danger" onclick="clearScore()" id="clearScoreBtn" style="display:none" data-i18n="clear">Clear</button><button class="btn btn-primary" onclick="confirmScore()" data-i18n="save">Save</button></div></div></div>
-<div class="modal-overlay" id="bulkModal"><div class="modal-box" style="max-width:400px"><div class="modal-title">⚡ <span data-i18n="bulk_entry">Bulk Entry</span></div><div class="form-group"><label class="form-label" data-i18n="criterion">Criterion</label><select class="form-select" id="bulkCrSel"></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px"><div class="form-group" style="margin:0"><label class="form-label" data-i18n="from_day">From Day</label><input class="form-input" type="number" id="bulkFrom" min="1" max="31"></div><div class="form-group" style="margin:0"><label class="form-label" data-i18n="to_day">To Day</label><input class="form-input" type="number" id="bulkTo" min="1" max="31"></div></div><div class="form-group"><label class="form-label" data-i18n="score">Score</label><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px" id="bulkScorePicker"></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:7px"><button class="btn btn-ghost" onclick="setBulkStatus('busy')" style="font-size:11px">⏳ مشغول</button><button class="btn btn-ghost" onclick="setBulkStatus('col_off')" style="font-size:11px">🏖 إجازة (زميل)</button><button class="btn btn-ghost" onclick="setBulkStatus('my_off')" style="font-size:11px">🌴 إجازتي</button></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('bulkModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="confirmBulk()" data-i18n="apply">Apply</button></div></div></div>
+<div class="modal-overlay" id="bulkModal"><div class="modal-box" style="max-width:400px">
+<div class="modal-title">⚡ إدخال جماعي</div>
+<!-- Option 1: Single day -->
+<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border)">
+  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+    <input type="radio" name="bulkMode" id="bulkModeSingle" value="single" onchange="onBulkModeChange()" checked
+      style="width:18px;height:18px;accent-color:var(--cyan);cursor:pointer;flex-shrink:0">
+    <span style="font-size:13px;font-weight:700;color:var(--cyan)">📅 يوم محدد</span>
+  </label>
+  <div id="bulkSingleRow">
+    <select class="form-select" id="bulkSingleDay" style="font-size:12px;width:100%"></select>
+  </div>
+</div>
+
+<!-- Option 2: Date range -->
+<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+    <input type="radio" name="bulkMode" id="bulkModeRange" value="range" onchange="onBulkModeChange()"
+      style="width:18px;height:18px;accent-color:var(--purple);cursor:pointer;flex-shrink:0">
+    <span style="font-size:13px;font-weight:700;color:var(--purple)">📆 فترة كاملة</span>
+  </label>
+  <div id="bulkRangeRow" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:4px">من يوم</label>
+      <select class="form-select" id="bulkFrom" style="font-size:12px"></select></div>
+    <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:4px">إلى يوم</label>
+      <select class="form-select" id="bulkTo" style="font-size:12px"></select></div>
+  </div>
+</div>
+
+<div class="form-group"><label class="form-label">الدرجة</label><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px" id="bulkScorePicker"></div></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:7px">
+  <button class="btn btn-ghost" onclick="setBulkStatus('busy')" style="font-size:11px">⏳ مشغول</button>
+  <button class="btn btn-ghost" onclick="setBulkStatus('col_off')" style="font-size:11px">🏖 إجازة (زميل)</button>
+  <button class="btn btn-ghost" onclick="setBulkStatus('my_off')" style="font-size:11px">🌴 إجازتي</button>
+</div>
+<div class="modal-actions">
+  <button class="btn btn-ghost" onclick="closeModal('bulkModal')">إلغاء</button>
+  <button class="btn btn-primary" onclick="confirmBulk()">تطبيق</button>
+</div>
+</div></div>
 <div class="modal-overlay" id="noteModal"><div class="modal-box"><div class="modal-title">📝 <span data-i18n="add_note">Add Note</span></div><div class="form-group"><label class="form-label" data-i18n="colleague">Colleague</label><select class="form-select" id="noteColSel"></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="form-group"><label class="form-label" data-i18n="type">Type</label><select class="form-select" id="noteType"><option value="positive">✅ Positive</option><option value="negative">⚠ Improvement</option></select></div><div class="form-group"><label class="form-label" data-i18n="priority">Priority</label><select class="form-select" id="notePriority"><option value="normal">Normal</option><option value="high">⭐ High</option><option value="critical">🔥 Critical</option></select></div></div><div class="form-group"><label class="form-label" data-i18n="note">Note</label><textarea class="form-input" id="noteText" rows="4" placeholder="Enter note…"></textarea></div><div class="form-group"><label class="form-label" data-i18n="date">Date</label><input class="form-input" type="date" id="noteDate"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('noteModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveNote()" data-i18n="save">Save</button></div></div></div>
 <div class="modal-overlay" id="pipModal"><div class="modal-box"><div class="modal-title" id="pipModalTitle">Create Improvement Plan</div><input type="hidden" id="pipId"><input type="hidden" id="pipColId"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="form-group"><label class="form-label" data-i18n="start_date">Start Date</label><input class="form-input" type="date" id="pipStart"></div><div class="form-group"><label class="form-label" data-i18n="end_date">End Date</label><input class="form-input" type="date" id="pipEnd"></div></div><div class="form-group"><label class="form-label" data-i18n="target_score">Target Score</label><input class="form-input" type="number" id="pipTarget" min="1" max="10" step="0.5"></div><div class="form-group"><label class="form-label" data-i18n="goal">Goal / Title</label><input class="form-input" type="text" id="pipGoal"></div><div class="form-group"><label class="form-label" data-i18n="reason">Reason / Context</label><textarea class="form-input" id="pipReason" rows="2"></textarea></div><div class="form-group"><label class="form-label" data-i18n="actions">Action Items</label><textarea class="form-input" id="pipActions" rows="3"></textarea></div><div class="form-group"><label class="form-label" data-i18n="status">Status</label><select class="form-select" id="pipStatus"><option value="active">Active</option><option value="monitoring">Monitoring</option><option value="completed">Completed</option></select></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('pipModal')" data-i18n="cancel">Cancel</button><button class="btn btn-danger" id="pipDeleteBtn" onclick="deletePlan()" style="display:none" data-i18n="delete">Delete</button><button class="btn btn-primary" onclick="savePlan()" data-i18n="save">Save</button></div></div></div>
 <div class="modal-overlay" id="voiceModal"><div class="modal-box" style="max-width:360px;text-align:center"><div class="modal-title" style="justify-content:center">🎙 <span data-i18n="voice_note">Voice Note</span></div><div id="voiceColSel" style="margin-bottom:12px"><select class="form-select" id="voiceColSelInput"></select></div><div class="voice-waveform" id="voiceWaveform" style="justify-content:center;margin:16px 0"><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div></div><div id="voiceTimer" style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--cyan);margin:8px 0">0:00</div><div id="voiceStatus" style="font-size:12px;color:var(--text2);margin-bottom:16px" data-i18n="press_record">Press record to start</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-danger" id="voiceRecordBtn" onclick="toggleVoiceRecord()" data-i18n="record">🔴 Record</button><button class="btn btn-ghost" id="voicePlayBtn" onclick="playVoice()" style="display:none" data-i18n="play">▶ Play</button></div><div id="voicePlayback" style="display:none;margin-top:12px"><audio id="voiceAudio" controls style="width:100%"></audio></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeVoiceModal()" data-i18n="cancel">Cancel</button><button class="btn btn-primary" id="voiceSaveBtn" onclick="saveVoiceNote()" style="display:none" data-i18n="save">Save Note</button></div></div></div>
