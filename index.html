@@ -25,7 +25,37 @@
 --glow-c:0 0 40px rgba(0,212,255,0.12);--glow-e:0 0 40px rgba(0,200,150,0.12);--glow-a:0 0 40px rgba(255,179,64,0.1);
 --trans:all 0.18s cubic-bezier(0.4,0,0.2,1);--trans-slow:all 0.35s cubic-bezier(0.4,0,0.2,1);--spring:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
-body.light{--bg:#f0f5fb;--bg2:#ffffff;--bg3:#e8eef8;--bg4:#dde5f2;--glass:rgba(255,255,255,0.6);--glass2:rgba(255,255,255,0.85);--glass3:rgba(255,255,255,0.95);--border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);--border3:rgba(0,0,0,0.18);--white:#0f172a;--text:#475569;--text2:#94a3b8;--text3:#cbd5e1;--shadow:0 4px 20px rgba(0,0,0,0.08);--shadow2:0 12px 40px rgba(0,0,0,0.12)}
+body.light{--bg:#f0f5fb;--bg2:#ffffff;--bg3:#e8eef8;--bg4:#dde5f2;--glass:rgba(255,255,255,0.6);--glass2:rgba(255,255,255,0.85);--glass3:rgba(255,255,255,0.95);--border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);--border3:rgba(0,0,0,0.18);--white:#0f172a;--text:#334155;--text2:#64748b;--text3:#94a3b8;--shadow:0 4px 20px rgba(0,0,0,0.08);--shadow2:0 12px 40px rgba(0,0,0,0.12)}
+body.light .tb-icon-btn,body.light .hbtn,body.light .btn-ghost{color:#0f172a!important}
+body.light .toast{background:rgba(255,255,255,0.97)!important;color:#0f172a!important;border-color:rgba(0,0,0,0.12)!important}
+body.light .modal-box,body.light .modal-overlay .modal-box{background:#ffffff!important;color:#0f172a!important}
+body.light .form-input,body.light .form-select{background:#f8fafc!important;border-color:rgba(0,0,0,0.12)!important;color:#0f172a!important}
+body.light .mt-score-cell{border-color:rgba(0,0,0,0.08)}
+body.light .bento-cell,body.light .tx-bento-cell{background:rgba(255,255,255,0.8)!important}
+body.light #topbar{background:rgba(220,230,245,0.97)!important;border-bottom:1px solid rgba(0,0,0,0.1)!important}
+body.light .tb-brand-name,body.light .tb-logo-sub,body.light .tb-period-label{color:#0f172a!important}
+body.light .tb-period-btn{background:rgba(0,0,0,0.06)!important;color:#0f172a!important}
+body.light .hbtn-outline{border-color:rgba(0,0,0,0.15)!important;color:#0f172a!important}
+body.light #workspace{background:var(--bg)!important}
+body.light .tab-btn{color:#475569!important}
+body.light .tab-btn.active{color:var(--cyan)!important}
+body.light .card,body.light .bento-cell{background:#ffffff!important;border-color:rgba(0,0,0,0.08)!important}
+body.light .mt-cr-head,body.light .mt-day-head,body.light .mt-avg-head{background:#e8eef8!important;color:#0f172a!important}
+body.light .mt-cr-cell{background:#f8fafc!important;color:#0f172a!important}
+body.light .hero-stats{background:rgba(255,255,255,0.6)!important}
+body.light .section-title,body.light .sec-label{color:#334155!important}
+body.light #heroCard{background:linear-gradient(135deg,#e8eef8,#f0f5fb)!important;border-bottom-color:rgba(0,0,0,0.08)!important}
+body.light #heroCard::before{display:none!important}
+body.light .hero-name{color:#0f172a!important}
+body.light .hero-meta span{color:#475569!important}
+body.light .hero-stat{background:rgba(255,255,255,0.8)!important;border-color:rgba(0,0,0,0.08)!important}
+body.light .hero-stat-val{color:inherit}
+body.light .hero-stat-label,.hero-stat-sub{color:#64748b!important}
+body.light #colTabs{background:rgba(240,245,251,0.98)!important;border-bottom-color:rgba(0,0,0,0.08)!important}
+body.light .col-tab{color:#475569!important}
+body.light .col-tab.active{color:var(--cyan)!important;background:rgba(0,0,0,0.04)!important}
+body.light .hero-ava{background:linear-gradient(135deg,rgba(0,212,255,0.12),rgba(0,200,150,0.12))!important}
+body.light .hero-verified{background:var(--emerald)!important;border-color:#e8eef8!important;color:#fff!important}
 body.theme-purple{--cyan:#a78bfa;--cyan2:#7c3aed;--cyan3:rgba(167,139,250,0.15);--emerald:#c084fc;--emerald2:#a855f7}
 body.theme-amber{--cyan:#ffb340;--cyan2:#f59e0b;--cyan3:rgba(255,179,64,0.15);--emerald:#fb923c;--emerald2:#ea580c}
 body.theme-rose{--cyan:#f43f5e;--cyan2:#e11d48;--cyan3:rgba(244,63,94,0.15);--emerald:#fb7185;--emerald2:#f43f5e}
@@ -93,9 +123,9 @@ body[dir="rtl"] .tb-actions{margin-left:0;margin-right:auto}
 .tb-lang-btn{padding:3px 9px;border-radius:7px;font-size:11px;font-weight:600;color:var(--text);cursor:pointer;transition:var(--trans)}.tb-lang-btn.active{background:var(--glass3);color:var(--white)}
 .tb-theme-btn{width:32px;height:32px;border-radius:8px;background:var(--glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:var(--trans);flex-shrink:0}
 .tb-theme-btn:hover{background:var(--glass2)}
-.tb-mode-btn{width:48px;height:26px;border-radius:99px;background:var(--glass);border:1px solid var(--border);display:flex;align-items:center;padding:3px;cursor:pointer;transition:var(--trans);flex-shrink:0}
+.tb-mode-btn{width:48px;height:26px;border-radius:99px;background:var(--glass);border:1px solid var(--border);display:flex;align-items:center;padding:3px;cursor:pointer;transition:var(--trans);flex-shrink:0;direction:ltr}
 .tb-mode-thumb{width:20px;height:20px;border-radius:99px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));transition:var(--trans);display:flex;align-items:center;justify-content:center;font-size:10px}
-body.light .tb-mode-thumb{transform:translateX(22px)}
+body.light .tb-mode-thumb{transform:translateX(22px)}body[dir='rtl'].light .tb-mode-thumb{transform:translateX(-22px)}
 .tb-profile{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:4px 9px 4px 4px;cursor:pointer;transition:var(--trans);flex-shrink:0}
 .tb-profile:hover{border-color:var(--border2)}
 .tb-profile-ava{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
@@ -281,7 +311,7 @@ body[dir="rtl"] #syncStatus{left:auto;right:16px}
 body[dir="rtl"] #toastWrap{right:auto;left:18px}
 @keyframes toastIn{from{opacity:0;transform:translateX(12px)}}
 
-.toast{padding:9px 14px;border-radius:9px;background:rgba(15,25,45,0.97);border:1px solid var(--border2);backdrop-filter:blur(16px);font-size:12px;box-shadow:var(--shadow);color:var(--white);animation:toastIn 0.25s ease;pointer-events:auto;display:flex;align-items:center;gap:8px}
+.toast{padding:9px 14px;border-radius:9px;background:var(--glass3);border:1px solid var(--border2);backdrop-filter:blur(16px);font-size:12px;box-shadow:var(--shadow);color:var(--white);animation:toastIn 0.25s ease;pointer-events:auto;display:flex;align-items:center;gap:8px}
 /* ════ MODAL ════ */
 .modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}.modal-overlay.open{display:flex}
 @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}}
@@ -317,11 +347,8 @@ body[dir="rtl"] #compareDrawer.open{transform:translateX(0)}
 .drawer-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}.drawer-title{font-size:15px;font-weight:700}.drawer-body{flex:1;overflow-y:auto;padding:14px 20px}
 .drawer-close{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--glass);cursor:pointer;font-size:14px;transition:var(--trans)}.drawer-close:hover{background:var(--glass2)}
 /* ════ VOICE NOTES ════ */
-.voice-waveform{display:flex;align-items:center;gap:2px;height:32px}
-.voice-bar{width:3px;border-radius:99px;background:var(--cyan);transition:height 0.1s}
 @keyframes waveAnim{0%,100%{height:4px}50%{height:24px}}
-.voice-bar.animating{animation:waveAnim 0.6s ease-in-out infinite}
-.voice-bar:nth-child(2){animation-delay:0.1s}.voice-bar:nth-child(3){animation-delay:0.2s}.voice-bar:nth-child(4){animation-delay:0.15s}.voice-bar:nth-child(5){animation-delay:0.05s}.voice-bar:nth-child(6){animation-delay:0.25s}.voice-bar:nth-child(7){animation-delay:0.3s}
+
 /* ════ NOTIFICATIONS ════ */
 #notifPanel{position:fixed;right:18px;top:62px;z-index:400;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);width:300px;display:none;box-shadow:var(--shadow2);overflow:hidden}
 body[dir="rtl"] #notifPanel{right:auto;left:18px}
@@ -489,7 +516,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
   .tb-logo-sub{display:none}
   .tb-avg{min-width:80px}
   .tb-avg .tb-avg-spark{display:none}
-  .tb-lang-toggle{display:none}
+  .tb-lang-toggle{display:flex}
   #colTabs{padding:0 8px;gap:3px}
   .col-tab{padding:6px 10px}
   .col-tab-name{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -639,7 +666,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
   <div class="tb-actions">
     <div class="tb-icon-btn" id="rxNotifBtn" onclick="openNotifPanel()" title="الإشعارات" style="position:relative">🔔<span id="rxNotifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ff4d6d;color:#fff;font-size:8px;font-weight:800;border-radius:8px;padding:1px 4px;min-width:15px;height:15px;align-items:center;justify-content:center;border:2px solid var(--bg)">0</span></div>
     <div class="tb-lang-toggle"><div class="tb-lang-btn active" id="langEN" onclick="setLang('en')">EN</div><div class="tb-lang-btn" id="langAR" onclick="setLang('ar')">عربي</div></div>
-    <div class="tb-theme-btn" onclick="cycleTheme()" title="Theme">🎨</div>
+
     <div class="tb-mode-btn" onclick="toggleMode()"><div class="tb-mode-thumb" id="modeThumb">☀️</div></div>
     <button onclick="doExport()" style="background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Export JSON</button>
     <button onclick="doImport()" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Import JSON</button>
@@ -693,6 +720,9 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
       <div class="inner-tab" data-tab="notes" onclick="switchInner('notes',this)">📝 <span data-i18n="notes">Notes</span> <span class="inner-tab-badge" id="notesTabBadge">0</span></div>
       <div class="inner-tab" data-tab="plans" onclick="switchInner('plans',this)">🏆 <span data-i18n="plans">Plans</span> <span class="inner-tab-badge" id="plansTabBadge">0</span></div>
       <div class="inner-tab" data-tab="achieve" onclick="switchInner('achieve',this)">🎖 <span data-i18n="achievements">Achievements</span></div>
+      <div class="inner-tab" data-tab="activity" onclick="switchInner('activity',this)">🕐 <span data-i18n="activity_feed">Activity</span></div>
+      <div class="inner-tab" data-tab="analytics" onclick="switchInner('analytics',this)">🧠 <span data-i18n="ai_insights">AI</span></div>
+      <div class="inner-tab" data-tab="coaching" onclick="switchInner('coaching',this)">🎯 <span data-i18n="coaching">Coaching</span></div>
       
 
     </div>
@@ -864,6 +894,21 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
       </div>
 
 
+
+      <!-- ACTIVITY FEED TAB -->
+      <div class="inner-view" id="view-activity" style="flex-direction:column;gap:10px;padding:14px">
+        <div style="font-size:13px;font-weight:700">🕐 <span data-i18n="activity_feed">Activity Feed</span></div>
+        <div id="activityFeed" style="display:flex;flex-direction:column;gap:0;position:relative"></div>
+      </div>
+
+      <!-- COACHING TAB -->
+      <div class="inner-view" id="view-coaching" style="flex-direction:column;gap:10px;padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:700">🎯 <span data-i18n="coaching_title">Weekly Coaching Session</span></div>
+          <button class="m-btn cyan" onclick="generateCoachingReport()">↻ <span data-i18n="refresh">Refresh</span></button>
+        </div>
+        <div id="coachingContent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;width:100%;align-content:start"></div>
+      </div>
 
     </div><!-- /innerContent -->
   </div><!-- /workspace -->
@@ -1066,10 +1111,10 @@ var _lastActType = 'inventory';
 ══════════════════════════════════════ */
 const I18N = {
   en: {
-    viewer_title:'View Only',viewer_desc:'Browse performance data — no password',admin_title:'Administrator',admin_desc:'Full access — edit and manage all data',sign_in:'Sign In as Admin',wrong_pwd:'Incorrect password',period:'Period',team_avg:'Team Avg',on_shift:'ON SHIFT',new_tab:'New Tab',select_member:'Select a Team Member',open_workspace:'Open a colleague workspace to begin',open_colleague:'Open Colleague',exec_dashboard:'Executive Dashboard',performance:'Performance',statistics:'Statistics',charts:'Charts',shift_tracker:'Shift',notes:'Notes',plans:'Plans',achievements:'Achievements',activity:'Activity',ai_insights:'AI Insights',coaching:'Coaching',avg_score:'Avg Score',entries:'Entries',criteria:'Criteria',rank:'Rank',burnout:'Burnout',risk:'risk',trend_14:'14-Day Trend',start_shift:'Start Shift',end_shift:'End Shift',report:'Report',compare:'Compare',whatsapp:'WhatsApp',note:'Note',click_to_score:'Click any cell to score',bulk:'Bulk',filter:'Filter',smart_insights:'⚡ Smart Insights',quick_actions:'▶ Quick Actions',recent_activity:'🕐 Recent Activity',data_entry:'Data',all:'All',positive:'Positive',improvement:'Improvement',voice:'Voice',add_note:'Add Note',improvement_plans:'Improvement Plans',new_plan:'New Plan',achievements_milestones:'Achievements & Milestones',activity_feed:'Activity Feed',ai_insights_title:'AI-Powered Insights',ai_desc:'Predictive analytics & performance intelligence',refresh:'Refresh',coaching_title:'Weekly Coaching Session',gen_report:'Generate Report',exec_overview:'Executive Overview',exec_desc:'Team performance at a glance',back:'Back',dashboard:'Dashboard',settings:'Settings',criteria_manager:'Criteria Manager',colleague_manager:'Colleague Manager',toggle_theme:'Toggle Theme',exec_short:'Exec',more:'More',notifications:'Notifications',mark_all_read:'Mark all read',cancel:'Cancel',save:'Save',close:'Close',add:'Add',add_colleague:'Add New Colleague',add_criterion:'Add Criterion',note_optional:'Note (optional)',bulk_entry:'Bulk Entry',criterion:'Criterion',from_day:'From Day',to_day:'To Day',score:'Score',apply:'Apply',type:'Type',priority:'Priority',date:'Date',start_date:'Start Date',end_date:'End Date',target_score:'Target Score',goal:'Goal / Title',reason:'Reason / Context',actions:'Action Items',status:'Status',delete:'Delete',log_activity:'Log Activity',activity_type:'Activity Type',description:'Description',start_time:'Start Time',end_time:'End Time',voice_note:'Voice Note',press_record:'Press record to start',record:'🔴 Record',play:'▶ Play',choose_theme:'Choose Theme',score_trend:'📊 Score Trend',criteria_radar:'🎯 Criteria Radar',distribution:'🍩 Distribution',burnout_chart:'🔥 Burnout Trend',forecast:'🔮 Forecast',consistency:'📈 Consistency',scores_above_7:'Scores ≥ 7',heatmap:'🗓 Daily Heatmap',current_activity:'Current Activity',shift_stats:'Shift Statistics',shift_timeline:'📅 Shift Timeline',add_activity:'Add',no_activities:'No activities yet',shift_history:'📋 Shift History',team_notes:'Team Notes',cycle_start:'Cycle Start Day',admin_name:'Admin Display Name',new_password:'New Password',on_shift_lbl:'On Shift',no_shift:'No Active Shift',no_data:'No data yet',tagline:'Pharmacy Performance Excellence',colleague:'Colleague',clear:'Clear',print_report:'Print Report',export_data:'Export Data',import_backup:'Import Backup',strongest:'Strongest Criterion',needs_improvement:'Needs Improvement',vs_team:'vs Team Avg',total_entries:'Total Entries',suggestion:'💡 Suggestion',focus_on:'Focus on',to_improve:'to improve',overdue:'Overdue',days_remaining:'days remaining',active:'Active',monitoring:'Monitoring',completed:'Completed',unknown:'Unknown',locked:'🔒 Locked',unlocked:'✅ Unlocked',streak:'🔥 Day Streak',streak_desc:'Consecutive days scored',no_streak:'Start scoring to build your streak!',exec_risk_alerts:'⚠ Risk Alerts',exec_top:'🏆 Top Performers',exec_weak:'📉 Needs Attention',exec_workload:'📊 Workload Map',exec_plans:'📋 Active Plans',burnout_low:'Low Risk',burnout_med:'Moderate',burnout_high:'High Risk',improving:'↑ Improving',declining:'↓ Declining',predicted:'Projected Score',based_on:'Based on',periods:'periods',coaching_strength:'💪 Key Strengths',coaching_weakness:'📌 Growth Areas',coaching_goals:'🎯 Next Week Goals',coaching_summary:'📊 This Week Summary',no_coaching:'Select a colleague to generate coaching report',scenario_gen:'AI Scenario Generator',gen_scenario:'Generate Scenario',check_in:'⚠ Consider a check-in',no_notif:'No notifications',notif_low_score:'has a low score this period',notif_plan_ends:'plan ends in',notif_days:'days',notif_overdue:'Overdue plan for',notif_new_note:'New note for',cycle_day:'Day'
+    viewer_title:'View Only',viewer_desc:'Browse performance data — no password',admin_title:'Administrator',admin_desc:'Full access — edit and manage all data',sign_in:'Sign In as Admin',wrong_pwd:'Incorrect password',period:'Period',team_avg:'Team Avg',on_shift:'ON SHIFT',new_tab:'New Tab',select_member:'Select a Team Member',open_workspace:'Open a colleague workspace to begin',open_colleague:'Open Colleague',exec_dashboard:'Executive Dashboard',performance:'Performance',statistics:'Statistics',charts:'Charts',shift_tracker:'Shift',notes:'Notes',plans:'Plans',achievements:'Achievements',activity:'Activity',ai_insights:'AI Insights',coaching:'Coaching',avg_score:'Avg Score',entries:'Entries',criteria:'Criteria',rank:'Rank',burnout:'Burnout',risk:'risk',trend_14:'14-Day Trend',start_shift:'Start Shift',end_shift:'End Shift',report:'Report',compare:'Compare',whatsapp:'WhatsApp',note:'Note',click_to_score:'Click any cell to score',bulk:'Bulk',filter:'Filter',smart_insights:'⚡ Smart Insights',quick_actions:'▶ Quick Actions',recent_activity:'🕐 Recent Activity',data_entry:'Data',all:'All',positive:'Positive',improvement:'Improvement',voice:'Voice',add_note:'Add Note',improvement_plans:'Improvement Plans',new_plan:'New Plan',achievements_milestones:'Achievements & Milestones',activity_feed:'Activity Feed',ai_insights_title:'AI-Powered Insights',ai_desc:'Predictive analytics & performance intelligence',refresh:'Refresh',coaching_title:'Weekly Coaching Session',gen_report:'Generate Report',exec_overview:'Executive Overview',exec_desc:'Team performance at a glance',back:'Back',dashboard:'Dashboard',settings:'Settings',criteria_manager:'Criteria Manager',colleague_manager:'Colleague Manager',toggle_theme:'Toggle Theme',exec_short:'Exec',more:'More',notifications:'Notifications',mark_all_read:'Mark all read',cancel:'Cancel',save:'Save',close:'Close',add:'Add',add_colleague:'Add New Colleague',add_criterion:'Add Criterion',note_optional:'Note (optional)',bulk_entry:'Bulk Entry',criterion:'Criterion',from_day:'From Day',to_day:'To Day',score:'Score',apply:'Apply',type:'Type',priority:'Priority',date:'Date',start_date:'Start Date',end_date:'End Date',target_score:'Target Score',goal:'Goal / Title',reason:'Reason / Context',actions:'Action Items',status:'Status',delete:'Delete',log_activity:'Log Activity',activity_type:'Activity Type',description:'Description',start_time:'Start Time',end_time:'End Time',voice_note:'Voice Note',press_record:'Press record to start',record:'🔴 Record',play:'▶ Play',choose_theme:'Choose Theme',score_trend:'📊 Score Trend',criteria_radar:'🎯 Criteria Radar',distribution:'🍩 Distribution',burnout_chart:'🔥 Burnout Trend',forecast:'🔮 Forecast',consistency:'📈 Consistency',scores_above_7:'Scores ≥ 7',heatmap:'🗓 Daily Heatmap',current_activity:'Current Activity',shift_stats:'Shift Statistics',shift_timeline:'📅 Shift Timeline',add_activity:'Add',no_activities:'No activities yet',shift_history:'📋 Shift History',team_notes:'Team Notes',cycle_start:'Cycle Start Day',admin_name:'Admin Display Name',new_password:'New Password',on_shift_lbl:'On Shift',no_shift:'No Active Shift',no_data:'No data yet',tagline:'Pharmacy Performance Excellence',colleague:'Colleague',clear:'Clear',print_report:'Print Report',export_data:'Export Data',import_backup:'Import Backup',strongest:'Strongest Criterion',needs_improvement:'Needs Improvement',vs_team:'vs Team Avg',total_entries:'Total Entries',suggestion:'💡 Suggestion',focus_on:'Focus on',to_improve:'to improve',overdue:'Overdue',days_remaining:'days remaining',active:'Active',monitoring:'Monitoring',completed:'Completed',unknown:'Unknown',locked:'🔒 Locked',unlocked:'✅ Unlocked',streak:'🔥 Day Streak',streak_desc:'Consecutive days scored',no_streak:'Start scoring to build your streak!',exec_risk_alerts:'⚠ Risk Alerts',exec_top:'🏆 Top Performers',exec_weak:'📉 Needs Attention',exec_workload:'📊 Workload Map',exec_plans:'📋 Active Plans',burnout_low:'Low Risk',burnout_med:'Moderate',burnout_high:'High Risk',improving:'↑ Improving',declining:'↓ Declining',predicted:'Projected Score',based_on:'Based on',periods:'periods',coaching_strength:'💪 Key Strengths',coaching_weakness:'📌 Growth Areas',coaching_goals:'🎯 Next Week Goals',coaching_summary:'📊 This Week Summary',no_coaching:'Select a colleague to generate coaching report',scenario_gen:'AI Scenario Generator',gen_scenario:'Generate Scenario',check_in:'⚠ Consider a check-in',no_notif:'No notifications',notif_low_score:'has a low score this period',notif_plan_ends:'plan ends in',notif_days:'days',notif_overdue:'Overdue plan for',notif_new_note:'New note for',cycle_day:'Day',select_compare:'Select 2–4 colleagues to compare side by side.'
   },
   ar: {
-    viewer_title:'مشاهدة فقط',viewer_desc:'تصفح بيانات الأداء — بدون كلمة مرور',admin_title:'مسؤول',admin_desc:'وصول كامل — تحرير وإدارة جميع البيانات',sign_in:'تسجيل الدخول كمسؤول',wrong_pwd:'كلمة المرور غير صحيحة',period:'الفترة',team_avg:'متوسط الفريق',on_shift:'في وردية',new_tab:'تبويب جديد',select_member:'اختر عضو من الفريق',open_workspace:'افتح مساحة عمل زميل للبدء',open_colleague:'افتح زميل',exec_dashboard:'لوحة القيادة التنفيذية',performance:'الأداء',statistics:'الإحصاءات',charts:'الرسوم',shift_tracker:'الوردية',notes:'الملاحظات',plans:'الخطط',achievements:'الإنجازات',activity:'النشاط',ai_insights:'رؤى الذكاء الاصطناعي',coaching:'التدريب',avg_score:'متوسط الدرجات',entries:'الإدخالات',criteria:'المعايير',rank:'الترتيب',burnout:'الإرهاق',risk:'خطر',trend_14:'اتجاه 14 يوم',start_shift:'بدء الوردية',end_shift:'إنهاء الوردية',report:'تقرير',compare:'مقارنة',whatsapp:'واتساب',note:'ملاحظة',click_to_score:'اضغط على أي خلية لإدخال درجة',bulk:'إدخال جماعي',filter:'تصفية',smart_insights:'⚡ رؤى ذكية',quick_actions:'▶ إجراءات سريعة',recent_activity:'🕐 النشاط الأخير',data_entry:'البيانات',all:'الكل',positive:'إيجابية',improvement:'تحسين',voice:'صوتية',add_note:'إضافة ملاحظة',improvement_plans:'خطط التحسين',new_plan:'خطة جديدة',achievements_milestones:'الإنجازات والمعالم',activity_feed:'سجل الأنشطة',ai_insights_title:'رؤى الذكاء الاصطناعي',ai_desc:'تحليلات تنبؤية وذكاء الأداء',refresh:'تحديث',coaching_title:'جلسة التدريب الأسبوعية',gen_report:'إنشاء تقرير',exec_overview:'النظرة التنفيذية الشاملة',exec_desc:'أداء الفريق بنظرة واحدة',back:'رجوع',dashboard:'لوحة القيادة',settings:'الإعدادات',criteria_manager:'إدارة المعايير',colleague_manager:'إدارة الزملاء',toggle_theme:'تغيير المظهر',exec_short:'تنفيذي',more:'المزيد',notifications:'الإشعارات',mark_all_read:'تعليم الكل كمقروء',cancel:'إلغاء',save:'حفظ',close:'إغلاق',add:'إضافة',add_colleague:'إضافة زميل جديد',add_criterion:'إضافة معيار',note_optional:'ملاحظة (اختياري)',bulk_entry:'إدخال جماعي',criterion:'المعيار',from_day:'من اليوم',to_day:'إلى اليوم',score:'الدرجة',apply:'تطبيق',type:'النوع',priority:'الأولوية',date:'التاريخ',start_date:'تاريخ البدء',end_date:'تاريخ الانتهاء',target_score:'الدرجة المستهدفة',goal:'الهدف / العنوان',reason:'السبب / السياق',actions:'بنود العمل',status:'الحالة',delete:'حذف',log_activity:'تسجيل نشاط',activity_type:'نوع النشاط',description:'الوصف',start_time:'وقت البداية',end_time:'وقت النهاية',voice_note:'ملاحظة صوتية',press_record:'اضغط تسجيل للبدء',record:'🔴 تسجيل',play:'▶ تشغيل',choose_theme:'اختر المظهر',score_trend:'📊 اتجاه الدرجات',criteria_radar:'🎯 رادار المعايير',distribution:'🍩 توزيع الدرجات',burnout_chart:'🔥 اتجاه الإرهاق',forecast:'🔮 التوقعات',consistency:'📈 الاتساق',scores_above_7:'درجات ≥ 7',heatmap:'🗓 خريطة حرارية يومية',current_activity:'النشاط الحالي',shift_stats:'إحصاءات الوردية',shift_timeline:'📅 جدول الوردية',add_activity:'إضافة',no_activities:'لا توجد أنشطة بعد',shift_history:'📋 سجل الورديات',team_notes:'ملاحظات الفريق',cycle_start:'يوم بدء الدورة',admin_name:'اسم العرض للمسؤول',new_password:'كلمة مرور جديدة',on_shift_lbl:'في وردية',no_shift:'لا توجد وردية نشطة',no_data:'لا توجد بيانات بعد',tagline:'التميز في أداء الصيدلة',colleague:'الزميل',clear:'مسح',print_report:'طباعة التقرير',export_data:'تصدير البيانات',import_backup:'استيراد نسخة احتياطية',strongest:'أقوى معيار',needs_improvement:'يحتاج تحسين',vs_team:'مقارنة بالفريق',total_entries:'إجمالي الإدخالات',suggestion:'💡 اقتراح',focus_on:'ركز على',to_improve:'للتحسين',overdue:'متأخر',days_remaining:'يوم متبقي',active:'نشط',monitoring:'مراقبة',completed:'مكتمل',unknown:'غير معروف',locked:'🔒 مقفل',unlocked:'✅ مفتوح',streak:'🔥 أيام متتالية',streak_desc:'أيام مسجلة بالتسلسل',no_streak:'ابدأ التقييم لبناء سلسلتك!',exec_risk_alerts:'⚠ تنبيهات المخاطر',exec_top:'🏆 أفضل الأداءات',exec_weak:'📉 يحتاج اهتمام',exec_workload:'📊 خريطة العبء',exec_plans:'📋 الخطط النشطة',burnout_low:'خطر منخفض',burnout_med:'متوسط',burnout_high:'خطر مرتفع',improving:'↑ تحسن',declining:'↓ تراجع',predicted:'الدرجة المتوقعة',based_on:'بناءً على',periods:'فترات',coaching_strength:'💪 نقاط القوة',coaching_weakness:'📌 مجالات النمو',coaching_goals:'🎯 أهداف الأسبوع القادم',coaching_summary:'📊 ملخص هذا الأسبوع',no_coaching:'اختر زميلاً لإنشاء تقرير التدريب',scenario_gen:'مولد سيناريوهات الذكاء الاصطناعي',gen_scenario:'إنشاء سيناريو',check_in:'⚠ يُنصح بإجراء محادثة',no_notif:'لا توجد إشعارات',notif_low_score:'لديه درجة منخفضة هذه الفترة',notif_plan_ends:'تنتهي خطته خلال',notif_days:'أيام',notif_overdue:'خطة متأخرة لـ',notif_new_note:'ملاحظة جديدة لـ',cycle_day:'يوم'
+    viewer_title:'مشاهدة فقط',viewer_desc:'تصفح بيانات الأداء — بدون كلمة مرور',admin_title:'مسؤول',admin_desc:'وصول كامل — تحرير وإدارة جميع البيانات',sign_in:'تسجيل الدخول كمسؤول',wrong_pwd:'كلمة المرور غير صحيحة',period:'الفترة',team_avg:'متوسط الفريق',on_shift:'في وردية',new_tab:'تبويب جديد',select_member:'اختر عضو من الفريق',open_workspace:'افتح مساحة عمل زميل للبدء',open_colleague:'افتح زميل',exec_dashboard:'لوحة القيادة التنفيذية',performance:'الأداء',statistics:'الإحصاءات',charts:'الرسوم',shift_tracker:'الوردية',notes:'الملاحظات',plans:'الخطط',achievements:'الإنجازات',activity:'النشاط',ai_insights:'رؤى الذكاء الاصطناعي',coaching:'التدريب',avg_score:'متوسط الدرجات',entries:'الإدخالات',criteria:'المعايير',rank:'الترتيب',burnout:'الإرهاق',risk:'خطر',trend_14:'اتجاه 14 يوم',start_shift:'بدء الوردية',end_shift:'إنهاء الوردية',report:'تقرير',compare:'مقارنة',whatsapp:'واتساب',note:'ملاحظة',click_to_score:'اضغط على أي خلية لإدخال درجة',bulk:'إدخال جماعي',filter:'تصفية',smart_insights:'⚡ رؤى ذكية',quick_actions:'▶ إجراءات سريعة',recent_activity:'🕐 النشاط الأخير',data_entry:'البيانات',all:'الكل',positive:'إيجابية',improvement:'تحسين',voice:'صوتية',add_note:'إضافة ملاحظة',improvement_plans:'خطط التحسين',new_plan:'خطة جديدة',achievements_milestones:'الإنجازات والمعالم',activity_feed:'سجل الأنشطة',ai_insights_title:'رؤى الذكاء الاصطناعي',ai_desc:'تحليلات تنبؤية وذكاء الأداء',refresh:'تحديث',coaching_title:'جلسة التدريب الأسبوعية',gen_report:'إنشاء تقرير',exec_overview:'النظرة التنفيذية الشاملة',exec_desc:'أداء الفريق بنظرة واحدة',back:'رجوع',dashboard:'لوحة القيادة',settings:'الإعدادات',criteria_manager:'إدارة المعايير',colleague_manager:'إدارة الزملاء',toggle_theme:'تغيير المظهر',exec_short:'تنفيذي',more:'المزيد',notifications:'الإشعارات',mark_all_read:'تعليم الكل كمقروء',cancel:'إلغاء',save:'حفظ',close:'إغلاق',add:'إضافة',add_colleague:'إضافة زميل جديد',add_criterion:'إضافة معيار',note_optional:'ملاحظة (اختياري)',bulk_entry:'إدخال جماعي',criterion:'المعيار',from_day:'من اليوم',to_day:'إلى اليوم',score:'الدرجة',apply:'تطبيق',type:'النوع',priority:'الأولوية',date:'التاريخ',start_date:'تاريخ البدء',end_date:'تاريخ الانتهاء',target_score:'الدرجة المستهدفة',goal:'الهدف / العنوان',reason:'السبب / السياق',actions:'بنود العمل',status:'الحالة',delete:'حذف',log_activity:'تسجيل نشاط',activity_type:'نوع النشاط',description:'الوصف',start_time:'وقت البداية',end_time:'وقت النهاية',voice_note:'ملاحظة صوتية',press_record:'اضغط تسجيل للبدء',record:'🔴 تسجيل',play:'▶ تشغيل',choose_theme:'اختر المظهر',score_trend:'📊 اتجاه الدرجات',criteria_radar:'🎯 رادار المعايير',distribution:'🍩 توزيع الدرجات',burnout_chart:'🔥 اتجاه الإرهاق',forecast:'🔮 التوقعات',consistency:'📈 الاتساق',scores_above_7:'درجات ≥ 7',heatmap:'🗓 خريطة حرارية يومية',current_activity:'النشاط الحالي',shift_stats:'إحصاءات الوردية',shift_timeline:'📅 جدول الوردية',add_activity:'إضافة',no_activities:'لا توجد أنشطة بعد',shift_history:'📋 سجل الورديات',team_notes:'ملاحظات الفريق',cycle_start:'يوم بدء الدورة',admin_name:'اسم العرض للمسؤول',new_password:'كلمة مرور جديدة',on_shift_lbl:'في وردية',no_shift:'لا توجد وردية نشطة',no_data:'لا توجد بيانات بعد',tagline:'التميز في أداء الصيدلة',colleague:'الزميل',clear:'مسح',print_report:'طباعة التقرير',export_data:'تصدير البيانات',import_backup:'استيراد نسخة احتياطية',strongest:'أقوى معيار',needs_improvement:'يحتاج تحسين',vs_team:'مقارنة بالفريق',total_entries:'إجمالي الإدخالات',suggestion:'💡 اقتراح',focus_on:'ركز على',to_improve:'للتحسين',overdue:'متأخر',days_remaining:'يوم متبقي',active:'نشط',monitoring:'مراقبة',completed:'مكتمل',unknown:'غير معروف',locked:'🔒 مقفل',unlocked:'✅ مفتوح',streak:'🔥 أيام متتالية',streak_desc:'أيام مسجلة بالتسلسل',no_streak:'ابدأ التقييم لبناء سلسلتك!',exec_risk_alerts:'⚠ تنبيهات المخاطر',exec_top:'🏆 أفضل الأداءات',exec_weak:'📉 يحتاج اهتمام',exec_workload:'📊 خريطة العبء',exec_plans:'📋 الخطط النشطة',burnout_low:'خطر منخفض',burnout_med:'متوسط',burnout_high:'خطر مرتفع',improving:'↑ تحسن',declining:'↓ تراجع',predicted:'الدرجة المتوقعة',based_on:'بناءً على',periods:'فترات',coaching_strength:'💪 نقاط القوة',coaching_weakness:'📌 مجالات النمو',coaching_goals:'🎯 أهداف الأسبوع القادم',coaching_summary:'📊 ملخص هذا الأسبوع',no_coaching:'اختر زميلاً لإنشاء تقرير التدريب',scenario_gen:'مولد سيناريوهات الذكاء الاصطناعي',gen_scenario:'إنشاء سيناريو',check_in:'⚠ يُنصح بإجراء محادثة',no_notif:'لا توجد إشعارات',notif_low_score:'لديه درجة منخفضة هذه الفترة',notif_plan_ends:'تنتهي خطته خلال',notif_days:'أيام',notif_overdue:'خطة متأخرة لـ',notif_new_note:'ملاحظة جديدة لـ',cycle_day:'يوم',select_compare:'اختر 2–4 زملاء للمقارنة جنبًا إلى جنب.'
   }
 };
 let lang='en';
@@ -1096,7 +1141,7 @@ let role='viewer',curColId=null,curMonth='',openTabs=[],_undoStack=[],_syncT=nul
 let _pendingScore=null,_selScore=null,_pendingBulk=null,_crFilter=new Set(),_noteFilter='all';
 let _compareSelected=[],_notifRead=new Set(),_notifications=[],_cmdIdx=0;
 let _shiftActive=false,_shiftStart=null,_shiftTimer=null,_shiftTotalSecs=0;
-let _voiceRecorder=null,_voiceChunks=[],_voiceBlob=null,_voiceTimer=null,_voiceSecs=0;
+
 let _fabOpen=false;
 
 let db={
@@ -1109,47 +1154,28 @@ const Store={
     clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},500);},
   async push(snap){setSyncSt('⏳',t('period')+'…');
     const pushTime=Date.now();
-    try{const r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()})});
-    if(r.ok){db._savedAt=pushTime;}setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');}catch(e){setSyncSt('⚠','Offline');}},
+    const payload={id:'main',data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()};
+    try{
+      // Try PATCH first (row exists)
+      let r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:payload.data,updated_at:payload.updated_at})});
+      // If no row matched (204 with no content but PATCH on missing row returns empty), do upsert via POST
+      if(!r.ok||(r.status===200&&(await r.clone().text())==='[]')){
+        const EP2=`${SUPA_URL}/rest/v1/rxperform`;
+        const SH2={...SH,'Prefer':'resolution=merge-duplicates,return=minimal'};
+        r=await fetch(EP2,{method:'POST',headers:SH2,body:JSON.stringify(payload)});
+      }
+      if(r.ok){db._savedAt=pushTime;try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}}
+      setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');
+    }catch(e){setSyncSt('⚠','Offline');}},
   async pull(){setSyncSt('⏳','Syncing…');
     try{const r=await fetch(EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
     const rows=await r.json();
     if(rows?.length&&rows[0].data){
       const rem=rows[0].data;
       if(rem?.colleagues?.length||rem?.criteria?.length){
-        const remTime=new Date(rows[0].updated_at||0).getTime();
-        const locTime=db._savedAt||0;
-        if(locTime>remTime){
-          // local newer → push to remote, keep local
-          Store.push(JSON.stringify(db));
-        } else {
-          // remote newer or equal → use remote
-          // but merge any local shifts/scores/transactions added after last push
-          const locShifts=JSON.parse(JSON.stringify(db.shifts||{}));
-          const locScores=JSON.parse(JSON.stringify(db.scores||{}));
-          const locTx=JSON.parse(JSON.stringify(db.transactions||{}));
-          db=rem; Store.defaults();
-          // deep merge shifts history
-          Object.keys(locShifts).forEach(k=>{
-            if(!db.shifts[k])db.shifts[k]=locShifts[k];
-            else{
-              const rh=db.shifts[k].history||[];
-              const rdates=new Set(rh.map(x=>x.date));
-              (locShifts[k].history||[]).forEach(e=>{if(!rdates.has(e.date))rh.push(e);});
-              db.shifts[k].history=rh.sort((a,b)=>a.date<b.date?1:-1);
-            }
-          });
-          // merge scores
-          Object.keys(locScores).forEach(col=>{
-            if(!db.scores[col])db.scores[col]=locScores[col];
-            else Object.assign(db.scores[col],locScores[col]);
-          });
-          // merge transactions
-          Object.keys(locTx).forEach(k=>{if(!db.transactions[k])db.transactions[k]=locTx[k];});
-          try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
-          // push merged result back
-          Store.push(JSON.stringify(db));
-        }
+        // Always use Supabase as source of truth - it has the latest from any device
+        db=rem; Store.defaults();
+        try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
       } else {
         if(db.colleagues&&db.colleagues.length)Store.push(JSON.stringify(db));
       }
@@ -1167,6 +1193,16 @@ const Store={
     if(!db.activities)db.activities={};
     if(!db.dayStatus)db.dayStatus={};
     if(!db.transactions)db.transactions={};
+    /* Migration: إضافة month للملاحظات القديمة */
+    ;(function(){
+      var _months=typeof availMonths==='function'?availMonths():[];
+      var _fb=_months.length?_months[_months.length-1]:new Date().toISOString().slice(0,7);
+      ['positive','negative'].forEach(function(k){
+        (db.notes[k]||[]).forEach(function(n){
+          if(!n.month){n.month=n.date?n.date.slice(0,7):_fb;}
+        });
+      });
+    })();
     /* Migration: كل زميل يحصل على criteria مستقلة (deep clone مضمون) */
     if(db.colleagues && db.colleagues.length){
       var _gc = db.criteria && db.criteria.length ? db.criteria : null;
@@ -1249,7 +1285,7 @@ function now12(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:
    HELPERS
 ══════════════════════════════════════ */
 function cs(){return db.settings?.cycleStart||16;}
-function availMonths(){const now=new Date();const cutoff='2026-01';return Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}).filter(m=>m>=cutoff);}
+function availMonths(){const now=new Date();return Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});}
 function getPeriodLabel(m){
   const[y,mo]=m.split('-').map(Number);
   const C=cs();
@@ -1318,10 +1354,16 @@ function burnoutRisk(colId,month){const avg=colAvg(colId,month);const con=consis
 function teamAvgVal(month){const avgs=db.colleagues.map(c=>colAvg(c.id,month)).filter(a=>a>0);return avgs.length?+(avgs.reduce((s,a)=>s+a,0)/avgs.length).toFixed(2):0;}
 function rankOf(colId,month){const sorted=db.colleagues.map(c=>colAvg(c.id,month)).filter(a=>a>0).sort((a,b)=>b-a);const avg=colAvg(colId,month);return sorted.findIndex(a=>Math.abs(a-avg)<0.01)+1||db.colleagues.length;}
 function streakOf(colId,month){
-  const sc=db.scores[colId]?.[month]||{};const c=cs();const[y,mo]=month.split('-').map(Number);let streak=0;
-  for(let d=new Date(y,mo-1,c);d<=new Date(y,mo,c-1);d.setDate(d.getDate()+1)){
-    const key=String(d.getDate());const hasScore=Object.values(sc).some(cr=>cr[key]?.score);
-    if(hasScore)streak++;else if(streak)break;
+  const sc=db.scores[colId]?.[month]||{};const C=cs();const[y,mo]=month.split('-').map(Number);
+  // Period runs from C of (mo-1) to C-1 of (mo) — count consecutive scored days from start
+  const periodStart=new Date(y,mo-2,C);
+  const periodEnd=new Date(y,mo-1,C-1);
+  let streak=0;
+  for(let d=new Date(periodStart);d<=periodEnd;d.setDate(d.getDate()+1)){
+    // day key inside scores is the calendar day number
+    const key=String(d.getDate());
+    const hasScore=Object.values(sc).some(cr=>cr[key]?.score);
+    if(hasScore)streak++;else if(streak>0)break;
   }return streak;
 }
 
@@ -1339,11 +1381,18 @@ function startClock(){
    AUTH
 ══════════════════════════════════════ */
 function showAdminPanel(){document.getElementById('adminPanel').classList.add('show');}
-function enterAsViewer(){role='viewer';localStorage.setItem('rxp_role','viewer');launch();}
-function doAdminLogin(){const pw=document.getElementById('adminPwdInp').value,stored=localStorage.getItem('rxp_admin_pw')||'Anonymous@1151';if(pw===stored){role='admin';localStorage.setItem('rxp_role','admin');launch();}else{document.getElementById('loginErr').style.display='block';}}
+function enterAsViewer(){try{role='viewer';localStorage.setItem('rxp_role','viewer');launch();}catch(e){console.error('enterAsViewer error:',e);alert('خطأ في تسجيل الدخول: '+e.message);}}
+function doAdminLogin(){try{const pw=document.getElementById('adminPwdInp').value,stored=localStorage.getItem('rxp_admin_pw')||'Anonymous@1151';if(pw===stored){role='admin';localStorage.setItem('rxp_role','admin');launch();}else{document.getElementById('loginErr').style.display='block';}}catch(e){console.error('doAdminLogin error:',e);}}
 window.addEventListener('beforeunload',function(){
   if(db&&db.colleagues&&db.colleagues.length){
     db._savedAt=Date.now();
+    fetch(EP,{method:'PATCH',keepalive:true,headers:SH,
+      body:JSON.stringify({data:db,updated_at:new Date().toISOString()})}).catch(()=>{});
+  }
+});
+
+window.addEventListener('beforeunload',function(){
+  if(db&&db.colleagues&&db.colleagues.length){
     fetch(EP,{method:'PATCH',keepalive:true,headers:SH,
       body:JSON.stringify({data:db,updated_at:new Date().toISOString()})}).catch(()=>{});
   }
@@ -1360,6 +1409,11 @@ function launch(){
   // auto-open first colleague
   if(db.colleagues.length){selectTab(db.colleagues[0].id);}
   Store.pull().then(()=>{if(!db.colleagues.length)Store.seed();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(!curColId&&db.colleagues.length)selectTab(db.colleagues[0].id);});
+  // Auto-sync every 2 minutes — keeps all devices updated without full reload
+  if(window._autoSyncInterval)clearInterval(window._autoSyncInterval);
+  window._autoSyncInterval=setInterval(function(){
+    Store.pull().then(function(){updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(curColId)renderWorkspace();});
+  },120000);
   // periodic pull disabled - push-only sync to avoid overwriting local data
 }
 function launchApp(){ launch(); }
@@ -2083,32 +2137,27 @@ function renderNotes(){
   let pos=db.notes?.positive||[],neg=db.notes?.negative||[];
   if(c){pos=pos.filter(n=>n.colId===c.id||!n.colId);neg=neg.filter(n=>n.colId===c.id||!n.colId);}
   if(_notePeriodFilter&&_notePeriodFilter!=='all'){
-    pos=pos.filter(n=>!n.month||n.month===_notePeriodFilter);
-    neg=neg.filter(n=>!n.month||n.month===_notePeriodFilter);
+    pos=pos.filter(n=>n.month===_notePeriodFilter);
+    neg=neg.filter(n=>n.month===_notePeriodFilter);
   }
   let all=[];
-  if(_noteFilter!=='neg'&&_noteFilter!=='voice')all=[...all,...pos.map(n=>({...n,type:'pos'}))];
-  if(_noteFilter!=='pos'&&_noteFilter!=='voice')all=[...all,...neg.map(n=>({...n,type:'neg'}))];
-  if(_noteFilter==='voice'||_noteFilter==='all')all=[...all,...pos.filter(n=>n.voice).map(n=>({...n,type:'pos'})),...neg.filter(n=>n.voice).map(n=>({...n,type:'neg'}))];
-  if(_noteFilter!=='voice')all=all.filter(n=>!n.voice||_noteFilter==='all');
+  if(_noteFilter!=='neg')all=[...all,...pos.map(n=>({...n,type:'pos'}))];
+  if(_noteFilter!=='pos')all=[...all,...neg.map(n=>({...n,type:'neg'}))];
   const seen=new Set();all=all.filter(n=>{const k=n.ts;if(seen.has(k))return false;seen.add(k);return true;});
   all.sort((a,b)=>(b.ts||0)-(a.ts||0));
-  document.getElementById('notesList').innerHTML=all.length?all.map(n=>{const col=db.colleagues.find(x=>x.id===n.colId);const color=n.type==='pos'?'var(--emerald)':'var(--rose)';const pc=n.priority==='critical'?'var(--rose)':n.priority==='high'?'var(--amber)':'var(--text2)';return`<div class="note-card ${n.type}"><div class="note-ava" style="background:${col?col.color+'22':'rgba(255,255,255,0.05)'};color:${col?col.color:'var(--text)'}">${col?ini(colName(col)):'👥'}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;color:${col?col.color:'var(--text)'}">${col?colName(col):t('all')}</span><span class="note-type-badge" style="background:${color}22;color:${color}">${n.type==='pos'?'✅':' ⚠'}</span>${n.priority&&n.priority!=='normal'?`<span class="note-type-badge" style="background:${pc}22;color:${pc}">${n.priority==='critical'?'🔥':'⭐'}</span>`:''} ${n.voice?`<span class="note-type-badge" style="background:var(--cyan3);color:var(--cyan)">🎙</span>`:''}</div><div class="note-text">${n.text}</div>${n.voice&&n.audioUrl?`<audio src="${n.audioUrl}" controls style="width:100%;height:28px;margin-top:6px;border-radius:4px"></audio>`:''}<div class="note-meta">${n.date||''}</div></div>${role==='admin'?`<button onclick="deleteNote('${n.type}',${n.ts})" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:3px;flex-shrink:0" title="Delete">🗑</button>`:''}</div>`;}).join(''):`<div style="color:var(--text2);text-align:center;padding:40px 0;font-size:13px">${t('no_data')}</div>`;}
-function deleteNote(type,ts){if(!confirm(t('delete')+'?'))return;snapshotUndo();db.notes[type]=(db.notes[type]||[]).filter(n=>n.ts!==ts);Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));}
+  document.getElementById('notesList').innerHTML=all.length?all.map(n=>{const col=db.colleagues.find(x=>x.id===n.colId);const color=n.type==='pos'?'var(--emerald)':'var(--rose)';const pc=n.priority==='critical'?'var(--rose)':n.priority==='high'?'var(--amber)':'var(--text2)';return`<div class="note-card ${n.type}"><div class="note-ava" style="background:${col?col.color+'22':'rgba(255,255,255,0.05)'};color:${col?col.color:'var(--text)'}">${col?ini(colName(col)):'👥'}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;color:${col?col.color:'var(--text)'}">${col?colName(col):t('all')}</span><span class="note-type-badge" style="background:${color}22;color:${color}">${n.type==='pos'?'✅':' ⚠'}</span>${n.priority&&n.priority!=='normal'?`<span class="note-type-badge" style="background:${pc}22;color:${pc}">${n.priority==='critical'?'🔥':'⭐'}</span>`:''}</div><div class="note-text">${n.text}</div><div class="note-meta">${n.date||''}</div></div>${role==='admin'?`<button onclick="deleteNote('${n.type}',${n.ts})" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:3px;flex-shrink:0" title="Delete">🗑</button>`:''}</div>`;}).join(''):`<div style="color:var(--text2);text-align:center;padding:40px 0;font-size:13px">${t('no_data')}</div>`;}
+function deleteNote(type,ts){if(!confirm(t('delete')+'?'))return;snapshotUndo();['positive','negative'].forEach(function(k){db.notes[k]=(db.notes[k]||[]).filter(function(n){return n.ts!=ts;});});Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));}
 function openAddNote(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}const s=document.getElementById('noteColSel');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');document.getElementById('noteText').value='';document.getElementById('noteDate').value='';openModal('noteModal');}
-function saveNote(){const text=document.getElementById('noteText').value.trim();if(!text){toast('Enter a note','#ffb340');return;}const type=document.getElementById('noteType').value,colId=document.getElementById('noteColSel').value||null,date=document.getElementById('noteDate').value,priority=document.getElementById('notePriority').value;snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text,date,priority,ts:Date.now()});closeModal('noteModal');Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ '+t('save'));
+function saveNote(){const text=document.getElementById('noteText').value.trim();if(!text){toast('Enter a note','#ffb340');return;}const type=document.getElementById('noteType').value,colId=document.getElementById('noteColSel').value||null,date=document.getElementById('noteDate').value,priority=document.getElementById('notePriority').value;const noteMonth=curMonth&&curMonth!=='all'?curMonth:availMonths()[0]||new Date().toISOString().slice(0,7);snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text,date,priority,month:noteMonth,ts:Date.now()});closeModal('noteModal');Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ '+t('save'));
   if(typeof RxNotifMgr!=='undefined'){const nc=colId&&db.colleagues.find(x=>x.id===colId);if(nc)RxNotifMgr.notify({title:(type==='positive'?'✅ ملاحظة إيجابية':'⚠ ملاحظة تحسين'),message:colName(nc)+': '+text.slice(0,60),icon:type==='positive'?'✅':'⚠',priority:priority==='critical'?'high':priority==='high'?'medium':'low',category:'employee'});}
 }
 
 /* VOICE NOTE */
-function openVoiceNote(){const s=document.getElementById('voiceColSelInput');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');_voiceBlob=null;_voiceChunks=[];_voiceSecs=0;document.getElementById('voiceTimer').textContent='0:00';document.getElementById('voiceStatus').textContent=t('press_record');document.getElementById('voiceRecordBtn').textContent=t('record');document.getElementById('voicePlayBtn').style.display='none';document.getElementById('voicePlayback').style.display='none';document.getElementById('voiceSaveBtn').style.display='none';document.querySelectorAll('.voice-bar').forEach(b=>b.classList.remove('animating'));openModal('voiceModal');}
-function toggleVoiceRecord(){
-  if(_voiceRecorder&&_voiceRecorder.state==='recording'){_voiceRecorder.stop();clearInterval(_voiceTimer);document.getElementById('voiceRecordBtn').textContent='🔴 '+t('record');document.querySelectorAll('.voice-bar').forEach(b=>b.classList.remove('animating'));document.getElementById('voiceStatus').textContent='Recording saved';document.getElementById('voicePlayBtn').style.display='';document.getElementById('voiceSaveBtn').style.display='';return;}
-  if(!navigator.mediaDevices?.getUserMedia){toast('Microphone not available','#ff4d6d');return;}
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{_voiceChunks=[];_voiceRecorder=new MediaRecorder(stream);_voiceRecorder.ondataavailable=e=>_voiceChunks.push(e.data);_voiceRecorder.onstop=()=>{_voiceBlob=new Blob(_voiceChunks,{type:'audio/webm'});const url=URL.createObjectURL(_voiceBlob);document.getElementById('voiceAudio').src=url;document.getElementById('voicePlayback').style.display='';stream.getTracks().forEach(track=>track.stop());};_voiceRecorder.start();_voiceSecs=0;_voiceTimer=setInterval(()=>{_voiceSecs++;document.getElementById('voiceTimer').textContent=fmtDur(_voiceSecs);},1000);document.getElementById('voiceRecordBtn').textContent='⏹ Stop';document.getElementById('voiceStatus').textContent='Recording…';document.querySelectorAll('.voice-bar').forEach(b=>b.classList.add('animating'));}).catch(()=>toast('Microphone access denied','#ff4d6d'));}
-function playVoice(){document.getElementById('voiceAudio').play();}
-function closeVoiceModal(){if(_voiceRecorder?.state==='recording')_voiceRecorder.stop();clearInterval(_voiceTimer);closeModal('voiceModal');}
-function saveVoiceNote(){if(!_voiceBlob){toast('Record first','#ffb340');return;}const reader=new FileReader();reader.onload=ev=>{const colId=document.getElementById('voiceColSelInput').value||null;const type='positive';snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text:'🎙 Voice note ('+fmtDur(_voiceSecs)+')',date:new Date().toISOString().slice(0,10),priority:'normal',voice:true,audioUrl:ev.target.result,ts:Date.now()});Store.save();closeVoiceModal();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ Voice note saved');};reader.readAsDataURL(_voiceBlob);}
+
+
+
+
+
 
 /* ══════════════════════════════════════
    PLANS KANBAN
@@ -2116,7 +2165,10 @@ function saveVoiceNote(){if(!_voiceBlob){toast('Record first','#ffb340');return;
 function renderPlans(){
   const colId=curColId;const all=(db.settings?.pips||[]).filter(p=>!colId||p.colId===colId);
   const active=all.filter(p=>p.status==='active'||!p.status),monitoring=all.filter(p=>p.status==='monitoring'),completed=all.filter(p=>p.status==='completed');
-  function planCard(p){const c=db.colleagues.find(x=>x.id===p.colId);const daysLeft=p.endDate?Math.ceil((new Date(p.endDate)-new Date())/86400000):null;const totalDays=p.startDate&&p.endDate?Math.ceil((new Date(p.endDate)-new Date(p.startDate))/86400000):null;const progress=p.completedAt?100:totalDays&&daysLeft!=null?Math.max(0,Math.min(100,Math.round((1-daysLeft/totalDays)*100))):0;const statusColor=p.status==='completed'?'var(--emerald)':p.status==='monitoring'?'var(--cyan)':'var(--amber)';const statusBg=p.status==='completed'?'var(--emerald3)':p.status==='monitoring'?'var(--cyan3)':'var(--amber2)';return`<div class="plan-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px"><div style="font-size:11px;font-weight:700;color:${c?c.color:'var(--cyan)'}">${c?colName(c):t('unknown')}</div><span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${statusBg};color:${statusColor}">${t(p.status||'active')}</span></div><div class="plan-goal">${p.goal||p.reason||'—'}</div>${p.target?`<div style="font-size:10px;color:var(--text2)">Target: <strong style="color:var(--amber)">${p.target}/10</strong></div>`:''}<div class="plan-progress"><div class="plan-progress-fill" style="width:${progress}%"></div></div><div style="font-size:10px;color:var(--text2);margin-bottom:7px">${progress}% · ${daysLeft!=null?(daysLeft>0?daysLeft+' '+t('days_remaining'):t('overdue')):'—'}</div>${role==='admin'?`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="openEditPlan('${p.id}')" style="padding:4px 9px;font-size:10px">✏</button>${p.status!=='completed'?`<button class="btn btn-emerald" onclick="completePlan('${p.id}')" style="padding:4px 9px;font-size:10px">✓</button>`:''}<button class="btn btn-danger" onclick="deletePlanById('${p.id}')" style="padding:4px 9px;font-size:10px">🗑</button></div>`:''}</div>`;}
+  function planCard(p){const c=db.colleagues.find(x=>x.id===p.colId);const daysLeft=p.endDate?Math.ceil((new Date(p.endDate)-new Date())/86400000):null;const totalDays=p.startDate&&p.endDate?Math.ceil((new Date(p.endDate)-new Date(p.startDate))/86400000):null;const progress=p.completedAt?100:totalDays&&daysLeft!=null?Math.max(0,Math.min(100,Math.round((1-daysLeft/totalDays)*100))):0;const statusColor=p.status==='completed'?'var(--emerald)':p.status==='monitoring'?'var(--cyan)':'var(--amber)';const statusBg=p.status==='completed'?'var(--emerald3)':p.status==='monitoring'?'var(--cyan3)':'var(--amber2)';
+  const reasonHtml=p.reason?`<div style="font-size:10px;color:var(--text2);margin-top:5px;line-height:1.5;border-right:2px solid var(--cyan3);padding-right:7px">${p.reason}</div>`:'';
+  const actionsHtml=p.actions?`<div style="margin-top:6px;padding:7px 9px;background:var(--bg3);border-radius:7px;font-size:10px;color:var(--text);line-height:1.6;white-space:pre-wrap">${p.actions}</div>`:'';
+  return`<div class="plan-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px"><div style="font-size:11px;font-weight:700;color:${c?c.color:'var(--cyan)'}">${c?colName(c):t('unknown')}</div><span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${statusBg};color:${statusColor}">${t(p.status||'active')}</span></div><div class="plan-goal">${p.goal||'—'}</div>${reasonHtml}${p.target?`<div style="font-size:10px;color:var(--text2);margin-top:4px">Target: <strong style="color:var(--amber)">${p.target}/10</strong></div>`:''}${actionsHtml}<div class="plan-progress" style="margin-top:8px"><div class="plan-progress-fill" style="width:${progress}%"></div></div><div style="font-size:10px;color:var(--text2);margin-bottom:7px">${progress}% · ${daysLeft!=null?(daysLeft>0?daysLeft+' '+t('days_remaining'):t('overdue')):'—'}</div>${role==='admin'?`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="openEditPlan('${p.id}')" style="padding:4px 9px;font-size:10px">✏</button>${p.status!=='completed'?`<button class="btn btn-emerald" onclick="completePlan('${p.id}')" style="padding:4px 9px;font-size:10px">✓</button>`:''}<button class="btn btn-danger" onclick="deletePlanById('${p.id}')" style="padding:4px 9px;font-size:10px">🗑</button></div>`:''}</div>`;}
   document.getElementById('plansBoard').innerHTML=`<div class="plans-col"><div class="plans-col-header"><span>⚡ ${t('active')}</span><span class="plans-col-count" style="background:var(--amber2);color:var(--amber)">${active.length}</span></div>${active.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div><div class="plans-col"><div class="plans-col-header"><span>👁 ${t('monitoring')}</span><span class="plans-col-count" style="background:var(--cyan3);color:var(--cyan)">${monitoring.length}</span></div>${monitoring.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div><div class="plans-col"><div class="plans-col-header"><span>✅ ${t('completed')}</span><span class="plans-col-count" style="background:var(--emerald3);color:var(--emerald)">${completed.length}</span></div>${completed.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div>`;
 }
 function openPIPModal(colId){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}document.getElementById('pipModalTitle').textContent=t('new_plan');document.getElementById('pipId').value='';document.getElementById('pipColId').value=colId||'';['pipStart','pipEnd','pipTarget','pipGoal','pipReason','pipActions'].forEach(id=>document.getElementById(id).value='');document.getElementById('pipStatus').value='active';document.getElementById('pipDeleteBtn').style.display='none';openModal('pipModal');}
@@ -2147,7 +2199,7 @@ function renderActivityFeed(){
   const c=db.colleagues.find(x=>x.id===curColId);if(!c)return;
   const events=[...(db.notes?.positive||[]).filter(n=>n.colId===c.id).map(n=>({ts:n.ts||0,type:'note_pos',text:n.text,date:n.date})),...(db.notes?.negative||[]).filter(n=>n.colId===c.id).map(n=>({ts:n.ts||0,type:'note_neg',text:n.text,date:n.date})),...(db.settings?.pips||[]).filter(p=>p.colId===c.id).map(p=>({ts:new Date(p.createdAt||0).getTime(),type:'plan',text:p.goal||p.reason||'—',date:p.createdAt?.slice(0,10)})),...(db.shifts?.[c.id]?.history||[]).slice(0,5).map(s=>({ts:s.end||0,type:'shift',text:fmtDur(s.duration),date:s.date}))].sort((a,b)=>b.ts-a.ts);
   const cfg={note_pos:{icon:'✅',color:'var(--emerald)',label:t('positive')},note_neg:{icon:'⚠',color:'var(--rose)',label:t('improvement')},plan:{icon:'🏆',color:'var(--amber)',label:t('plans')},shift:{icon:'⏱',color:'var(--cyan)',label:'Shift'}};
-  const allEvts=[...events,...[{ts:Date.now(),type:'note_pos',text:t('performance')+' · '+fmtMonth(curMonth),date:new Date().toISOString().slice(0,10)}]].sort((a,b)=>b.ts-a.ts);
+  const allEvts=[...events].sort((a,b)=>b.ts-a.ts);
   const feed=document.getElementById('activityFeed');
   feed.innerHTML='<div class="timeline-line"></div>'+(allEvts.length?allEvts.slice(0,20).map(ev=>{const cfg2=cfg[ev.type]||{icon:'📌',color:'var(--text2)',label:''};return`<div class="timeline-item"><div class="timeline-dot" style="background:${cfg2.color};border-color:${cfg2.color}"></div><div class="timeline-content"><div style="display:flex;align-items:center;gap:6px"><span>${cfg2.icon}</span><div class="timeline-title">${ev.text}</div><span style="font-size:9px;background:${cfg2.color}22;color:${cfg2.color};padding:1px 5px;border-radius:3px;flex-shrink:0">${cfg2.label}</span></div><div class="timeline-time">${ev.date||'—'}</div></div></div>`;}).join(''):`<div style="color:var(--text2);font-size:12px;text-align:center;padding:20px">${t('no_data')}</div>`);
 }
@@ -2187,7 +2239,7 @@ function generateCoachingReport(){
   const avg=colAvg(c.id,curMonth),crit=getActiveCr(c.id),con=consistency(c.id,curMonth);
   const crList=crit.map(cr=>{const v=Object.values(db.scores[c.id]?.[curMonth]?.[cr.id]||{}).filter(e=>e.score).map(e=>e.score);return{name:crName(cr),avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:0,count:v.length};}).filter(x=>x.count>0).sort((a,b)=>b.avg-a.avg);
   const strengths=crList.slice(0,2),weak=crList.slice(-2).reverse();
-  const notes=(db.notes?.positive||[]).filter(n=>n.colId===c.id).concat((db.notes?.negative||[]).filter(n=>n.colId===c.id)).slice(0,3);
+  const notes=(db.notes?.positive||[]).filter(n=>n.colId===c.id&&(!n.month||n.month===curMonth)).concat((db.notes?.negative||[]).filter(n=>n.colId===c.id&&(!n.month||n.month===curMonth))).slice(0,3);
   const br=burnoutRisk(c.id,curMonth);
   document.getElementById('coachingContent').innerHTML=`
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;margin-bottom:10px">${t('coaching_summary')}</div><div style="display:flex;gap:10px;flex-wrap:wrap">${[{l:t('avg_score'),v:avg||'—',c:sColor(avg)},{l:t('consistency'),v:con+'%',c:con>=70?'var(--emerald)':'var(--amber)'},{l:t('burnout'),v:br+'%',c:br>65?'var(--rose)':br>40?'var(--amber)':'var(--emerald)'},{l:t('total_entries'),v:countSc(c.id,curMonth),c:'var(--cyan)'}].map(x=>`<div style="flex:1;min-width:80px;padding:9px;background:var(--bg3);border-radius:var(--r);text-align:center"><div style="font-size:18px;font-weight:800;color:${x.c};font-family:var(--mono)">${x.v}</div><div style="font-size:9px;color:var(--text2);margin-top:2px">${x.l}</div></div>`).join('')}</div></div>
@@ -2230,11 +2282,15 @@ function renderExecDashboard(){
 /* ══════════════════════════════════════
    NOTIFICATIONS
 ══════════════════════════════════════ */
+let _notifBuilt=false;
 function buildNotifications(){
   _notifications=[];const now=new Date();
+  // Only push to RxNotifMgr once per session
+  const _shouldPush=!_notifBuilt;
+  _notifBuilt=true;
   const _pushNotif=(n)=>{
     _notifications.push(n);
-    if(typeof RxNotifMgr!=='undefined'){
+    if(_shouldPush&&typeof RxNotifMgr!=='undefined'){
       const id='col_'+n.cat+'_'+(n.colId||'')+'_'+(n.time||'');
       RxNotifMgr.notify({
         id, title:n.text, message:'', icon:n.icon,
@@ -2269,13 +2325,14 @@ function updateNotifBadge(){const u=_notifications.filter(n=>!_notifRead.has(JSO
 function openNotifications(){openNotifPanel();}
 function renderNotifications(){
   const list=document.getElementById('notifList');
+  if(!list)return; // notifList rendered by RxNotifRenderer — skip if not present
   if(!_notifications.length){list.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text2);font-size:12px">${t('no_notif')}</div>`;return;}
   const cats=['burnout','performance','plan','note'];
   const catLabels={burnout:'🔥 Burnout',performance:'📊 Performance',plan:'📋 Plans',note:'📝 Notes'};
   let html='';cats.forEach(cat=>{const items=_notifications.filter(n=>n.cat===cat);if(!items.length)return;html+=`<div class="notif-category">${catLabels[cat]||cat}</div>`;html+=items.map(n=>{const key=JSON.stringify(n);const read=_notifRead.has(key);return`<div class="notif-item ${n.critical?'':''}'" onclick="handleNotifClick('${n.colId||''}','${encodeURIComponent(key)}')"><div class="notif-icon">${n.icon}</div><div style="flex:1"><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>${!read?'<div class="notif-unread"></div>':''}</div>`;}).join('');});
   list.innerHTML=html;
 }
-function handleNotifClick(colId,kEnc){const key=decodeURIComponent(kEnc);_notifRead.add(key);updateNotifBadge();renderNotifications();if(colId){openColTab(colId);document.getElementById('notifPanel').classList.remove('open');}}
+function handleNotifClick(colId,kEnc){const key=decodeURIComponent(kEnc);_notifRead.add(key);updateNotifBadge();renderNotifications();if(colId){openColTab(colId);(document.getElementById('notifPanel')||document.getElementById('rxNotifPanel'))?.classList.remove('open');closeNotifPanel&&closeNotifPanel();}}
 function markAllRead(){_notifications.forEach(n=>_notifRead.add(JSON.stringify(n)));updateNotifBadge();renderNotifications();}
 
 /* ══════════════════════════════════════
@@ -2287,7 +2344,7 @@ function fuzzyMatch(str,query){if(!query)return true;str=str.toLowerCase();query
 function updateCmdResults(){
   const q=document.getElementById('cmdInput').value.trim();_cmdIdx=0;
   const cols=db.colleagues.filter(c=>!q||fuzzyMatch(colName(c),q)||fuzzyMatch(c.role,q));
-  const acts=[{icon:'📊',label:t('performance'),action:"switchInner('perf',null)"},{icon:'📈',label:t('statistics'),action:"switchInner('stats',null)"},{icon:'📉',label:t('charts'),action:"switchInner('charts',null)"},{icon:'🧠',label:t('ai_insights'),action:"switchInner('analytics',null)"},{icon:'⏱',label:t('shift_tracker'),action:"switchInner('shift',null)"},{icon:'📝',label:t('add_note'),action:'openAddNote()'},{icon:'⚡',label:t('bulk_entry'),action:'openBulkEntry()'},{icon:'⇄',label:t('compare'),action:'openCompare()'},{icon:'📊',label:t('exec_dashboard'),action:"switchGlobalView('exec')"},{icon:'🖨',label:t('print_report'),action:'openPrintMenu()'},{icon:'💾',label:t('export_data'),action:'doExport()'},{icon:'🎙',label:t('voice_note'),action:'openVoiceNote()'},{icon:'⚙',label:t('settings'),action:'openSettings()'}].filter(a=>!q||fuzzyMatch(a.label,q));
+  const acts=[{icon:'📊',label:t('performance'),action:"switchInner('perf',null)"},{icon:'📈',label:t('statistics'),action:"switchInner('stats',null)"},{icon:'📉',label:t('charts'),action:"switchInner('charts',null)"},{icon:'🧠',label:t('ai_insights'),action:"switchInner('analytics',null)"},{icon:'⏱',label:t('shift_tracker'),action:"switchInner('shift',null)"},{icon:'📝',label:t('add_note'),action:'openAddNote()'},{icon:'⚡',label:t('bulk_entry'),action:'openBulkEntry()'},{icon:'⇄',label:t('compare'),action:'openCompare()'},{icon:'📊',label:t('exec_dashboard'),action:"switchGlobalView('exec')"},{icon:'🖨',label:t('print_report'),action:'openPrintMenu()'},{icon:'💾',label:t('export_data'),action:'doExport()'},{icon:'⚙',label:t('settings'),action:'openSettings()'}].filter(a=>!q||fuzzyMatch(a.label,q));
   let html='';if(cols.length)html+=`<div class="cmd-section">${t('colleague')}</div>`+cols.slice(0,6).map(c=>`<div class="cmd-item" onclick="openColTab('${c.id}');closeCmdPalette()"><div class="cmd-item-icon" style="color:${c.color}">${ini(colName(c))}</div><span class="cmd-item-label">${colName(c)}</span><span class="cmd-item-hint">${colRole(c)}</span></div>`).join('');
   if(acts.length)html+=`<div class="cmd-section">Actions</div>`+acts.slice(0,10).map(a=>`<div class="cmd-item" onclick="${a.action};closeCmdPalette()"><div class="cmd-item-icon">${a.icon}</div><span class="cmd-item-label">${a.label}</span></div>`).join('');
   document.getElementById('cmdResults').innerHTML=html||`<div class="cmd-empty">${t('no_data')} "${q}"</div>`;
@@ -2836,9 +2893,21 @@ function doImport(){
         db=imported;
         Store.defaults();
         Store.save();
+        // Reset curColId — imported DB may have different colleagues
+        curColId=null;
+        openTabs=[];
+        if(db.colleagues&&db.colleagues.length){
+          // Auto-open first colleague so workspace is never blank after import
+          curColId=db.colleagues[0].id;
+          openTabs=[curColId];
+        }
         updateTopbar();
         renderTabs();
-        if(curColId) renderWorkspace();
+        if(curColId){
+          document.getElementById('emptyState').style.display='none';
+          document.getElementById('workspace').style.display='flex';
+          renderWorkspace();
+        }
         toast('✅ '+t('import_backup'));
       }catch(err){toast('❌ '+err.message,'#ff4d6d');}
     };
@@ -3007,73 +3076,98 @@ function showMoreMenu() {
 ══════════════════════════════════════════════════════════════ */
 
 function doWhatsApp() {
-  /* guard */
   if (!curColId || !db) { toast('اختر زميلاً أولاً', '#ffb340'); return; }
   const c = db.colleagues.find(x => x.id === curColId);
   if (!c) { toast('بيانات الزميل غير موجودة', '#ff4d6d'); return; }
 
   const isAr = typeof lang !== 'undefined' && lang === 'ar';
 
-  /* ── build rich data ── */
-  const avg       = colAvg(curColId, curMonth) || 0;
-  const prevMonth = typeof availMonths === 'function' ? (availMonths()[1] || '') : '';
-  const prevAvg   = prevMonth ? (colAvg(curColId, prevMonth) || 0) : 0;
-  const trend     = avg && prevAvg ? (avg > prevAvg ? '↑' : avg < prevAvg ? '↓' : '→') : '—';
-  const entries   = typeof countSc === 'function' ? countSc(curColId, curMonth) : 0;
-  const rank      = typeof rankOf  === 'function' ? rankOf(curColId, curMonth)  : '—';
-  const total     = db.colleagues.length;
-  const con       = typeof consistency === 'function' ? consistency(curColId, curMonth) : 0;
-  const br        = typeof burnoutRisk === 'function' ? burnoutRisk(curColId, curMonth) : 0;
-  const brLbl     = br >= 70 ? '🔴 مرتفع' : br >= 40 ? '🟡 متوسط' : '🟢 منخفض';
-  const mLabel    = typeof periodLabel === 'function' ? periodLabel(curMonth) : (curMonth || '—');
+  /* ── نفس بيانات الموقع بالظبط ── */
+  const avg        = colAvg(curColId, curMonth) || 0;
+  const prevMonth  = availMonths()[1] || '';
+  const prevAvg    = prevMonth ? (colAvg(curColId, prevMonth) || 0) : 0;
+  const diff       = avg && prevAvg ? +(avg - prevAvg).toFixed(2) : null;
+  const trendTxt   = diff === null ? '—' : diff > 0 ? '↑ +' + diff : '↓ ' + Math.abs(diff);
+  const entries    = countSc(curColId, curMonth);
+  const crit       = getActiveCr(curColId);
+  const rank       = rankOf(curColId, curMonth);
+  const total      = db.colleagues.length;
+  const con        = consistency(curColId, curMonth);
+  const br         = burnoutRisk(curColId, curMonth);
+  const brLbl      = br >= 70 ? '🔴 مرتفع' : br >= 40 ? '🟡 متوسط' : '🟢 منخفض';
+  const ta         = teamAvgVal(curMonth);
+  const vsTm       = avg && ta ? (avg >= ta ? '+' : '') + (avg - ta).toFixed(2) : '—';
+  const allS       = allScoresArr(curColId, curMonth);
+  const perfect    = allS.filter(s => s === 10).length;
+  const streak     = typeof streakOf === 'function' ? streakOf(curColId, curMonth) : 0;
+  const months6    = availMonths().slice(0, 6);
+  const mAvgs      = months6.map(m => colAvg(curColId, m));
+  const predict    = mAvgs[0] && mAvgs[1] ? Math.max(0, Math.min(10, +(mAvgs[0] + (mAvgs[0] - mAvgs[1])).toFixed(2))) : null;
+  const mLabel     = periodLabel(curMonth);
 
-  /* per-criterion summary (top 5) */
-  const activeCr  = typeof getActiveCr === 'function' ? getActiveCr(curColId) : (db.criteria || []);
-  const scores    = (db.scores && db.scores[curColId] && db.scores[curColId][curMonth]) || {};
-  const dim       = typeof periodDayCount === 'function' ? periodDayCount(curMonth) : 30;
-  const days      = Array.from({length: dim}, (_, i) => i + 1);
+  /* أقوى / أضعف معيار (نفس renderInsights) */
+  const scores = (db.scores && db.scores[curColId] && db.scores[curColId][curMonth]) || {};
+  const crA = crit.map(cr => {
+    const v = Object.values(scores[cr.id] || {}).filter(e => e.score).map(e => e.score);
+    return { cr, avg: v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0 };
+  }).filter(x => x.avg > 0).sort((a, b) => b.avg - a.avg);
+  const best  = crA[0];
+  const worst = crA[crA.length - 1];
 
-  const crLines = activeCr.slice(0, 6).map(cr => {
-    let ws = 0, wn = 0;
-    days.forEach(d => {
-      const e = scores[cr.id] && scores[cr.id][d];
-      if (e && e.score) { ws += e.score; wn++; }
-    });
-    const a = wn ? ws / wn : 0;
-    const bar = a ? '█'.repeat(Math.round(a)) + '░'.repeat(10 - Math.round(a)) : '░░░░░░░░░░';
-    const lbl = a >= 8 ? '✅' : a >= 6 ? '🔶' : a > 0 ? '⚠️' : '➖';
-    return `${lbl} ${(cr.nameAr && isAr ? cr.nameAr : cr.name).slice(0, 20).padEnd(20)} ${a ? a.toFixed(1) : '—'}`;
+  /* كل المعايير مرتبة (نفس الموقع) */
+  const crLines = crit.map(cr => {
+    const v = Object.values(scores[cr.id] || {}).filter(e => e.score).map(e => e.score);
+    const a = v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
+    const lbl = a >= 9 ? '🌟' : a >= 8 ? '✅' : a >= 6 ? '🔶' : a > 0 ? '⚠️' : '➖';
+    const name = (cr.nameAr && isAr ? cr.nameAr : cr.name).slice(0, 18);
+    return a > 0 ? `${lbl} ${name}: *${a.toFixed(1)}/10*` : null;
+  }).filter(Boolean).join('\n');
+
+  /* ملاحظات الفترة (إيجابية وتحسين) */
+  const periodNotes = [
+    ...(db.notes?.positive || []).filter(n => n.colId === curColId && (!n.month || n.month === curMonth)),
+    ...(db.notes?.negative || []).filter(n => n.colId === curColId && (!n.month || n.month === curMonth))
+  ].sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 3);
+  const notesLines = periodNotes.map(n => {
+    const isPos = (db.notes?.positive || []).some(x => x.ts === n.ts);
+    return `${isPos ? '✅' : '⚠️'} ${n.text.slice(0, 100)}${n.text.length > 100 ? '…' : ''}`;
   }).join('\n');
 
-  /* active PIPs */
-  const pips = (db.settings?.pips || []).filter(p => p.colId === curColId && p.status === 'active');
-  const pipLine = pips.length
-    ? `\n📋 *خطط التحسين النشطة:* ${pips.length} خطة`
-    : '';
+  /* خطط التحسين */
+  const pips = (db.settings?.pips || []).filter(p => p.colId === curColId);
+  const activePips  = pips.filter(p => p.status === 'active');
+  const monitorPips = pips.filter(p => p.status === 'monitoring');
+  const pipLines = [...activePips, ...monitorPips].map(p => {
+    const daysLeft = p.endDate ? Math.ceil((new Date(p.endDate) - new Date()) / 86400000) : null;
+    const st = p.status === 'active' ? '⚡' : '👁';
+    const dl = daysLeft !== null ? (daysLeft > 0 ? ` — ${daysLeft} يوم متبقي` : ' — متأخرة') : '';
+    return `${st} ${(p.goal || p.reason || '').slice(0, 80)}${dl}`;
+  }).join('\n');
 
-  /* recent positive note */
-  const lastNote = [...(db.notes?.positive || [])].filter(n => n.colId === curColId).slice(-1)[0];
-  const noteLine = lastNote ? `\n💬 *آخر ملاحظة إيجابية:*\n"${lastNote.text.slice(0, 120)}${lastNote.text.length > 120 ? '…' : ''}"` : '';
+  const avgEmoji = avg >= 9 ? '🌟' : avg >= 8 ? '✅' : avg >= 6 ? '🔶' : avg > 0 ? '⚠️' : '➖';
 
-  /* avg colour emoji */
-  const avgEmoji = avg >= 8 ? '🌟' : avg >= 6 ? '✅' : avg > 0 ? '⚠️' : '➖';
-
-  /* ── compose message ── */
   const msg =
-`📊 *تقرير الأداء الشخصي — RxPerform Pro*
+`📊 *تقرير الأداء — RxPerform Pro*
 ━━━━━━━━━━━━━━━━━━━━━
-👤 *${c.name}*${c.role ? '\n🏷 ' + c.role : ''}
+👤 *${c.name}*${c.role ? ' · ' + c.role : ''}${c.department ? ' · ' + c.department : ''}
 📅 *الفترة:* ${mLabel}
 ━━━━━━━━━━━━━━━━━━━━━
 ${avgEmoji} *متوسط الأداء:* ${avg ? avg.toFixed(2) : '—'}/10
-📈 *الاتجاه:* ${trend}${prevAvg ? ' (' + prevAvg.toFixed(1) + ' → ' + avg.toFixed(1) + ')' : ''}
-🏆 *الترتيب:* ${rank}/${total}
-📝 *الإدخالات:* ${entries}
+📈 *الاتجاه:* ${trendTxt}${prevAvg ? ' (الفترة السابقة: ' + prevAvg.toFixed(1) + ')' : ''}
+🏆 *الترتيب:* #${rank} من ${total}
+
 💪 *الاتساق:* ${con}%
-🔥 *خطر الإرهاق:* ${brLbl}
+🔥 *خطر الإرهاق:* ${brLbl} (${br}%)
+👥 *مقارنة بالفريق:* ${vsTm} (متوسط الفريق: ${ta || '—'})
+💯 *درجات 10/10:* ${perfect}
+${streak > 0 ? '🔥 *أيام متتالية:* ' + streak : ''}
+${predict !== null ? '🔮 *التوقع:* ' + predict + '/10 (' + (predict >= avg ? '↑ تحسن متوقع' : '↓ مراجعة مطلوبة') + ')' : ''}
 ━━━━━━━━━━━━━━━━━━━━━
 📐 *تفاصيل المعايير:*
-${crLines || '— لا توجد بيانات —'}${pipLine}${noteLine}
+${crLines || '— لا توجد بيانات —'}
+${best && worst && best !== worst ? `\n🏆 *أقوى:* ${isAr && best.cr.nameAr ? best.cr.nameAr : best.cr.name} (${best.avg.toFixed(1)}/10)\n⚠️ *يحتاج تحسين:* ${isAr && worst.cr.nameAr ? worst.cr.nameAr : worst.cr.name} (${worst.avg.toFixed(1)}/10)` : ''}
+${notesLines ? '━━━━━━━━━━━━━━━━━━━━━\n📝 *ملاحظات الفترة:*\n' + notesLines : ''}
+${pipLines ? '━━━━━━━━━━━━━━━━━━━━━\n📋 *خطط التطوير:*\n' + pipLines : ''}
 ━━━━━━━━━━━━━━━━━━━━━
 _RxPerform Pro · ${new Date().toLocaleDateString('ar-EG')} · سري_`;
 
@@ -3088,8 +3182,8 @@ _RxPerform Pro · ${new Date().toLocaleDateString('ar-EG')} · سري_`;
     _waUpdatePhone(sel);
   }
   /* message preview */
-  const ta = document.getElementById('waMsgArea');
-  if (ta) ta.value = msg;
+  const msgArea = document.getElementById('waMsgArea');
+  if (msgArea) msgArea.value = msg;
 
   openModal('waModal');
 }
@@ -3220,10 +3314,19 @@ if (typeof doImport !== 'function') {
 /* ── Apply saved theme on load ── */
 (function() {
   const savedTheme = localStorage.getItem('rxp_theme') || localStorage.getItem('rxp_mode') || 'night';
+  // Default is always dark/night — only apply light if explicitly saved
   if (savedTheme === 'light') {
     document.body.classList.add('light');
     const t = document.getElementById('modeThumb');
     if (t) t.textContent = '🌙';
+  } else {
+    // Ensure dark mode is active and remove any stale light class
+    document.body.classList.remove('light');
+    const t = document.getElementById('modeThumb');
+    if (t) t.textContent = '☀️';
+    if (!localStorage.getItem('rxp_theme') && !localStorage.getItem('rxp_mode')) {
+      localStorage.setItem('rxp_mode', 'night');
+    }
   }
 })();
 
@@ -3243,8 +3346,8 @@ document.addEventListener('click', function(e) {
   }
   // Close notif panel
   if (!e.target.closest('#notifPanel') && !e.target.closest('[onclick*="notif"], [onclick*="Notif"]')) {
-    const np = document.getElementById('notifPanel');
-    if (np) np.classList.remove('open');
+    const np = document.getElementById('notifPanel')||document.getElementById('rxNotifPanel');
+     if (np) { np.classList.remove('open'); if(typeof closeNotifPanel==='function')closeNotifPanel(); }
   }
 });
 
@@ -3930,20 +4033,29 @@ function _getData(colId,month){
   if(!c)return null;
   var crs=getActiveCr(colId);
   var dim=periodDayCount(month);
-  var days=Array.from({length:dim},function(_,i){return i+1;});
   var sc=(db.scores[colId]&&db.scores[colId][month])||{};
+  var _dsMap=(db.dayStatus&&db.dayStatus[colId]&&db.dayStatus[colId][month])||{};
   var ar=typeof lang!=='undefined'&&lang==='ar';
-  var dayData=days.map(function(d){
+  // Build actual day-of-month numbers for the period
+  var C2=cs();var pParts=month.split('-').map(Number);
+  var days=[];
+  for(var di=0;di<dim;di++){
+    var _dObj=new Date(pParts[0],pParts[1]-2,C2+di);
+    days.push(_dObj.getDate());
+  }
+  var dayData=days.map(function(d,idx){
     var s=0,n=0,statuses=[];
-    crs.forEach(function(cr){var e=sc[cr.id]&&sc[cr.id][d];if(e&&e.score){s+=e.score;n++;}else if(e&&e.status)statuses.push(e.status);});
-    return{d:d,avg:n?+(s/n).toFixed(2):0,n:n,statuses:statuses,
-           date:typeof periodDayToDate==='function'?periodDayToDate(month,d):new Date()};
+    var dayLock=_dsMap[String(d)]||null;
+    crs.forEach(function(cr){var e=sc[cr.id]&&sc[cr.id][String(d)];if(e&&e.score){s+=e.score;n++;}else if(e&&e.status)statuses.push(e.status);});
+    if(dayLock&&!statuses.length)statuses.push(dayLock);
+    var _date=new Date(pParts[0],pParts[1]-2,C2+idx);
+    return{d:d,idx:idx+1,avg:n?+(s/n).toFixed(2):0,n:n,statuses:statuses,dayLock:dayLock,date:_date};
   });
   var crData=crs.map(function(cr){
     var ws=0,wn=0;
-    days.forEach(function(d){var e=sc[cr.id]&&sc[cr.id][d];if(e&&e.score){ws+=e.score;wn++;}});
+    days.forEach(function(d){var e=sc[cr.id]&&sc[cr.id][String(d)];if(e&&e.score){ws+=e.score;wn++;}});
     var avg=wn?ws/wn:0;
-    var entries=days.filter(function(d){var e=sc[cr.id]&&sc[cr.id][d];return e&&e.score;}).length;
+    var entries=days.filter(function(d){var e=sc[cr.id]&&sc[cr.id][String(d)];return e&&e.score;}).length;
     return{cr:cr,avg:avg?+avg.toFixed(2):0,entries:entries};
   });
   var filled=crData.filter(function(x){return x.avg>0;});
@@ -3960,17 +4072,42 @@ function _getData(colId,month){
   var months6=(typeof availMonths==='function'?availMonths():[month]).slice(0,6).reverse();
   var trend6=months6.map(function(m){return{m:m,avg:typeof colAvg==='function'?colAvg(colId,m)||0:0};});
   var pips=(db.settings&&db.settings.pips||[]).filter(function(p){return p.colId===colId;});
-  var posNotes=(db.notes&&db.notes.positive||[]).filter(function(n){return n.colId===colId;});
-  var negNotes=(db.notes&&db.notes.negative||[]).filter(function(n){return n.colId===colId;});
+  // Filter notes to current period only
+  var _pStart2=new Date(pParts[0],pParts[1]-2,C2);
+  var _pEnd2=new Date(pParts[0],pParts[1]-1,C2-1);
+  function _noteInPeriod(n){if(!n.date)return false;var nd=new Date(n.date+'T00:00:00');return nd>=_pStart2&&nd<=_pEnd2;}
+  var posNotes=(db.notes&&db.notes.positive||[]).filter(function(n){return n.colId===colId&&_noteInPeriod(n);});
+  var negNotes=(db.notes&&db.notes.negative||[]).filter(function(n){return n.colId===colId&&_noteInPeriod(n);});
   var acts=[];
   if(db.activities&&db.activities[colId]){Object.values(db.activities[colId]).forEach(function(arr){if(Array.isArray(arr))arr.forEach(function(a){acts.push(a);});});}
   var txns=db.transactions&&db.transactions[colId]?Object.values(db.transactions[colId]):[];
   var ini=(c.name||'?').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
   var mLbl=typeof periodLabel==='function'?periodLabel(month):month;
+  // Extra analytics
+  var prevMonth=(typeof availMonths==='function'?availMonths():[]).find(function(m){return m!==month;})||'';
+  var prevAvg=prevMonth&&typeof colAvg==='function'?colAvg(colId,prevMonth)||0:0;
+  var trendDiff=prevAvg>0?+(overallAvg-prevAvg).toFixed(2):null;
+  var trendDir=trendDiff===null?'stable':trendDiff>0.3?'improving':trendDiff<-0.3?'declining':'stable';
+  var _crSorted=crData.filter(function(x){return x.avg>0;}).slice();
+  var _crMean=_crSorted.length?_crSorted.reduce(function(a,x){return a+x.avg;},0)/_crSorted.length:0;
+  var weakCr=_crSorted.sort(function(a,b){return a.avg-b.avg;}).filter(function(x){return x.avg<8||(x.avg<=_crMean-0.3);}).slice(0,3);
+  var strongCr=_crSorted.slice().sort(function(a,b){return b.avg-a.avg;}).filter(function(x){return x.avg>=9||(x.avg>=_crMean+0.3);}).slice(0,3);
+  var curStreakCount=0;dayData.slice().reverse().forEach(function(x){if(x.avg>=8)curStreakCount++;else if(curStreakCount===0){}else return;});
+  var streak=curStreakCount;
+  var goal=(db.settings&&db.settings.monthlyGoal)||9.0;
+  var goalPct=goal>0?Math.min(100,Math.round(overallAvg/goal*100)):0;
+  var months3=(typeof availMonths==='function'?availMonths():[]).slice(0,3);
+  var avg3m=months3.length?+(months3.reduce(function(a,m2){return a+(typeof colAvg==='function'?colAvg(colId,m2)||0:0);},0)/months3.length).toFixed(2):overallAvg;
+  var rankTotal=db.colleagues?db.colleagues.length:1;
+  var rankBadge=rnk===1?'الأول 🥇':rnk===2?'الثاني 🥈':rnk===3?'الثالث 🥉':rnk<=Math.ceil(rankTotal*0.1)?'Top 10%':('#'+rnk);
   return{c:c,crs:crs,days:days,dayData:dayData,crData:crData,sc:sc,dim:dim,
          overallAvg:overallAvg,daysScored:daysScored,totalEnt:totalEnt,
          bestDay:bestDay,worstDay:worstDay,abv8Days:abv8Days,
          con:con,br:br,rnk:rnk,teamAvg:teamAvg,trend6:trend6,
+         rankTotal:rankTotal,rankBadge:rankBadge,
+         prevAvg:prevAvg,trendDiff:trendDiff,trendDir:trendDir,
+         weakCr:weakCr,strongCr:strongCr,streak:streak,
+         goal:goal,goalPct:goalPct,avg3m:avg3m,
          pips:pips,posNotes:posNotes,negNotes:negNotes,activities:acts,txns:txns,
          mLbl:mLbl,month:month,ar:ar,ini:ini};
 }
@@ -4037,7 +4174,7 @@ function _css(paper,ar){
     +'display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0}'
   +'.ph-name{font-size:14px;font-weight:800;color:#0f172a;letter-spacing:-.2px}'
   +'.ph-name span{color:#0ea5e9}'
-  +'.ph-badge{font-size:10px;background:#0ea5e9;color:#fff;padding:2px 6px;border-radius:3px;font-weight:700;margin-'+lft+':4px;vertical-align:middle}'
+  +'.ph-badge{font-size:10px;background:#0ea5e9 !important;color:#fff !important;padding:2px 6px;border-radius:3px;font-weight:700;margin-'+lft+':4px;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
   +'.ph-sec{font-size:11.2px;color:#94a3b8;margin-top:1px}'
   +'.ph-r{text-align:'+rgt+'}'
   +'.ph-period{font-size:12px;font-weight:700;color:#0ea5e9}'
@@ -4235,20 +4372,19 @@ function _p3(D){
 
   /* ── رأس الجدول ── */
   var thCr=D.crData.map(function(x){
-    /* اختصر اسم المعيار ليناسب العرض */
-    var nm=x.cr.name.length>10?x.cr.name.slice(0,9)+'…':x.cr.name;
-    return '<th style="padding:3px 4px;color:#e2e8f0;font-size:8.8px;font-weight:700;'
-      +'text-align:center;border:1px solid #334155;white-space:nowrap">'+nm+'</th>';
+    var nm=x.cr.nameAr||x.cr.name;
+    return '<th style="padding:2px 3px;color:#e2e8f0;font-size:7px;font-weight:700;'
+      +'text-align:center;border:1px solid #334155;white-space:normal;word-break:break-word;max-width:40px;line-height:1.2">'+nm+'</th>';
   }).join('');
 
   var thead='<thead><tr style="background:#1e293b">'
-    +'<th style="padding:4px 7px;color:#e2e8f0;font-size:9.5px;font-weight:700;'
-      +'text-align:'+(ar?'right':'left')+';border:1px solid #334155;min-width:52px;white-space:nowrap">'
+    +'<th style="padding:2px 4px;color:#e2e8f0;font-size:7.5px;font-weight:700;'
+      +'text-align:'+(ar?'right':'left')+';border:1px solid #334155;min-width:46px;white-space:nowrap">'
       +(ar?'التاريخ':'Date')+'</th>'
     +thCr
-    +'<th style="padding:4px 7px;color:#e2e8f0;font-size:9.5px;font-weight:700;'
-      +'border:1px solid #334155;min-width:64px;text-align:center">'
-      +(ar?'المعدل اليومي':'Daily Avg')+'</th>'
+    +'<th style="padding:2px 4px;color:#e2e8f0;font-size:7.5px;font-weight:700;'
+      +'border:1px solid #334155;min-width:40px;text-align:center;white-space:nowrap">'
+      +(ar?'المعدل':'Avg')+'</th>'
     +'</tr></thead>';
 
   /* ── صفوف الأيام ── */
@@ -4260,30 +4396,30 @@ function _p3(D){
     var avgBg=avg?H.bg(avg):'#f8fafc';
 
     /* خلايا المعايير */
+    var _dayLock=dayObj.dayLock||null;
     var crCells=D.crData.map(function(x){
-      var e=D.sc[x.cr.id]&&D.sc[x.cr.id][dayObj.d];
-      var sc=e&&e.score, st=e&&e.status;
+      var e=D.sc[x.cr.id]&&D.sc[x.cr.id][String(dayObj.d)];
+      var sc=e&&e.score, st=(e&&e.status)||_dayLock;
       var cbg,cfg,ctxt;
       if(sc){cbg=H.bg(sc);cfg=H.c(sc);ctxt=sc;}
-      else if(st==='absent'){cbg='#fee2e2';cfg='#b91c1c';ctxt='A';}
-      else if(st==='busy'){cbg='#fef9c3';cfg='#92400e';ctxt='B';}
+      else if(st==='absent'){cbg='#fee2e2';cfg='#b91c1c';ctxt=ar?'غ':'A';}
+      else if(st==='busy'){cbg='#fef9c3';cfg='#92400e';ctxt=ar?'مشغول':'Busy';}
+      else if(st==='col_off'){cbg='#dbeafe';cfg='#1d4ed8';ctxt=ar?'إجازة زميل':'Col.Off';}
+      else if(st==='my_off'){cbg='#dcfce7';cfg='#166534';ctxt=ar?'إجازتي':'My Off';}
       else{cbg='transparent';cfg='#e2e8f0';ctxt='·';}
       return '<td style="text-align:center;background:'+cbg+';color:'+cfg
-        +';font-weight:700;font-size:9.5px;padding:2px 3px;border:1px solid #f1f5f9">'+ctxt+'</td>';
+        +';font-weight:700;font-size:7.5px;padding:1px 2px;border:1px solid #f1f5f9;white-space:nowrap">'+ctxt+'</td>';
     }).join('');
 
-    /* شريط المعدل */
-    var barW=Math.round(pct*0.5); /* max ~50px داخل خلية 64px */
-    var avgCell='<td style="padding:2px 7px;border:1px solid #f1f5f9;background:'+rowBg+'">'
-      +'<div style="display:flex;align-items:center;gap:4px">'
+    /* خلية المعدل */
+    var avgCell='<td style="padding:1px 4px;border:1px solid #f1f5f9;background:'+rowBg+';text-align:center;white-space:nowrap">'
       +(avg
-        ?'<div style="width:'+barW+'px;height:5px;background:'+avgFg+';border-radius:2px;flex-shrink:0"></div>'
-         +'<span style="font-size:9.5px;font-weight:800;color:'+avgFg+';font-family:monospace">'+pct+'%</span>'
-        :'<span style="font-size:9.5px;color:#e2e8f0">—</span>')
-      +'</div></td>';
+        ?'<span style="font-size:8.5px;font-weight:800;color:'+avgFg+'">'+pct+'%</span>'
+        :'<span style="font-size:8.5px;color:#e2e8f0">—</span>')
+      +'</td>';
 
     return '<tr style="background:'+rowBg+'">'
-      +'<td style="padding:2px 7px;font-size:9.5px;font-weight:'+(wk?'700':'600')
+      +'<td style="padding:1px 4px;font-size:8px;font-weight:'+(wk?'700':'600')
         +';color:'+(wk?'#ef4444':'#334155')+';white-space:nowrap;border:1px solid #f1f5f9">'
         +dayLabel(dayObj)+'</td>'
       +crCells
@@ -4302,8 +4438,10 @@ function _p3(D){
     {c:'#0891b2',bg:'#e0f2fe',l:ar?'جيد جداً ≥ 70%':'Very Good ≥70%'},
     {c:'#d97706',bg:'#fef3c7',l:ar?'جيد ≥ 50%':'Good ≥50%'},
     {c:'#dc2626',bg:'#fee2e2',l:ar?'يحتاج تحسين':'Needs Work'},
-    {c:'#b91c1c',bg:'#fee2e2',l:'A = '+(ar?'غياب':'Absent')},
-    {c:'#92400e',bg:'#fef9c3',l:'B = '+(ar?'مشغول':'Busy')},
+    {c:'#b91c1c',bg:'#fee2e2',l:ar?'غ = غياب':'A = Absent'},
+    {c:'#92400e',bg:'#fef9c3',l:ar?'مشغول':'Busy'},
+    {c:'#1d4ed8',bg:'#dbeafe',l:ar?'إجازة زميل':'Col. Off'},
+    {c:'#166534',bg:'#dcfce7',l:ar?'إجازتي':'My Off'},
   ].map(function(it){
     return '<div style="display:flex;align-items:center;gap:3px">'
       +'<div style="width:9px;height:9px;border-radius:2px;background:'+it.bg+';border:1px solid '+it.c+'"></div>'
@@ -4560,8 +4698,8 @@ function _p5(D){
   var allTx=Object.values((db.transactions&&db.transactions[D.c.id])||{});
   var pParts=D.month.split('-').map(Number);
   var cs=(db.settings&&db.settings.cycleStart)||16;
-  var pStart=new Date(pParts[0],pParts[1]-2,cs);
-  var pEnd=new Date(pParts[0],pParts[1]-1,cs-1);
+  var pStart=new Date(pParts[0],pParts[1]-1,cs);
+  var pEnd=new Date(pParts[0],pParts[1],cs-1);
   var txList=allTx.filter(function(tx){
     if(!tx.date) return false;
     var d=new Date(tx.date);
@@ -4777,8 +4915,8 @@ function _p6(D){
     var pParts=periodYM.split('-').map(Number);
     var cs=(db.settings&&db.settings.cycleStart)||16;
     /* الفترة: من cs/pM/pY إلى (cs-1)/(pM+1)/pY */
-    var pStart=new Date(pParts[0],pParts[1]-2,cs);
-    var pEnd=new Date(pParts[0],pParts[1]-1,cs-1);
+    var pStart=new Date(pParts[0],pParts[1]-1,cs);
+    var pEnd=new Date(pParts[0],pParts[1],cs-1);
     if(hDate>=pStart&&hDate<=pEnd){
       (h.activities||[]).forEach(function(a){
         allActs.push({
@@ -4979,9 +5117,14 @@ function _p7(D){
   }).join('');
 
   /* ── نقاط القوة ومجالات التطوير ── */
-  var sorted=D.crData.slice().sort(function(a,b){return b.avg-a.avg;});
-  var strengths=sorted.slice(0,3).filter(function(x){return x.avg>0;});
-  var improvs=sorted.slice(-3).filter(function(x){return x.avg>0;}).reverse();
+  var sorted=D.crData.filter(function(x){return x.avg>0;}).slice().sort(function(a,b){return b.avg-a.avg;});
+  var _crMean=sorted.length?sorted.reduce(function(a,x){return a+x.avg;},0)/sorted.length:0;
+  // Strengths: only if avg>=9 OR clearly above average
+  var strengths=sorted.filter(function(x){return x.avg>=9||(sorted.length>3&&x.avg>=_crMean+0.3);});
+  if(!strengths.length)strengths=sorted.slice(0,1); // at least best one
+  // Development: only if avg<8 OR clearly below average
+  var improvs=sorted.filter(function(x){return x.avg<8||(sorted.length>3&&x.avg<=_crMean-0.3);});
+  if(!improvs.length&&sorted.length)improvs=[]; // empty if all good
 
   var strHtml=strengths.map(function(x){
     var c=H.c(x.avg);
@@ -4999,12 +5142,12 @@ function _p7(D){
       +'<div style="flex:1;font-size:9.4px;font-weight:600">'+x.cr.name+'</div>'
       +'<span style="font-size:10.6px;font-weight:800;color:'+c+';font-family:monospace">'+H.pct(x.avg,10)+'%</span>'
       +'</div>';
-  }).join('')||'<div style="color:#94a3b8;font-size:9.4px;padding:6px">'+(ar?'لا توجد':'No data')+'</div>';
+  }).join('')||'<div style="color:#059669;font-size:9.4px;padding:8px;background:#f0fdf4;border-radius:6px;text-align:center">✅ '+(ar?'جميع المعايير بمستوى ممتاز':'All criteria performing excellently')+'</div>';
 
-  /* ── ملاحظات (موسّعة) ── */
+  /* ── ملاحظات الفترة الحالية فقط ── */
   var allNotesForDisplay=[
-    ...D.posNotes.slice(-6).map(function(n){return{t:'✅',c:n.text,d:n.date||'—',color:'#059669',bg:'#f0fdf4'};}),
-    ...D.negNotes.slice(-5).map(function(n){return{t:'⚠️',c:n.text,d:n.date||'—',color:'#dc2626',bg:'#fff5f5'};})
+    ...D.posNotes.map(function(n){return{t:'✅',c:n.text,d:n.date||'—',color:'#059669',bg:'#f0fdf4'};}),
+    ...D.negNotes.map(function(n){return{t:'⚠️',c:n.text,d:n.date||'—',color:'#dc2626',bg:'#fff5f5'};})
   ].sort(function(a,b){return (b.d||'').localeCompare(a.d||'');});
   var notesHtml=allNotesForDisplay.map(function(n){
     return '<tr>'
@@ -5109,12 +5252,27 @@ function _p8(D){
   var top=D.crData.slice().sort(function(a,b){return b.avg-a.avg;}).slice(0,2);
   if(top.length)recs.push({i:'💪',t:ar?'نقاط القوة':'Top Strengths',b:top.map(function(x){return x.cr.name+' ('+H.pct(x.avg,10)+'%)';}).join(' · ')});
   if(!recs.length)recs.push({i:'📋',t:ar?'مراجعة دورية':'Regular Review',b:ar?'يُنصح بمراجعة الأداء بشكل منتظم.':'Regular performance reviews recommended.'});
-  var devPlan=[
-    {ph:ar?'الأسبوع 1-2':'Week 1-2',act:ar?'تحليل أسباب انخفاض الأداء في المعايير الضعيفة':'Analyze root causes of low-performing criteria'},
-    {ph:ar?'الأسبوع 3-4':'Week 3-4',act:ar?'وضع أهداف يومية قابلة للقياس والمتابعة':'Set measurable daily targets with tracking'},
-    {ph:ar?'الشهر 2':'Month 2',act:ar?'متابعة التقدم ومراجعة الأهداف بانتظام':'Track progress and review targets regularly'},
-    {ph:ar?'الشهر 3':'Month 3',act:ar?'تقييم شامل ورفع مستوى الأهداف للمرحلة القادمة':'Comprehensive assessment and target elevation'}
-  ];
+  // Manager summary - auto generated
+  var trendColor=D.trendDir==='improving'?'#059669':D.trendDir==='declining'?'#dc2626':'#d97706';
+  var trendLbl=D.trendDir==='improving'?(ar?'تحسن ↑':'Improving ↑'):D.trendDir==='declining'?(ar?'تراجع ↓':'Declining ↓'):(ar?'مستقر →':'Stable →');
+  var summaryText=ar
+    ?('يُظهر '+D.c.name+' أداءً بمعدل '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) خلال '+D.mLbl
+      +(D.trendDiff!==null?'، '+(D.trendDir==='improving'?'تحسّن':'تراجَع')+' بمقدار '+Math.abs(D.trendDiff)+' عن الفترة السابقة.':'.')
+      +' الترتيب: #'+D.rnk+' من '+D.rankTotal+'.'
+      +' الاتساق: '+D.con+'%.'
+      +(D.br>60?' ⚠ مؤشر إرهاق مرتفع ('+D.br+'%).':''))
+    :(D.c.name+' scored '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) for '+D.mLbl
+      +(D.trendDiff!==null?', '+(D.trendDir==='improving'?'improved':'declined')+' by '+Math.abs(D.trendDiff)+' vs previous period.':'.')
+      +' Rank: #'+D.rnk+'/'+D.rankTotal+'.'
+      +' Consistency: '+D.con+'%.'
+      +(D.br>60?' ⚠ High burnout risk ('+D.br+'%).':''));
+  // Next month goals based on weak criteria
+  var sorted=D.crData.filter(function(x){return x.avg>0;}).sort(function(a,b){return a.avg-b.avg;});
+  var goals3=[];
+  if(D.overallAvg<9.5) goals3.push(ar?'رفع المعدل العام إلى '+Math.min(10,+(D.overallAvg+0.5).toFixed(1))+'/10':'Raise overall to '+Math.min(10,+(D.overallAvg+0.5).toFixed(1))+'/10');
+  if(D.con<90) goals3.push(ar?'تحقيق اتساق ≥ 90% بتسجيل يومي منتظم':'Achieve ≥90% consistency with daily entries');
+  if(sorted.length&&sorted[0].avg<8) goals3.push(ar?'تحسين "'+( sorted[0].cr.nameAr||sorted[0].cr.name)+'" (حالياً '+sorted[0].avg.toFixed(1)+')':'Improve "'+(sorted[0].cr.name)+'" (currently '+sorted[0].avg.toFixed(1)+')');
+  while(goals3.length<3) goals3.push(ar?'الحفاظ على مستوى الأداء الحالي وتعزيز نقاط القوة':'Maintain current performance and reinforce strengths');
   return'<div class="A4"><div class="accent" style="background:linear-gradient(to bottom,#f59e0b,#0ea5e9)"></div>'
     +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
@@ -5145,10 +5303,23 @@ function _p8(D){
           +recs.map(function(r){return'<div style="display:flex;gap:8px;padding:6px 9px;border-radius:8px;background:#f8fafc;border:1px solid #f1f5f9;margin-bottom:4px"><span style="font-size:13px;flex-shrink:0">'+r.i+'</span><div><div style="font-size:10px;font-weight:800">'+r.t+'</div><div style="font-size:9.4px;color:#475569;margin-top:1px">'+r.b+'</div></div></div>';}).join('')
         +'</div>'
         +'<div>'
-          +'<div class="sec">'+(ar?'خطة التطوير':'Development Plan')+'</div>'
-          +'<table class="T"><thead><tr class="dh"><th style="width:76px">'+(ar?'المرحلة':'Phase')+'</th><th>'+(ar?'الإجراء':'Action')+'</th></tr></thead><tbody>'
-            +devPlan.map(function(p){return'<tr><td style="font-weight:700;color:#0ea5e9;white-space:nowrap;font-size:10px">'+p.ph+'</td><td style="font-size:9.4px">'+p.act+'</td></tr>';}).join('')
-          +'</tbody></table>'
+          +'<div class="sec">'+(ar?'الملخص التنفيذي':'Executive Summary')+'</div>'
+          +'<div style="padding:8px 10px;background:#f0fdf4;border-'+(ar?'right':'left')+':4px solid #059669;border-radius:8px;font-size:9px;color:#334155;line-height:1.7;margin-bottom:8px">'+summaryText+'</div>'
+          +'<div class="sec">'+(ar?'أهداف الفترة القادمة':'Next Period Goals')+'</div>'
+          +goals3.map(function(g,i){
+            var colors=['#059669','#0891b2','#d97706'];
+            var bgs=['#dcfce7','#e0f2fe','#fef9c3'];
+            return'<div style="display:flex;gap:7px;padding:5px 8px;background:'+bgs[i]+';border-radius:7px;margin-bottom:4px">'
+              +'<span style="font-size:11px;font-weight:900;color:'+colors[i]+'">0'+(i+1)+'</span>'
+              +'<span style="font-size:9px;color:#334155;line-height:1.4">'+g+'</span>'
+              +'</div>';
+          }).join('')
+          +'<div style="margin-top:6px;padding:7px 10px;background:'+(D.trendDir==='improving'?'#f0fdf4':D.trendDir==='declining'?'#fef2f2':'#fefce8')+';border-radius:7px;display:flex;align-items:center;gap:8px">'
+            +'<span style="font-size:18px;color:'+trendColor+'">'+( D.trendDir==='improving'?'↗':D.trendDir==='declining'?'↘':'→')+'</span>'
+            +'<div><div style="font-size:9.5px;font-weight:700;color:'+trendColor+'">'+trendLbl+'</div>'
+            +(D.trendDiff!==null?'<div style="font-size:8.5px;color:#64748b">'+(D.trendDiff>0?'+':'')+D.trendDiff+' '+(ar?'عن الفترة السابقة':'vs previous period')+'</div>':'')
+            +'</div>'
+          +'</div>'
           +'<div style="margin-top:12px;padding-top:10px;border-top:1.5px dashed #e2e8f0">'
             +'<div style="font-size:9.4px;color:#64748b;margin-bottom:12px">'+(ar?'الاعتماد والتوقيع':'Approval & Signature')+'</div>'
             +'<div style="display:flex;justify-content:space-between;gap:14px">'
@@ -5624,10 +5795,11 @@ function printAllNotesReport() {
     + '</div>'
     + noteCards
     + '</div></body></html>';
+  html = html.replace('</body>', '<scri'+'pt>window.onload=function(){window.print();}<\/scri'+'pt></body>');
   var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   var url = URL.createObjectURL(blob);
   var w = window.open(url, '_blank');
-  if (w) { setTimeout(function() { URL.revokeObjectURL(url); }, 60000); if (typeof toast === 'function') toast(ar ? '👁 تم فتح تقرير الملاحظات' : '👁 Notes report opened', '#0d9488'); }
+  if (w) { setTimeout(function() { URL.revokeObjectURL(url); }, 60000); if (typeof toast === 'function') toast(ar ? '🖨 جاري فتح نافذة الطباعة…' : '🖨 Opening print dialog…', '#0d9488'); }
   else { var a = document.createElement('a'); a.href = url; a.download = 'notes-report.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 }
 
@@ -5995,8 +6167,21 @@ const RxNotifMgr = (() => {
     return false;
   }
 
+  // Check if same notification was already seen in this session or stored
+  function _alreadySeen(category, title) {
+    // Check in-memory recent (3 sec)
+    const key = category + '::' + title;
+    if (_dedup(key)) return true;
+    // Check stored notifications - if same title+category exists unarchived within last 24h
+    const cutoff = Date.now() - 86400000;
+    const existing = RxNotifStore.getAll().find(function(n) {
+      return n.title === title && n.category === category && n.ts > cutoff;
+    });
+    return !!existing;
+  }
+
   function notify({ title, message, icon = '🔔', priority = 'medium', category = 'system', action = null, sticky = false }) {
-    if (_dedup(category + title)) return;
+    if (_alreadySeen(category, title)) return;
     const settings = RxNotifStore.getSettings();
     if (!settings.categories[category]) return;
     if (settings.quietMode && priority !== 'critical') return;
@@ -6541,7 +6726,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 </div></div>
 <div class="modal-overlay" id="noteModal"><div class="modal-box"><div class="modal-title">📝 <span data-i18n="add_note">Add Note</span></div><div class="form-group"><label class="form-label" data-i18n="colleague">Colleague</label><select class="form-select" id="noteColSel"></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="form-group"><label class="form-label" data-i18n="type">Type</label><select class="form-select" id="noteType"><option value="positive">✅ Positive</option><option value="negative">⚠ Improvement</option></select></div><div class="form-group"><label class="form-label" data-i18n="priority">Priority</label><select class="form-select" id="notePriority"><option value="normal">Normal</option><option value="high">⭐ High</option><option value="critical">🔥 Critical</option></select></div></div><div class="form-group"><label class="form-label" data-i18n="note">Note</label><textarea class="form-input" id="noteText" rows="4" placeholder="Enter note…"></textarea></div><div class="form-group"><label class="form-label" data-i18n="date">Date</label><input class="form-input" type="date" id="noteDate"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('noteModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveNote()" data-i18n="save">Save</button></div></div></div>
 <div class="modal-overlay" id="pipModal"><div class="modal-box"><div class="modal-title" id="pipModalTitle">Create Improvement Plan</div><input type="hidden" id="pipId"><input type="hidden" id="pipColId"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="form-group"><label class="form-label" data-i18n="start_date">Start Date</label><input class="form-input" type="date" id="pipStart"></div><div class="form-group"><label class="form-label" data-i18n="end_date">End Date</label><input class="form-input" type="date" id="pipEnd"></div></div><div class="form-group"><label class="form-label" data-i18n="target_score">Target Score</label><input class="form-input" type="number" id="pipTarget" min="1" max="10" step="0.5"></div><div class="form-group"><label class="form-label" data-i18n="goal">Goal / Title</label><input class="form-input" type="text" id="pipGoal"></div><div class="form-group"><label class="form-label" data-i18n="reason">Reason / Context</label><textarea class="form-input" id="pipReason" rows="2"></textarea></div><div class="form-group"><label class="form-label" data-i18n="actions">Action Items</label><textarea class="form-input" id="pipActions" rows="3"></textarea></div><div class="form-group"><label class="form-label" data-i18n="status">Status</label><select class="form-select" id="pipStatus"><option value="active">Active</option><option value="monitoring">Monitoring</option><option value="completed">Completed</option></select></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('pipModal')" data-i18n="cancel">Cancel</button><button class="btn btn-danger" id="pipDeleteBtn" onclick="deletePlan()" style="display:none" data-i18n="delete">Delete</button><button class="btn btn-primary" onclick="savePlan()" data-i18n="save">Save</button></div></div></div>
-<div class="modal-overlay" id="voiceModal"><div class="modal-box" style="max-width:360px;text-align:center"><div class="modal-title" style="justify-content:center">🎙 <span data-i18n="voice_note">Voice Note</span></div><div id="voiceColSel" style="margin-bottom:12px"><select class="form-select" id="voiceColSelInput"></select></div><div class="voice-waveform" id="voiceWaveform" style="justify-content:center;margin:16px 0"><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div><div class="voice-bar" style="height:4px"></div></div><div id="voiceTimer" style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--cyan);margin:8px 0">0:00</div><div id="voiceStatus" style="font-size:12px;color:var(--text2);margin-bottom:16px" data-i18n="press_record">Press record to start</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-danger" id="voiceRecordBtn" onclick="toggleVoiceRecord()" data-i18n="record">🔴 Record</button><button class="btn btn-ghost" id="voicePlayBtn" onclick="playVoice()" style="display:none" data-i18n="play">▶ Play</button></div><div id="voicePlayback" style="display:none;margin-top:12px"><audio id="voiceAudio" controls style="width:100%"></audio></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeVoiceModal()" data-i18n="cancel">Cancel</button><button class="btn btn-primary" id="voiceSaveBtn" onclick="saveVoiceNote()" style="display:none" data-i18n="save">Save Note</button></div></div></div>
+
 <div class="modal-overlay" id="themeModal"><div class="modal-box" style="max-width:340px"><div class="modal-title">🎨 <span data-i18n="choose_theme">Choose Theme</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="themeGrid"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('themeModal')" data-i18n="close">Close</button></div></div></div>
 
 
@@ -6820,7 +7005,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 
 
 <!-- ═══ NOTIFICATION PANEL ═══ -->
-<div id="rxNotifPanel" style="position:fixed;top:0;right:0;width:380px;max-width:100vw;height:100vh;z-index:99998;display:flex;flex-direction:column;background:rgba(10,22,40,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-left:1px solid rgba(255,255,255,0.08);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-20px 0 60px rgba(0,0,0,0.5)">
+<div id="rxNotifPanel" style="position:fixed;top:58px;right:0;width:300px;max-width:92vw;height:auto;max-height:calc(100vh - 70px);z-index:99998;display:flex;flex-direction:column;background:rgba(10,22,40,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08);border-radius:0 0 0 14px;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-8px 8px 32px rgba(0,0,0,0.4)">
 
   <!-- Header -->
   <div style="padding:16px 16px 0;flex-shrink:0">
@@ -6955,7 +7140,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 #rxNotifList::-webkit-scrollbar { width: 4px; }
 #rxNotifList::-webkit-scrollbar-track { background: transparent; }
 #rxNotifList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-@media (max-width: 480px) { #rxNotifPanel { width: 100vw !important; } }
+@media (max-width: 480px) { #rxNotifPanel { width: 92vw !important; max-width:92vw !important; } }
 /* WA modal textarea scrollbar */
 #waMsgArea::-webkit-scrollbar { width: 4px; }
 #waMsgArea::-webkit-scrollbar-thumb { background: rgba(37,211,102,0.3); border-radius: 2px; }
