@@ -7531,15 +7531,65 @@ window.bsmRenderColleagues = function(){
 
     // Header
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
+    hdr.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px';
+
+    // Name display (click to edit)
     var nm = document.createElement('span');
-    nm.style.cssText = 'font-size:13px;font-weight:700;color:var(--white)';
+    nm.style.cssText = 'font-size:13px;font-weight:700;color:var(--white);flex:1';
     nm.textContent = '👤 ' + col.name;
+
+    // Edit button
+    var eb = document.createElement('button');
+    eb.style.cssText = 'background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap';
+    eb.textContent = '✏ تعديل';
+    (function(i, nameSpan, editBtn, cardEl){
+      editBtn.onclick = function(){
+        // Switch to inline edit mode
+        var oldName = _bsmCols[i].name;
+        var inp = document.createElement('input');
+        inp.value = oldName;
+        inp.style.cssText = 'flex:1;background:var(--bg2);border:1px solid var(--cyan);color:var(--white);border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700;outline:none;min-width:0';
+        var saveBtn = document.createElement('button');
+        saveBtn.style.cssText = 'background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.4);color:var(--emerald);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap';
+        saveBtn.textContent = '✔ حفظ';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap';
+        cancelBtn.textContent = '✕';
+        // Replace name span and edit btn with input + save + cancel
+        hdr.innerHTML = '';
+        hdr.appendChild(inp);
+        hdr.appendChild(saveBtn);
+        hdr.appendChild(cancelBtn);
+        inp.focus(); inp.select();
+        function doSave(){
+          var newName = inp.value.trim();
+          if(!newName){ toast('اكتب اسم الزميل','#ffb340'); inp.focus(); return; }
+          if(newName !== oldName && _bsmCols.find(function(x,xi){ return xi!==i && x.name===newName; })){
+            toast('الاسم موجود بالفعل','#ffb340'); inp.focus(); return;
+          }
+          // Update name in _bsmCols and _trBranch
+          _bsmCols[i].name = newName;
+          Object.keys(_trBranch).forEach(function(b){
+            if(_trBranch[b] === oldName) _trBranch[b] = newName;
+          });
+          bsmSaveColleagues();
+          saveBranchStaffLocal();
+          bsmRenderColleagues();
+          toast('✅ تم تعديل الاسم');
+        }
+        saveBtn.onclick = doSave;
+        cancelBtn.onclick = function(){ bsmRenderColleagues(); };
+        inp.onkeydown = function(e){ if(e.key==='Enter') doSave(); if(e.key==='Escape') bsmRenderColleagues(); };
+      };
+    })(colIdx, nm, eb, card);
+
+    // Delete button
     var db2 = document.createElement('button');
-    db2.style.cssText = 'background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);color:var(--rose);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer';
+    db2.style.cssText = 'background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);color:var(--rose);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap';
     db2.textContent = '✕ حذف';
     (function(i){ db2.onclick = function(){ bsmRemoveColleague(i); }; })(colIdx);
-    hdr.appendChild(nm); hdr.appendChild(db2);
+
+    hdr.appendChild(nm); hdr.appendChild(eb); hdr.appendChild(db2);
     card.appendChild(hdr);
 
     // Chips
