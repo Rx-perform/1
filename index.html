@@ -2,6 +2,27 @@
 <html lang="en" dir="ltr" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
+<style>html,body{background:#060c18!important;color:#eef4ff}</style>
+<script>
+// Apply saved theme INSTANTLY — dark is always the default
+(function(){
+  // Migrate legacy key and always use rxp_theme as single source of truth
+  if(!localStorage.getItem('rxp_theme') && localStorage.getItem('rxp_mode')){
+    localStorage.setItem('rxp_theme', localStorage.getItem('rxp_mode'));
+  }
+  localStorage.removeItem('rxp_mode');
+  var t = localStorage.getItem('rxp_theme') || 'night';
+  if(t === 'light'){
+    document.documentElement.style.background = '#f0f5fb';
+    document.body && (document.body.style.background = '#f0f5fb');
+  } else {
+    // night or anything else → dark
+    localStorage.setItem('rxp_theme','night');
+    document.documentElement.style.background = '#060c18';
+  }
+})();
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RxPerform Pro v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -253,15 +274,15 @@ body[dir="rtl"] .mt-daily-label{left:auto;right:0;text-align:right}
 .shift-history-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}.shift-history-item:last-child{border-bottom:none}
 .shift-bar{flex:1;height:6px;border-radius:99px;background:var(--border);overflow:hidden}.shift-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan2),var(--emerald));transition:width 0.4s ease}
 /* ════ ACTIVITIES TIMELINE ════ */
-.timeline-container{position:relative;padding-left:24px}
-body[dir="rtl"] .timeline-container{padding-left:0;padding-right:24px}
-.timeline-line{position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
-body[dir="rtl"] .timeline-line{left:auto;right:8px}
-.timeline-item{position:relative;margin-bottom:12px}
-.timeline-dot{position:absolute;left:-20px;width:12px;height:12px;border-radius:99px;border:2px solid;top:2px;background:var(--bg2)}
-body[dir="rtl"] .timeline-dot{left:auto;right:-20px}
-.timeline-content{background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;transition:var(--trans)}.timeline-content:hover{border-color:var(--border2)}
-.timeline-title{font-size:12px;font-weight:600}.timeline-time{font-size:10px;color:var(--text2)}.timeline-desc{font-size:11px;color:var(--text2);margin-top:3px}
+
+body[dir="rtl"] 
+
+body[dir="rtl"] 
+
+
+body[dir="rtl"] 
+
+
 /* ════ NOTES ════ */
 .notes-list{display:flex;flex-direction:column;gap:8px;flex:1}
 .note-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;display:flex;gap:10px;border-left:3px solid;transition:var(--trans)}.note-card:hover{background:var(--glass2)}.note-card.pos{border-left-color:var(--emerald)}.note-card.neg{border-left-color:var(--rose)}
@@ -374,7 +395,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,.mt-score-cell:foc
 @media(max-width:600px){#topbar{padding:0 10px;gap:6px}.tb-logo-sub{display:none}.hero-stats{display:none}.hero-trend-wrap{display:none}.plans-board{flex-direction:column}.fab-main{width:44px;height:44px}}
 @media(min-width:1400px){.bento-grid{grid-template-columns:repeat(5,1fr)}.exec-grid{grid-template-columns:repeat(4,1fr)}}
 /* ════ PRINT ════ */
-@media print{body{background:#fff;color:#000;overflow:auto}.modal-overlay,.fab-main,#bottomNav,#topbar,#colTabs,#fab,#syncStatus{display:none!important}#workspace{display:flex!important;height:auto}}
+@media print{html,body{background:#fff;color:#000;height:auto!important;overflow:visible!important}.modal-overlay,.fab-main,#bottomNav,#topbar,#colTabs,#fab,#syncStatus{display:none!important}#app,#mainArea,#workspace,#innerContent{display:flex!important;height:auto!important;min-height:0!important;overflow:visible!important}.inner-view{display:none!important}.inner-view.active{display:flex!important;height:auto!important;overflow:visible!important}}
 
 /* ════ NEW STATUS CLASSES ════ */
 .s-busy{background:rgba(255,179,64,0.18)!important;color:var(--amber)!important;}
@@ -600,6 +621,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
 .tx-q-text{flex:1;font-size:12px;line-height:1.5}
 .tx-q-btns{display:flex;gap:5px;flex-shrink:0}
 .tx-q-btn{padding:4px 11px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;transition:var(--trans)}
+.tx-note-box{background:var(--rose2);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:8px;margin-top:4px;animation:dpIn 0.15s ease}
 .tx-q-btn.yes{background:var(--glass);border-color:var(--border);color:var(--text2)}.tx-q-btn.yes.active{background:rgba(0,200,150,0.15);border-color:var(--emerald);color:var(--emerald)}
 .tx-q-btn.no{background:var(--glass);border-color:var(--border);color:var(--text2)}.tx-q-btn.no.active{background:rgba(255,77,109,0.12);border-color:var(--rose);color:var(--rose)}
 .tx-sub-q{margin-right:20px;margin-top:4px;border-right:2px solid var(--cyan3);padding-right:10px}
@@ -668,6 +690,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
     <div class="tb-lang-toggle"><div class="tb-lang-btn active" id="langEN" onclick="setLang('en')">EN</div><div class="tb-lang-btn" id="langAR" onclick="setLang('ar')">عربي</div></div>
 
     <div class="tb-mode-btn" onclick="toggleMode()"><div class="tb-mode-thumb" id="modeThumb">☀️</div></div>
+    <button onclick="openTransferPage()" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);color:var(--purple2);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">🔄 تحويلات</button>
     <button onclick="doExport()" style="background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Export JSON</button>
     <button onclick="doImport()" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Import JSON</button>
     <button onclick="doLogout()" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.35);color:var(--rose);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">خروج</button>
@@ -720,9 +743,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
       <div class="inner-tab" data-tab="notes" onclick="switchInner('notes',this)">📝 <span data-i18n="notes">Notes</span> <span class="inner-tab-badge" id="notesTabBadge">0</span></div>
       <div class="inner-tab" data-tab="plans" onclick="switchInner('plans',this)">🏆 <span data-i18n="plans">Plans</span> <span class="inner-tab-badge" id="plansTabBadge">0</span></div>
       <div class="inner-tab" data-tab="achieve" onclick="switchInner('achieve',this)">🎖 <span data-i18n="achievements">Achievements</span></div>
-      <div class="inner-tab" data-tab="activity" onclick="switchInner('activity',this)">🕐 <span data-i18n="activity_feed">Activity</span></div>
       <div class="inner-tab" data-tab="analytics" onclick="switchInner('analytics',this)">🧠 <span data-i18n="ai_insights">AI</span></div>
-      <div class="inner-tab" data-tab="coaching" onclick="switchInner('coaching',this)">🎯 <span data-i18n="coaching">Coaching</span></div>
       
 
     </div>
@@ -895,20 +916,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
 
 
 
-      <!-- ACTIVITY FEED TAB -->
-      <div class="inner-view" id="view-activity" style="flex-direction:column;gap:10px;padding:14px">
-        <div style="font-size:13px;font-weight:700">🕐 <span data-i18n="activity_feed">Activity Feed</span></div>
-        <div id="activityFeed" style="display:flex;flex-direction:column;gap:0;position:relative"></div>
-      </div>
 
-      <!-- COACHING TAB -->
-      <div class="inner-view" id="view-coaching" style="flex-direction:column;gap:10px;padding:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:13px;font-weight:700">🎯 <span data-i18n="coaching_title">Weekly Coaching Session</span></div>
-          <button class="m-btn cyan" onclick="generateCoachingReport()">↻ <span data-i18n="refresh">Refresh</span></button>
-        </div>
-        <div id="coachingContent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;width:100%;align-content:start"></div>
-      </div>
 
     </div><!-- /innerContent -->
   </div><!-- /workspace -->
@@ -959,11 +967,29 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
 
 <div id="syncStatus"></div>
 
+<!-- TX TYPE PICKER MODAL -->
+<div class="modal-overlay" id="txTypeModal">
+  <div class="modal-box" style="max-width:360px;text-align:center">
+    <div class="modal-title">🧾 نوع الفاتورة</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:22px">اختر نوع الفاتورة قبل المتابعة</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+      <button onclick="chooseTxType('sale')" style="padding:16px;border-radius:12px;background:var(--emerald3);border:1.5px solid var(--emerald);color:var(--emerald);font-size:14px;font-weight:700;cursor:pointer;transition:var(--trans)">
+        🛒 فاتورة بيع<div style="font-size:11px;font-weight:400;color:var(--text2);margin-top:4px">تقييم أداء عملية البيع مع العميل</div>
+      </button>
+      <button onclick="chooseTxType('review')" style="padding:16px;border-radius:12px;background:var(--cyan3);border:1.5px solid var(--cyan);color:var(--cyan);font-size:14px;font-weight:700;cursor:pointer;transition:var(--trans)">
+        🔍 فاتورة مراجعة (كنترول)<div style="font-size:11px;font-weight:400;color:var(--text2);margin-top:4px">مراجعة صرف الدواء والتحقق من الجودة</div>
+      </button>
+    </div>
+    <button class="btn btn-ghost" onclick="closeModal('txTypeModal')">إلغاء</button>
+  </div>
+</div>
+
 <!-- ADD TRANSACTION MODAL -->
 <div class="modal-overlay" id="addTxModal">
   <div class="modal-box" style="max-width:560px">
-    <div class="modal-title">🧾 إضافة فاتورة للمراجعة</div>
+    <div class="modal-title" id="addTxModalTitle">🧾 إضافة فاتورة للمراجعة</div>
     <input type="hidden" id="txEditId">
+    <input type="hidden" id="txInvType" value="sale">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
       <div class="form-group">
         <label class="form-label">رقم الفاتورة *</label>
@@ -1811,9 +1837,7 @@ function switchInner(tab,el){
   if(tab==='notes'){_populateNotesPeriodDropdown();renderNotes();}
   if(tab==='plans')renderPlans();
   if(tab==='achieve'&&curColId)renderAchievements();
-  if(tab==='activity'&&curColId)renderActivityFeed();
   if(tab==='analytics'&&curColId)renderAnalytics();
-  if(tab==='coaching'&&curColId)renderCoaching();
   if(tab==='shift')renderShiftTab();
   if(tab==='tx'&&curColId){if(!db.transactions)db.transactions={};renderTxFeed();}
   updateBottomNav(tab);
@@ -2192,17 +2216,7 @@ function renderAchievements(){
   document.getElementById('achieveGrid').innerHTML=achs.map(a=>`<div class="achievement-card ${a.unlocked?'unlocked':''}"><div class="achievement-icon" style="${!a.unlocked?'opacity:0.2;filter:grayscale(1)':''}">${a.icon}</div><div class="achievement-title" style="color:${a.unlocked?a.color:'var(--text2)'}">${a.title}</div><div class="achievement-desc">${a.desc}</div><span class="achievement-badge" style="background:${a.unlocked?a.color+'22':'rgba(255,255,255,0.03)'};color:${a.unlocked?a.color:'var(--text2)'}">${a.unlocked?t('unlocked'):t('locked')}</span></div>`).join('');
 }
 
-/* ══════════════════════════════════════
-   ACTIVITY FEED (Slack-style)
-══════════════════════════════════════ */
-function renderActivityFeed(){
-  const c=db.colleagues.find(x=>x.id===curColId);if(!c)return;
-  const events=[...(db.notes?.positive||[]).filter(n=>n.colId===c.id).map(n=>({ts:n.ts||0,type:'note_pos',text:n.text,date:n.date})),...(db.notes?.negative||[]).filter(n=>n.colId===c.id).map(n=>({ts:n.ts||0,type:'note_neg',text:n.text,date:n.date})),...(db.settings?.pips||[]).filter(p=>p.colId===c.id).map(p=>({ts:new Date(p.createdAt||0).getTime(),type:'plan',text:p.goal||p.reason||'—',date:p.createdAt?.slice(0,10)})),...(db.shifts?.[c.id]?.history||[]).slice(0,5).map(s=>({ts:s.end||0,type:'shift',text:fmtDur(s.duration),date:s.date}))].sort((a,b)=>b.ts-a.ts);
-  const cfg={note_pos:{icon:'✅',color:'var(--emerald)',label:t('positive')},note_neg:{icon:'⚠',color:'var(--rose)',label:t('improvement')},plan:{icon:'🏆',color:'var(--amber)',label:t('plans')},shift:{icon:'⏱',color:'var(--cyan)',label:'Shift'}};
-  const allEvts=[...events].sort((a,b)=>b.ts-a.ts);
-  const feed=document.getElementById('activityFeed');
-  feed.innerHTML='<div class="timeline-line"></div>'+(allEvts.length?allEvts.slice(0,20).map(ev=>{const cfg2=cfg[ev.type]||{icon:'📌',color:'var(--text2)',label:''};return`<div class="timeline-item"><div class="timeline-dot" style="background:${cfg2.color};border-color:${cfg2.color}"></div><div class="timeline-content"><div style="display:flex;align-items:center;gap:6px"><span>${cfg2.icon}</span><div class="timeline-title">${ev.text}</div><span style="font-size:9px;background:${cfg2.color}22;color:${cfg2.color};padding:1px 5px;border-radius:3px;flex-shrink:0">${cfg2.label}</span></div><div class="timeline-time">${ev.date||'—'}</div></div></div>`;}).join(''):`<div style="color:var(--text2);font-size:12px;text-align:center;padding:20px">${t('no_data')}</div>`);
-}
+
 
 /* ══════════════════════════════════════
    AI ANALYTICS
@@ -2226,35 +2240,6 @@ function renderAnalytics(){
   if(recs.length)cards.push(`<div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px;grid-column:span 2"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text2);margin-bottom:10px">💡 Recommendations</div><div style="display:flex;flex-direction:column;gap:7px">${recs.map(r=>`<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:8px;background:${r.color}10;border:1px solid ${r.color}22"><span style="font-size:16px;flex-shrink:0">${r.icon}</span><div style="font-size:12px;color:var(--text)">${r.text}</div></div>`).join('')}</div></div>`);
   document.getElementById('analyticsContent').innerHTML=cards.join('');
 }
-
-/* ══════════════════════════════════════
-   COACHING
-══════════════════════════════════════ */
-function renderCoaching(){
-  if(!curColId){document.getElementById('coachingContent').innerHTML=`<div style="color:var(--text2);grid-column:span 2;text-align:center;padding:40px">${t('no_coaching')}</div>`;return;}
-  generateCoachingReport();
-}
-function generateCoachingReport(){
-  const c=db.colleagues.find(x=>x.id===curColId);if(!c){toast(t('no_data'));return;}
-  const avg=colAvg(c.id,curMonth),crit=getActiveCr(c.id),con=consistency(c.id,curMonth);
-  const crList=crit.map(cr=>{const v=Object.values(db.scores[c.id]?.[curMonth]?.[cr.id]||{}).filter(e=>e.score).map(e=>e.score);return{name:crName(cr),avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:0,count:v.length};}).filter(x=>x.count>0).sort((a,b)=>b.avg-a.avg);
-  const strengths=crList.slice(0,2),weak=crList.slice(-2).reverse();
-  const notes=(db.notes?.positive||[]).filter(n=>n.colId===c.id&&(!n.month||n.month===curMonth)).concat((db.notes?.negative||[]).filter(n=>n.colId===c.id&&(!n.month||n.month===curMonth))).slice(0,3);
-  const br=burnoutRisk(c.id,curMonth);
-  document.getElementById('coachingContent').innerHTML=`
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;margin-bottom:10px">${t('coaching_summary')}</div><div style="display:flex;gap:10px;flex-wrap:wrap">${[{l:t('avg_score'),v:avg||'—',c:sColor(avg)},{l:t('consistency'),v:con+'%',c:con>=70?'var(--emerald)':'var(--amber)'},{l:t('burnout'),v:br+'%',c:br>65?'var(--rose)':br>40?'var(--amber)':'var(--emerald)'},{l:t('total_entries'),v:countSc(c.id,curMonth),c:'var(--cyan)'}].map(x=>`<div style="flex:1;min-width:80px;padding:9px;background:var(--bg3);border-radius:var(--r);text-align:center"><div style="font-size:18px;font-weight:800;color:${x.c};font-family:var(--mono)">${x.v}</div><div style="font-size:9px;color:var(--text2);margin-top:2px">${x.l}</div></div>`).join('')}</div></div>
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;margin-bottom:10px">${t('coaching_strength')}</div>${strengths.length?strengths.map(s=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">🏆</span><div style="flex:1"><div style="font-size:12px;font-weight:600">${s.name}</div><div style="font-size:10px;color:var(--emerald)">${s.avg.toFixed(2)}/10</div></div></div>`).join(''):`<div style="color:var(--text2);font-size:11px">${t('no_data')}</div>`}</div>
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;margin-bottom:10px">${t('coaching_weakness')}</div>${weak.length?weak.map(w=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">📌</span><div style="flex:1"><div style="font-size:12px;font-weight:600">${w.name}</div><div style="font-size:10px;color:var(--amber)">${w.avg.toFixed(2)}/10 · needs work</div></div></div>`).join(''):`<div style="color:var(--text2);font-size:11px">${t('no_data')}</div>`}</div>
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px;grid-column:span 2"><div style="font-size:12px;font-weight:700;margin-bottom:10px">${t('coaching_goals')}</div><div style="display:flex;flex-direction:column;gap:7px">${[`Maintain excellence in ${strengths[0]?.name||t('criteria')}`,`Improve ${weak[0]?.name||t('criteria')} from ${(weak[0]?.avg||0).toFixed(1)} to ${Math.min(10,(weak[0]?.avg||0)+1).toFixed(1)}`,`Achieve ${Math.min(100,con+10)}% consistency score`,br>60?t('check_in'):'Maintain work-life balance and current performance'].map((g,i)=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:9px;background:var(--bg3);border-radius:var(--r)"><span style="font-size:14px;flex-shrink:0">${['🎯','📈','✅','❤️'][i]}</span><div style="font-size:12px">${g}</div></div>`).join('')}</div></div>
-    <div style="background:var(--glass);border:1px solid var(--emerald)33;border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;margin-bottom:10px">🤖 AI Scenario: ${t('scenario_gen')}</div><div id="scenarioBox" style="font-size:12px;color:var(--text2);line-height:1.6;min-height:60px">${generateScenario()}</div><button class="m-btn cyan" onclick="document.getElementById('scenarioBox').innerHTML=generateScenario()" style="margin-top:10px;font-size:11px">↻ ${t('gen_scenario')}</button></div>
-  `;
-}
-function generateScenario(){
-  const scenarios=[{s:'A patient comes to pick up warfarin and mentions they started taking aspirin daily.',expect:'Check INR, assess bleeding risk, counsel on interaction, notify physician.'},{s:'A prescription arrives with an unusually high dose of metformin for a renal patient.',expect:'Verify renal function, contact prescriber, adjust dose or suggest alternative.'},{s:'An anxious caregiver asks about opioid use for their elderly parent in pain.',expect:'Assess pain level, counsel on safe use, provide written instructions, monitor.'},{s:'A patient refuses a generic substitute and demands the brand medication.',expect:'Explain bioequivalence, check insurance coverage, document discussion.'},{s:'You notice a potential drug-drug interaction between two medications in a patient\'s profile.',expect:'Immediately alert prescriber, document concern, suggest safer alternatives.'}];
-  const s=scenarios[Math.floor(Math.random()*scenarios.length)];
-  return `<div style="margin-bottom:8px"><strong style="color:var(--cyan)">Scenario:</strong> ${s.s}</div><div><strong style="color:var(--emerald)">Expected Response:</strong> ${s.expect}</div>`;
-}
-
 /* ══════════════════════════════════════
    EXECUTIVE DASHBOARD
 ══════════════════════════════════════ */
@@ -2972,7 +2957,7 @@ function toggleMode() {
   const isLight = document.body.classList.contains('light');
   const t = document.getElementById('modeThumb');
   if (t) t.textContent = isLight ? '🌙' : '☀️';
-  localStorage.setItem('rxp_mode', isLight ? 'light' : 'night');
+  localStorage.setItem('rxp_theme', isLight ? 'light' : 'night');
   toast(isLight ? '☀️ Light mode' : '🌙 Dark mode');
   closeMoreMenu();
 }
@@ -3313,20 +3298,23 @@ if (typeof doImport !== 'function') {
 
 /* ── Apply saved theme on load ── */
 (function() {
-  const savedTheme = localStorage.getItem('rxp_theme') || localStorage.getItem('rxp_mode') || 'night';
-  // Default is always dark/night — only apply light if explicitly saved
+  const savedTheme = localStorage.getItem('rxp_theme') || 'night';
+  document.body.classList.remove('light', 'ocean');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
+    _themeIdx = _themes.indexOf('light');
     const t = document.getElementById('modeThumb');
     if (t) t.textContent = '🌙';
+  } else if (savedTheme === 'ocean') {
+    document.body.classList.add('ocean');
+    _themeIdx = _themes.indexOf('ocean');
+    const t = document.getElementById('modeThumb');
+    if (t) t.textContent = '🌊';
   } else {
-    // Ensure dark mode is active and remove any stale light class
-    document.body.classList.remove('light');
+    _themeIdx = 0; // night
+    localStorage.setItem('rxp_theme', 'night');
     const t = document.getElementById('modeThumb');
     if (t) t.textContent = '☀️';
-    if (!localStorage.getItem('rxp_theme') && !localStorage.getItem('rxp_mode')) {
-      localStorage.setItem('rxp_mode', 'night');
-    }
   }
 })();
 
@@ -3524,23 +3512,44 @@ function calcLogDur(){
 if(!db.transactions) db.transactions={};
 
 // Questions definition
-const TX_QUESTIONS=[
-  {id:'q_style',   text:'هل تعامل بأسلوب لائق وودود مع العميل؟',         sub:null},
-  {id:'q_time',    text:'هل أعطى العميل وقته الكافي دون استعجال أو تباطؤ؟',sub:null},
-  {id:'q_steps',   text:'هل اتّبع الخطوات الصحيحة في عملية البيع؟',       sub:null},
-  {id:'q_explain', text:'هل شرح للعميل طريقة الاستخدام والجرعات؟',         sub:null},
-  {id:'q_cross_avail', text:'هل كان من المتاح عرض منتج إضافي مفيد على العميل؟ (Cross-Selling)', sub:{id:'q_cross_done',text:'هل قام الزميل بالفعل بعرض المنتج الإضافي؟'}},
-  {id:'q_up_avail',text:'هل كان بالإمكان زيادة مدة العلاج بما يتناسب مع حالة العميل؟ (Upselling)',sub:{id:'q_up_done',  text:'هل قام الزميل بعرض زيادة مدة العلاج للعميل؟'}},
-  {id:'q_subst',   text:'هل كان هناك صنف ناقص وعرض على العميل بديلاً أو تسجيل طلب؟',sub:null},
-  {id:'q_record',  text:'هل سجّل بيانات العميل بشكل صحيح في النظام؟',     sub:null},
-  {id:'q_complaint',text:'هل تعامل مع أي شكوى أو استفسار بشكل احترافي؟', sub:null},
+// أسئلة فاتورة البيع
+const TX_QUESTIONS_SALE=[
+  {id:'q_style',    text:'هل تعامل بأسلوب لائق وودود مع العميل؟',               sub:null},
+  {id:'q_time',     text:'هل أعطى العميل وقته الكافي دون استعجال أو تباطؤ؟',    sub:null},
+  {id:'q_steps',    text:'هل اتّبع الخطوات الصحيحة في عملية البيع؟',             sub:null},
+  {id:'q_explain',  text:'هل شرح للعميل طريقة الاستخدام والجرعات؟',              sub:null},
+  {id:'q_complaint',text:'هل تعامل مع أي شكوى أو استفسار بشكل احترافي؟',        sub:null},
+  {id:'q_needs',    text:'هل حدّد احتياج العميل الفعلي قبل عرض المنتج؟',        sub:null},
+  {id:'q_confirm',  text:'هل تأكّد من رضا العميل قبل إتمام عملية البيع؟',       sub:null},
 ];
+
+// أسئلة فاتورة المراجعة (كنترول)
+const TX_QUESTIONS_REVIEW=[
+  {id:'r_usage',    text:'هل تأكّد من معرفة العميل بطريقة الاستخدام قبل التسليم، حتى لو لم يسأل العميل — وخاصة عند أول استخدام؟',
+    sub:null, requireNote:false},
+  {id:'r_steps',    text:'هل اتّبع الخطوات الصحيحة في عملية مراجعة الدواء بشكل عام؟',
+    sub:null, requireNote:true},
+  {id:'r_check',    text:'هل تحقّق من صلاحية الأدوية وسلامة التعبئة قبل التسليم؟',
+    sub:null, requireNote:true},
+  {id:'r_interact', text:'هل نبّه إلى أي تفاعلات دوائية أو تحذيرات مهمة يجب على العميل معرفتها؟',
+    sub:null, requireNote:false},
+  {id:'r_docs',     text:'هل راجع وثائق الوصفة الطبية والجرعات بدقة قبل الصرف؟',
+    sub:null, requireNote:true},
+  {id:'r_manner',   text:'هل تعامل مع العميل باحترافية وصبر أثناء عملية المراجعة؟',
+    sub:null, requireNote:false},
+];
+
+// للتوافق مع الكود القديم — يتحدد بناءً على نوع الفاتورة
+function getTxQuestions(txType){
+  return txType==='review' ? TX_QUESTIONS_REVIEW : TX_QUESTIONS_SALE;
+}
+const TX_QUESTIONS=TX_QUESTIONS_SALE; // fallback للفواتير القديمة
 
 const TX_CRITERIA=[
   {id:'comm',  label:'التواصل',          color:'var(--cyan)'},
   {id:'know',  label:'المعرفة بالمنتجات', color:'var(--emerald)'},
   {id:'speed', label:'السرعة والكفاءة',   color:'var(--amber)'},
-  {id:'up',    label:'Upselling',         color:'var(--purple2)'},
+  {id:'up',    label:'جودة المراجعة',      color:'var(--purple2)'},
   {id:'prof',  label:'الاحترافية',        color:'var(--rose)'},
 ];
 
@@ -3681,8 +3690,8 @@ function renderTxFeed(){
         if(updated){const ring=card.querySelector('.tx-score-val');if(ring){const ov=calcTxOverall(updated);ring.textContent=ov||'—';ring.style.color=txScoreColor(ov);}}
       });
     });
-    // Feedback save
-    const fbBox=card.querySelector('.tx-feedback-box');
+    // Manager feedback (main box at bottom — no data-noteid attr)
+    const fbBox=card.querySelector('.tx-feedback-box:not([data-noteid])');
     if(fbBox){
       let debT=null;
       fbBox.addEventListener('input',()=>{
@@ -3690,6 +3699,17 @@ function renderTxFeed(){
         debT=setTimeout(()=>saveTxFeedback(tx.id,fbBox.value),800);
       });
     }
+    // Per-question note boxes (requireNote)
+    card.querySelectorAll('.tx-feedback-box[data-noteid]').forEach(nb=>{
+      let debN;
+      nb.addEventListener('input',()=>{
+        clearTimeout(debN);
+        debN=setTimeout(()=>{
+          const tx2=db.transactions[curColId]?.[tx.id];
+          if(tx2){if(!tx2.qa)tx2.qa={};tx2.qa[nb.dataset.noteid]=nb.value;Store.save();}
+        },600);
+      });
+    });
     // Status buttons
     card.querySelectorAll('.tx-status-btn').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -3735,30 +3755,25 @@ function buildTxCard(tx){
     </div>`;
   }).join('');
 
-  // Questions
+  // Questions — use correct set based on invoice type
+  const activeQuestions=getTxQuestions(tx.txType);
   let questionsHtml='';
-  TX_QUESTIONS.forEach(q=>{
+  activeQuestions.forEach(q=>{
     const ans=tx.qa?.[q.id]||'';
-    const showSub=q.sub&&ans==='yes';
-    questionsHtml+=`<div class="tx-q-row${ans?(' answered-'+ans):''}">
-      <div class="tx-q-text">${q.text}</div>
-      <div class="tx-q-btns">
-        <button class="tx-q-btn yes${ans==='yes'?' active':''}" data-qid="${q.id}" data-ans="yes">نعم</button>
-        <button class="tx-q-btn no${ans==='no'?' active':''}" data-qid="${q.id}" data-ans="no">لا</button>
-      </div>
-    </div>`;
-    if(q.sub){
-      const subAns=tx.qa?.[q.sub.id]||'';
-      questionsHtml+=`<div class="tx-sub-q" style="display:${showSub?'block':'none'}" id="sub_${tx.id}_${q.sub.id}">
-        <div class="tx-q-row${subAns?(' answered-'+subAns):''}">
-          <div class="tx-q-text" style="color:var(--cyan)">↳ ${q.sub.text}</div>
-          <div class="tx-q-btns">
-            <button class="tx-q-btn yes${subAns==='yes'?' active':''}" data-qid="${q.sub.id}" data-ans="yes">نعم</button>
-            <button class="tx-q-btn no${subAns==='no'?' active':''}" data-qid="${q.sub.id}" data-ans="no">لا</button>
-          </div>
+    const noteVal=tx.qa?.[q.id+'_note']||'';
+    const showNote=q.requireNote&&ans==='no';
+    questionsHtml+=`<div class="tx-q-row${ans?(' answered-'+ans):''}" style="flex-direction:column;align-items:stretch;gap:6px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div class="tx-q-text">${q.text}</div>
+        <div class="tx-q-btns" style="flex-shrink:0">
+          <button class="tx-q-btn yes${ans==='yes'?' active':''}" data-qid="${q.id}" data-ans="yes">نعم</button>
+          <button class="tx-q-btn no${ans==='no'?' active':''}" data-qid="${q.id}" data-ans="no">لا</button>
         </div>
-      </div>`;
-    }
+      </div>
+      ${q.requireNote?`<div class="tx-note-box" id="txnote_${tx.id}_${q.id}" style="display:${showNote?'block':'none'}">
+        <textarea class="tx-feedback-box" placeholder="ما الخطأ الذي حصل؟ اكتب التفاصيل هنا…" style="width:100%;resize:vertical;min-height:56px;font-size:11px" data-qid="${q.id}" data-noteid="${q.id}_note">${noteVal}</textarea>
+      </div>`:''}
+    </div>`;
   });
 
   const imgHtml=tx.imgData?`<img class="tx-thumb tx-img-preview" src="${tx.imgData}" alt="فاتورة" style="max-height:120px;width:auto">`:
@@ -3770,7 +3785,7 @@ function buildTxCard(tx){
   <div class="tx-card-header">
     <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;flex-wrap:wrap">
       <div>
-        <div class="tx-inv-num"># ${tx.invNum||'—'}</div>
+        <div class="tx-inv-num"># ${tx.invNum||'—'} <span style="font-size:9px;padding:2px 6px;border-radius:4px;margin-left:4px;background:${tx.txType==='review'?'var(--cyan3)':('var(--emerald3)')};color:${tx.txType==='review'?'var(--cyan)':('var(--emerald)')}">${tx.txType==='review'?'🔍 مراجعة':'🛒 بيع'}</span></div>
         <div style="font-size:10px;color:var(--text2);margin-top:2px">${date}${tx.time?' · '+tx.time:''}</div>
       </div>
       <div class="tx-inv-meta">
@@ -3834,6 +3849,9 @@ function saveTxQA(txId,qid,ans,card){
   if(!db.transactions[curColId]||!db.transactions[curColId][txId])return;
   const tx=db.transactions[curColId][txId];
   if(!tx.qa)tx.qa={};
+  // Show/hide requireNote textarea based on answer
+  const noteBox=card?card.querySelector(`#txnote_${txId}_${qid}`):null;
+  if(noteBox){noteBox.style.display=ans==='no'?'block':'none';}
   // Toggle off if same answer clicked again
   tx.qa[qid]=tx.qa[qid]===ans?'':ans;
   Store.save();
@@ -3906,8 +3924,14 @@ let _txImgData2=null;
 function openAddTxModal(){
   if(role!=='admin'){toast('للمديرين فقط','#ff4d6d');return;}
   if(!curColId){toast('اختر زميلاً أولاً','#ffb340');return;}
+  openModal('txTypeModal');
+}
+
+function chooseTxType(type){
+  closeModal('txTypeModal');
   _txProducts2=[];_txImgData2=null;
   document.getElementById('txEditId').value='';
+  document.getElementById('txInvType').value=type;
   ['txInvNum','txInvValue','txQuickNote','txProductInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const d=new Date();
   document.getElementById('txInvDate').value=d.toISOString().split('T')[0];
@@ -3915,8 +3939,12 @@ function openAddTxModal(){
   document.getElementById('txCustType').value='new';
   document.getElementById('txProductsList').innerHTML='';
   document.getElementById('txImgPreview').style.display='none';
+  // Update modal title based on type
+  const titleEl=document.getElementById('addTxModalTitle');
+  if(titleEl) titleEl.textContent=type==='review'?'🔍 إضافة فاتورة مراجعة (كنترول)':'🛒 إضافة فاتورة بيع';
+  // Update date/time labels
+  const dateLabel=document.querySelector('label[for="txInvDate"],.form-label:has(+#txInvDate)');
   openModal('addTxModal');
-  // Enter key in product input
   const pi=document.getElementById('txProductInput');
   if(pi){pi.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTxProduct();}}}
 }
@@ -3953,9 +3981,11 @@ function saveTxInvoice(){
   if(!db.transactions)db.transactions={};
   if(!db.transactions[curColId])db.transactions[curColId]={};
   const id='tx'+Date.now();
+  const txType=document.getElementById('txInvType')?.value||'sale';
   db.transactions[curColId][id]={
     id,
     invNum,
+    txType,
     value:document.getElementById('txInvValue').value||null,
     date:document.getElementById('txInvDate').value,
     time:document.getElementById('txInvTime').value,
@@ -4140,29 +4170,30 @@ function _css(paper,ar){
   +'.A4{width:210mm;min-height:297mm;max-height:297mm;background:#fff;position:relative;overflow:hidden;'
     +'box-shadow:0 2px 24px rgba(0,0,0,.13),0 1px 3px rgba(0,0,0,.07);border-radius:2px}'
   +'@media print{'
-    +'html,body{margin:0;padding:0;background:white}'
-    +'.viewer{padding:0!important;gap:0!important;background:white!important;display:block!important}'
+    +'html,body{margin:0;padding:0;background:white;height:auto!important;overflow:visible!important}'
+    +'.viewer{padding:0!important;gap:0!important;background:white!important;display:block!important;min-height:0!important;height:auto!important}'
     +'.toolbar{display:none!important}'
     +'.pg-wrap{display:block!important;position:static!important;margin:0!important;padding:0!important}'
     +'.pg-num{display:none!important}'
     +'.A4{'
       +'width:210mm!important;'
-      +'height:297mm!important;'
+      +'height:auto!important;'
       +'min-height:297mm!important;'
-      +'max-height:297mm!important;'
-      +'overflow:hidden!important;'
+      +'max-height:none!important;'
+      +'overflow:visible!important;'
       +'box-shadow:none!important;'
       +'border-radius:0!important;'
       +'page-break-after:always!important;'
       +'break-after:page!important;'
-      +'page-break-inside:avoid!important;'
-      +'break-inside:avoid!important;'
+      +'page-break-inside:auto!important;'
+      +'break-inside:auto!important;'
       +'display:block!important;'
       +'position:relative!important'
     +'}'
     +'.A4:last-child{page-break-after:avoid!important;break-after:avoid!important}'
-    +'.body{height:calc(297mm - 68px - 34px)!important;max-height:calc(297mm - 68px - 34px)!important;overflow:hidden!important}'
-    +'.covc{height:297mm!important;min-height:297mm!important;overflow:hidden!important}'
+    +'.body{height:auto!important;min-height:calc(297mm - 68px - 34px)!important;max-height:none!important;overflow:visible!important;page-break-inside:auto!important;break-inside:auto!important}'
+    +'.foot{position:relative!important;margin-top:8px}'
+    +'.covc{height:297mm!important;min-height:297mm!important;max-height:297mm!important;overflow:hidden!important}'
     +'.covbg,.covdots,.covg1,.covg2{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
   +'}'
   /* Page zones */
@@ -5362,20 +5393,21 @@ function _wrapPreview(pages,paper,ar){
 
 function _wrapPrint(pages,paper,ar){
   /* للطباعة المباشرة: لا viewer wrapper، كل A4 صفحة مستقلة */
-  var extraCss='html,body{margin:0;padding:0;background:white}'
+  var extraCss='html,body{margin:0;padding:0;background:white;height:auto!important;overflow:visible!important}'
     +'@page{size:'+paper+';margin:0}'
     +'.A4{'
-      +'width:210mm!important;height:297mm!important;'
-      +'min-height:297mm!important;max-height:297mm!important;'
-      +'overflow:hidden!important;display:block!important;'
+      +'width:210mm!important;height:auto!important;'
+      +'min-height:297mm!important;max-height:none!important;'
+      +'overflow:visible!important;display:block!important;'
       +'page-break-after:always!important;break-after:page!important;'
-      +'page-break-inside:avoid!important;break-inside:avoid!important;'
+      +'page-break-inside:auto!important;break-inside:auto!important;'
       +'box-shadow:none!important;border-radius:0!important;'
       +'position:relative!important'
     +'}'
     +'.A4:last-child{page-break-after:avoid!important;break-after:avoid!important}'
-    +'.body{height:calc(297mm - 68px - 34px)!important;max-height:calc(297mm - 68px - 34px)!important;overflow:hidden!important}'
-    +'.covc{height:297mm!important;min-height:297mm!important;overflow:hidden!important}';
+    +'.body{height:auto!important;min-height:calc(297mm - 68px - 34px)!important;max-height:none!important;overflow:visible!important;page-break-inside:auto!important;break-inside:auto!important}'
+    +'.foot{position:relative!important;margin-top:8px}'
+    +'.covc{height:297mm!important;min-height:297mm!important;max-height:297mm!important;overflow:hidden!important}';
   return'<!DOCTYPE html><html lang="'+(ar?'ar':'en')+'" dir="'+(ar?'rtl':'ltr')+'">'
     +'<head><meta charset="UTF-8">'
     +'<style>'+_css(paper,ar)+extraCss+'</style></head>'
@@ -6558,6 +6590,1030 @@ window.openNotifPanel = function() {
 // Close on Escape
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPanel(); });
 
+
+
+/* ══════════════════════════════════════════════════════
+   TRANSFER / REDISTRIBUTION MODULE  v2
+══════════════════════════════════════════════════════ */
+(function(){
+
+/* ── state ─────────────────────────────────────────── */
+var _trRows   = [];
+var _trBranch = {};
+var _trSel    = new Set();
+var _trHistory= [];   // [{name, date, rows}]
+
+/* ── localStorage helpers ───────────────────────────── */
+function loadBranchStaff(){
+  try{ _trBranch=JSON.parse(localStorage.getItem('rxp_branch_staff')||'{}'); }catch(e){ _trBranch={}; }
+  // Migrate any legacy lowercase/mixed-case branch keys to uppercase
+  var migrated={}, changed=false;
+  Object.keys(_trBranch).forEach(function(k){
+    var up=k.toUpperCase();
+    if(up!==k) changed=true;
+    if(!(up in migrated) || _trBranch[k]) migrated[up]=_trBranch[k];
+  });
+  if(changed){ _trBranch=migrated; saveBranchStaffLocal(); }
+}
+function saveBranchStaffLocal(){
+  localStorage.setItem('rxp_branch_staff',JSON.stringify(_trBranch));
+}
+function loadHistory(){
+  try{ _trHistory=JSON.parse(localStorage.getItem('rxp_tr_history')||'[]'); }catch(e){ _trHistory=[]; }
+}
+function saveHistory(){
+  // keep last 20 files, store rows (cap at 2000 rows per file to stay under quota)
+  localStorage.setItem('rxp_tr_history',JSON.stringify(_trHistory.slice(0,20)));
+}
+function getStaff(branch){ return _trBranch[branch]||''; }
+
+/* Rebuild _trBranch links from saved colleague assignments (rxp_bsm_cols),
+   so colleague→branch links survive refresh even if rxp_branch_staff
+   was out of sync. Keeps any manual Tab1-only entries intact. */
+function reconcileBranchStaffFromColleagues(){
+  var cols=[];
+  try{ cols=JSON.parse(localStorage.getItem('rxp_bsm_cols')||'[]'); }catch(e){ cols=[]; }
+  if(!cols.length) return;
+  var changed=false;
+  cols.forEach(function(col){
+    (col.branches||[]).forEach(function(b){
+      var key=String(b).toUpperCase();
+      if(_trBranch[key]!==col.name){ _trBranch[key]=col.name; changed=true; }
+    });
+  });
+  if(changed) saveBranchStaffLocal();
+}
+
+/* ── open / close ───────────────────────────────────── */
+window.openTransferPage = function(){
+  loadBranchStaff();
+  loadHistory();
+  reconcileBranchStaffFromColleagues();
+  var page=document.getElementById('transferPage');
+  page.style.display='flex';
+  // Always show the table shell immediately
+  document.getElementById('trTableWrap').style.display='';
+  var trEmpty=document.getElementById('trEmpty'); if(trEmpty) trEmpty.style.display='none';
+  document.getElementById('trFilters').style.display='flex';
+  document.getElementById('trStaffPanel').style.display='flex';
+  renderHistoryPanel();
+  renderTransferTable();   // empty table on first open
+  renderBranchStaffChips();
+};
+window.closeTransferPage = function(){
+  document.getElementById('transferPage').style.display='none';
+};
+
+/* ── SheetJS loader ────────────────────────────────── */
+function ensureXLSX(cb){
+  if(window.XLSX){ cb(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=cb;
+  s.onerror=function(){ toast('تعذّر تحميل مكتبة Excel — تحقق من الاتصال','#ff4d6d'); };
+  document.head.appendChild(s);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   TRANSFER UPLOAD — SELF-CONTAINED, NO CDN, WORKS OFFLINE
+   Reads .xlsx (ZIP+XML) and .csv natively in the browser
+══════════════════════════════════════════════════════════════ */
+
+/* ── Inline Progress Bar (inside transferPage) ───────────── */
+function trShowProgress(fileName, pct, msg, done, count){
+  var bar = document.getElementById('trUploadBar');
+  var barFill = document.getElementById('trProgressBar');
+  var barFile = document.getElementById('trBarFileName');
+  var barMsg  = document.getElementById('trBarMsg');
+  if(!bar) return;
+  bar.style.display = 'flex';
+  if(barFile) barFile.textContent = fileName;
+  if(barFill){
+    barFill.style.width = pct + '%';
+    barFill.style.background = done
+      ? 'linear-gradient(90deg,#00c896,#14b8a6)'
+      : 'linear-gradient(90deg,#00d4ff,#00c896)';
+  }
+  if(barMsg){
+    if(done && count !== undefined){
+      barMsg.style.color = '#00c896';
+      barMsg.textContent = '✅ اكتمل — ' + count + ' تحويل';
+    } else if(done === false && msg === 'ERROR'){
+      barMsg.style.color = '#ff4d6d';
+      barMsg.textContent = count; // error text passed in count param
+    } else {
+      barMsg.style.color = '#8fa3c0';
+      barMsg.textContent = msg;
+    }
+  }
+}
+function trHideProgress(){
+  var bar = document.getElementById('trUploadBar');
+  if(bar) bar.style.display = 'none';
+}
+
+/* ── Main entry point ────────────────────────────────────── */
+window.loadTransferExcel = function(input){
+  var files = input.files;
+  if(!files || !files.length) return;
+  var file = files[0];
+  var name = file.name;
+  var ext  = name.split('.').pop().toLowerCase();
+
+  trShowProgress(name, 5, 'جاري فتح الملف…', false);
+  setTimeout(function(){ input.value = ''; }, 300);
+
+  var reader = new FileReader();
+
+  reader.onprogress = function(e){
+    if(e.lengthComputable)
+      trShowProgress(name, 5 + Math.round(e.loaded/e.total*40), 'جاري القراءة…', false);
+  };
+
+  reader.onload = function(e){
+    trShowProgress(name, 50, 'جاري تحليل البيانات…', false);
+    if(ext === 'csv'){
+      try{
+        var rows = parseCSV(e.target.result);
+        trShowProgress(name, 90, 'جاري المعالجة…', false);
+        processRows(rows, name);
+      }catch(err){
+        trShowProgress(name, 0, 'ERROR', false, '❌ '+err.message);
+        console.error('CSV error:',err);
+      }
+    } else {
+      /* async XLSX parse */
+      trShowProgress(name, 55, 'جاري فك الضغط…', false);
+      parseXLSXAsync(e.target.result).then(function(rows){
+        trShowProgress(name, 90, 'جاري المعالجة…', false);
+        processRows(rows, name);
+      }).catch(function(err){
+        /* fallback: try window.XLSX if loaded */
+        if(window.XLSX){
+          try{
+            var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+            var ws=wb.Sheets[wb.SheetNames[0]];
+            var rows2=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+            trShowProgress(name, 90, 'جاري المعالجة…', false);
+            processRows(rows2, name);
+          }catch(err2){
+            trShowProgress(name, 0, 'ERROR', false, '❌ '+err2.message);
+            console.error('XLSX fallback error:',err2);
+          }
+        } else {
+          trShowProgress(name, 0, 'ERROR', false, '❌ '+err.message+' — جرب رفع CSV');
+          console.error('XLSX async error:',err);
+        }
+      });
+    }
+  };
+
+  reader.onerror = function(){
+    trShowProgress(name, 0, 'ERROR', false, '❌ تعذّر قراءة الملف');
+  };
+
+  if(ext === 'csv'){
+    reader.readAsText(file, 'UTF-8');
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
+};
+
+/* ── CSV Parser ──────────────────────────────────────────── */
+function parseCSV(text){
+  // handle BOM
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  var lines = text.split(/\r?\n/);
+  return lines.map(function(line){
+    var cells = [], cur = '', inQ = false;
+    for(var i=0; i<line.length; i++){
+      var c = line[i];
+      if(c==='"'){ inQ=!inQ; }
+      else if((c===','||c==='\t') && !inQ){ cells.push(cur.trim()); cur=''; }
+      else { cur+=c; }
+    }
+    cells.push(cur.trim());
+    return cells;
+  }).filter(function(r){ return r.some(function(c){return c;}); });
+}
+
+/* ── XLSX / CSV Parser — async DecompressionStream, no CDN ── */
+
+/* readZIP: returns {name: Uint8Array} for all stored files */
+function readZIPEntries(bytes){
+  var eocd=-1;
+  for(var i=bytes.length-22;i>=0;i--){
+    if(bytes[i]===0x50&&bytes[i+1]===0x4B&&bytes[i+2]===0x05&&bytes[i+3]===0x06){eocd=i;break;}
+  }
+  if(eocd<0) throw new Error('ليس ملف ZIP صحيح');
+  var cdOff=r32(bytes,eocd+16), cdSz=r32(bytes,eocd+12);
+  var entries={}, pos=cdOff;
+  while(pos<cdOff+cdSz){
+    if(r32(bytes,pos)!==0x02014B50) break;
+    var method=r16(bytes,pos+10);
+    var compSz=r32(bytes,pos+20), uncompSz=r32(bytes,pos+24);
+    var fnLen=r16(bytes,pos+28), exLen=r16(bytes,pos+30), cmLen=r16(bytes,pos+32);
+    var lhOff=r32(bytes,pos+42);
+    var fname=new TextDecoder().decode(bytes.subarray(pos+46,pos+46+fnLen));
+    pos+=46+fnLen+exLen+cmLen;
+    var lhEx=r16(bytes,lhOff+28), lhFn=r16(bytes,lhOff+26);
+    var dataStart=lhOff+30+lhFn+lhEx;
+    entries[fname]={data:bytes.subarray(dataStart,dataStart+compSz), method:method, uncompSz:uncompSz};
+  }
+  return entries;
+}
+function r16(b,o){return b[o]|(b[o+1]<<8);}
+function r32(b,o){return(b[o]|(b[o+1]<<8)|(b[o+2]<<16)|(b[o+3]<<24))>>>0;}
+
+/* inflate one entry async using DecompressionStream */
+async function inflateEntry(entry){
+  if(entry.method===0) return entry.data; // stored, no compression
+  if(entry.method===8){
+    // deflate-raw — Chrome Android 80+
+    if(typeof DecompressionStream==='undefined')
+      throw new Error('DecompressionStream غير مدعوم — جرب رفع CSV');
+    var ds=new DecompressionStream('deflate-raw');
+    var writer=ds.writable.getWriter();
+    var reader=ds.readable.getReader();
+    writer.write(entry.data);
+    writer.close();
+    var chunks=[], total=0;
+    while(true){var r=await reader.read(); if(r.done)break; chunks.push(r.value); total+=r.value.length;}
+    var out=new Uint8Array(total), off=0;
+    chunks.forEach(function(c){out.set(c,off);off+=c.length;});
+    return out;
+  }
+  throw new Error('ضغط غير مدعوم: method='+entry.method);
+}
+
+/* parse XLSX async */
+async function parseXLSXAsync(arrayBuffer){
+  var bytes=new Uint8Array(arrayBuffer);
+  var entries=readZIPEntries(bytes);
+
+  /* shared strings */
+  var shared=[];
+  var ssEntry=entries['xl/sharedStrings.xml'];
+  if(ssEntry){
+    var ssBytes=await inflateEntry(ssEntry);
+    var ssXml=new TextDecoder().decode(ssBytes);
+    var siRe=/<si>([\s\S]*?)<\/si>/g, m;
+    while((m=siRe.exec(ssXml))!==null){
+      shared.push(decodeXE(m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()));
+    }
+  }
+
+  /* first sheet */
+  var shEntry=entries['xl/worksheets/sheet1.xml'];
+  if(!shEntry) throw new Error('لم يُعثر على ورقة البيانات');
+  var shBytes=await inflateEntry(shEntry);
+  var shXml=new TextDecoder().decode(shBytes);
+
+  /* parse rows */
+  var result=[];
+  var rowRe=/<row[^>]*>([\s\S]*?)<\/row>/g, rowM;
+  while((rowM=rowRe.exec(shXml))!==null){
+    var cells=[];
+    var cellRe=/<c ([^>]*)>([\s\S]*?)<\/c>/g, cf;
+    while((cf=cellRe.exec(rowM[0]))!==null){
+      var attr=cf[1], inner=cf[2];
+      var type=(attr.match(/t="([^"]*)"/) ||[])[1]||'';
+      var vM=inner.match(/<v>([\s\S]*?)<\/v>/);
+      var val='';
+      if(vM){
+        if(type==='s') val=shared[parseInt(vM[1])]||'';
+        else if(type==='inlineStr'){var tM=inner.match(/<t>([\s\S]*?)<\/t>/);val=tM?decodeXE(tM[1]):'';}
+        else val=decodeXE(vM[1]);
+      }
+      cells.push(val);
+    }
+    if(cells.length) result.push(cells);
+  }
+  return result;
+}
+function decodeXE(s){
+  return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#(\d+);/g,function(_,n){return String.fromCharCode(+n);});
+}
+
+/* CSV parser */
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  return text.split(/\r?\n/).map(function(line){
+    var cells=[],cur='',inQ=false;
+    for(var i=0;i<line.length;i++){
+      var c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if((c===','||c==='\t')&&!inQ){cells.push(cur.trim());cur='';}
+      else{cur+=c;}
+    }
+    cells.push(cur.trim());
+    return cells;
+  }).filter(function(r){return r.some(function(c){return c;});});
+}
+
+/* ── Row processing (column detection + filter/save) ─────── */
+/* ── Row processing (column detection + filter/save) ─────── */
+function processRows(raw, fileName){
+  trShowProgress(fileName, 85, 'جاري البحث عن الأعمدة…', false);
+
+  // Auto-detect header row
+  var headerIdx = 0;
+  for(var i=0;i<Math.min(15,raw.length);i++){
+    if(raw[i].filter(function(c){return String(c).trim();}).length>=3){headerIdx=i;break;}
+  }
+  var headers     = raw[headerIdx].map(function(h){return String(h).trim();});
+  var headersLow  = headers.map(function(h){return h.toLowerCase();});
+
+  function findCol(){
+    var args = Array.prototype.slice.call(arguments);
+    for(var ai=0;ai<args.length;ai++){
+      var cand = args[ai].toLowerCase();
+      for(var hi=0;hi<headersLow.length;hi++){
+        if(headersLow[hi].indexOf(cand)>=0) return hi;
+      }
+    }
+    return -1;
+  }
+
+  // exact-match first, then partial
+  function findColExact(){ 
+    var args=Array.prototype.slice.call(arguments);
+    for(var ai=0;ai<args.length;ai++){
+      var cand=args[ai].toLowerCase().trim();
+      for(var hi=0;hi<headersLow.length;hi++){
+        if(headersLow[hi].trim()===cand) return hi;
+      }
+    }
+    return -1;
+  }
+  // exact match first, fallback to partial
+  var colCode = findColExact('الكود','code') >= 0 ? findColExact('الكود','code') : findCol('كود','code','item code','رمز');
+  var colName = findColExact('اسم الصنف','اسم الدواء','name','item name') >= 0 ? findColExact('اسم الصنف','اسم الدواء','name','item name') : findCol('صنف','product','description','وصف','اسم');
+  var colQty  = findColExact('الكمية','كمية','qty','quantity') >= 0 ? findColExact('الكمية','كمية','qty','quantity') : findCol('كمية','qty','quantity','amount','عدد');
+  // "من" and "إلي/إلى" — exact match critical to avoid false positives
+  var colFrom = findColExact('من','from') >= 0 ? findColExact('من','from') : findCol('من فرع','from branch','source','مصدر','مرسل');
+  var colTo   = findColExact('إلي','إلى','الى','to') >= 0 ? findColExact('إلي','إلى','الى','to') : findCol('الى فرع','إلى فرع','to branch','dest','receiving','target','مستلم');
+
+  console.log('Headers:', headers);
+  console.log('code:'+colCode+' name:'+colName+' from:'+colFrom+' to:'+colTo+' qty:'+colQty);
+
+  var parsed = [];
+  for(var ri=headerIdx+1;ri<raw.length;ri++){
+    var r    = raw[ri];
+    var from = colFrom>=0 ? String(r[colFrom]||'').trim().toUpperCase() : '';
+    var to   = colTo  >=0 ? String(r[colTo  ]||'').trim().toUpperCase() : '';
+    var qty  = colQty >=0 ? String(r[colQty ]||'').trim() : '';
+    var code = colCode>=0 ? String(r[colCode]||'').trim() : '';
+    var name = colName>=0 ? String(r[colName]||'').trim() : '';
+    if(!from&&!to&&!code&&!name) continue;
+    if(!from||!to) continue;
+    if(!qty||qty==='0'||parseFloat(qty)===0) continue;
+    parsed.push({code:code||'—',name:name||'—',from:from,to:to,qty:qty});
+  }
+
+  if(!parsed.length){
+    trShowProgress(fileName, 0, 'ERROR', false, '❌ لم يُعثر على بيانات — تحقق أسماء الأعمدة');
+    console.warn('Headers found:', headers, '| Data rows:', raw.length-headerIdx-1);
+    return;
+  }
+
+  _trRows = parsed;
+  _trSel  = new Set();
+
+  var histEntry = {
+    id:'h'+Date.now(), name:fileName,
+    date:new Date().toLocaleString('ar-EG'),
+    rows:parsed
+  };
+  _trHistory.unshift(histEntry);
+  saveHistory();
+
+  populateTransferFilters();
+  renderTransferTable();
+  renderBranchStaffChips();
+  renderHistoryPanel();
+
+  ['trExportXLSX','trExportPDF'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display='';
+  });
+
+  trShowProgress(fileName, 100, '', true, parsed.length);
+}
+
+
+/* ── filters ────────────────────────────────────────── */
+function populateTransferFilters(){
+  var froms=[...new Set(_trRows.map(function(r){return r.from;}))].sort();
+  var tos  =[...new Set(_trRows.map(function(r){return r.to;  }))].sort();
+  function fill(selId,branches){
+    var sel=document.getElementById(selId);
+    if(!sel)return;
+    sel.innerHTML='<option value="">كل الفروع</option>'+branches.map(function(b){
+      return '<option value="'+b+'">'+b+'</option>';
+    }).join('');
+  }
+  fill('trFromFilter',froms);
+  fill('trToFilter',tos);
+}
+
+/* ── render table ───────────────────────────────────── */
+window.renderTransferTable = function(){
+  var fromF=(document.getElementById('trFromFilter')||{}).value||'';
+  var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var q    =((document.getElementById('trSearch')||{}).value||'').trim().toLowerCase();
+
+  var filtered=_trRows.filter(function(r){
+    if(fromF&&r.from!==fromF)return false;
+    if(toF  &&r.to  !==toF  )return false;
+    if(q&&r.name.toLowerCase().indexOf(q)<0&&r.code.toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+
+  var countEl=document.getElementById('trCount');
+  if(countEl)countEl.textContent=filtered.length+' صنف';
+
+  var tbody=document.getElementById('trTableBody');
+  if(!tbody)return;
+
+  if(!_trRows.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text2)">ارفع ملف Excel لعرض التحويلات</td></tr>';
+    return;
+  }
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text2)">لا توجد نتائج مطابقة</td></tr>';
+    return;
+  }
+
+  var rows=filtered.map(function(r,fi){
+    var origIdx=_trRows.indexOf(r);
+    var checked=_trSel.has(origIdx)?'checked':'';
+    var staff=getStaff(r.to)||'—';
+    var bg=fi%2?'rgba(255,255,255,0.02)':'';
+    return'<tr style="background:'+bg+'" onmouseenter="this.style.background=\'rgba(167,139,250,0.06)\'" onmouseleave="this.style.background=\''+bg+'\'">'
+      +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><input type="checkbox" '+checked+' data-idx="'+origIdx+'" onchange="toggleTrSel('+origIdx+',this.checked)" style="accent-color:var(--purple2);cursor:pointer;width:15px;height:15px"></td>'
+      +'<td style="padding:9px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2)">'+r.code+'</td>'
+      +'<td style="padding:9px 8px;border-bottom:1px solid var(--border);font-weight:600">'+r.name+'</td>'
+      +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:rgba(255,180,64,0.13);color:var(--amber);border-radius:5px;padding:2px 8px;font-size:11px;white-space:nowrap">'+r.from+'</span></td>'
+      +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:rgba(0,200,150,0.13);color:var(--emerald);border-radius:5px;padding:2px 8px;font-size:11px;white-space:nowrap">'+r.to+'</span></td>'
+      +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-family:var(--mono);font-weight:700;color:var(--cyan)">'+r.qty+'</td>'
+      +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-size:11px;color:var(--purple2)">'+staff+'</td>'
+      +'</tr>';
+  }).join('');
+
+  tbody.innerHTML=rows;
+
+  var allChecked=filtered.length>0&&filtered.every(function(r){return _trSel.has(_trRows.indexOf(r));});
+  var ca=document.getElementById('trCheckAll');
+  if(ca)ca.checked=allChecked;
+
+  var delBtn=document.getElementById('trDeleteBtn');
+  if(delBtn)delBtn.style.display=_trSel.size?'':'none';
+};
+
+window.toggleTrSel=function(idx,checked){
+  if(checked)_trSel.add(idx);else _trSel.delete(idx);
+  var delBtn=document.getElementById('trDeleteBtn');
+  if(delBtn)delBtn.style.display=_trSel.size?'':'none';
+};
+window.selectAllTransfers=function(checked){
+  var fromF=(document.getElementById('trFromFilter')||{}).value||'';
+  var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var q    =((document.getElementById('trSearch')||{}).value||'').trim().toLowerCase();
+  _trRows.forEach(function(r,i){
+    if(fromF&&r.from!==fromF)return;
+    if(toF&&r.to!==toF)return;
+    if(q&&r.name.toLowerCase().indexOf(q)<0&&r.code.toLowerCase().indexOf(q)<0)return;
+    if(checked)_trSel.add(i);else _trSel.delete(i);
+  });
+  var ca=document.getElementById('trCheckAll');
+  if(ca)ca.checked=checked;
+  renderTransferTable();
+};
+window.deleteSelectedTransfers=function(){
+  if(!_trSel.size)return;
+  if(!confirm('حذف '+_trSel.size+' صنف من القائمة؟'))return;
+  _trRows=_trRows.filter(function(_,i){return!_trSel.has(i);});
+  _trSel=new Set();
+  populateTransferFilters();
+  renderTransferTable();
+};
+
+/* ── history panel ──────────────────────────────────── */
+function renderHistoryPanel(){
+  var wrap=document.getElementById('trHistoryList');
+  if(!wrap)return;
+  if(!_trHistory.length){
+    wrap.innerHTML='<div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد سجل بعد</div>';
+    return;
+  }
+  wrap.innerHTML=_trHistory.map(function(h,i){
+    return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:var(--trans)" onmouseenter="this.style.borderColor=\'var(--purple2)\'" onmouseleave="this.style.borderColor=\'var(--border)\'">'
+      +'<span style="font-size:18px">📄</span>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</div><div style="font-size:10px;color:var(--text2)">'+h.date+' · '+h.rows.length+' صنف</div></div>'
+      +'<button onclick="restoreHistory('+i+')" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:var(--purple2);border-radius:6px;padding:3px 9px;font-size:10px;cursor:pointer;white-space:nowrap">↩ تحميل</button>'
+      +'<button onclick="deleteHistory('+i+')" style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.2);color:var(--rose);border-radius:6px;padding:3px 9px;font-size:10px;cursor:pointer">🗑</button>'
+      +'</div>';
+  }).join('');
+}
+window.restoreHistory=function(i){
+  if(!_trHistory[i])return;
+  _trRows=_trHistory[i].rows.map(function(r){
+    var c=Object.assign({},r);
+    if(c.from) c.from=String(c.from).trim().toUpperCase();
+    if(c.to)   c.to  =String(c.to  ).trim().toUpperCase();
+    return c;
+  });
+  _trSel=new Set();
+  populateTransferFilters();
+  renderTransferTable();
+  renderBranchStaffChips();
+  ['trExportXLSX','trExportPDF'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
+  toast('✅ تم تحميل "'+_trHistory[i].name+'"');
+};
+window.deleteHistory=function(i){
+  _trHistory.splice(i,1);
+  saveHistory();
+  renderHistoryPanel();
+};
+
+/* ── Branch → Staff ─────────────────────────────────── */
+function renderBranchStaffChips(){
+  var branches=[...new Set(_trRows.flatMap(function(r){return[r.from,r.to];}))].sort();
+  var wrap=document.getElementById('trBranchStaffChips');
+  if(!wrap)return;
+  if(!branches.length){wrap.innerHTML='<span style="font-size:10px;color:var(--text2)">ارفع ملف لتظهر الفروع</span>';return;}
+  wrap.innerHTML=branches.slice(0,8).map(function(b){
+    var s=getStaff(b);
+    return'<span style="font-size:10px;padding:3px 8px;border-radius:5px;background:'+(s?'var(--emerald3)':'var(--bg3)')+';border:1px solid '+(s?'var(--emerald)':'var(--border)')+';color:'+(s?'var(--emerald)':'var(--text2)')+'">'+b+(s?' → '+s:'')+'</span>';
+  }).join('')+(branches.length>8?'<span style="font-size:10px;color:var(--text2)">+' +(branches.length-8)+' آخرين</span>':'');
+}
+/* ── Branch-Staff Modal ─────────────────────────────── */
+function _bsmAllBranches(){
+  // branches from uploaded data + manually added keys
+  var fromData=[...new Set(_trRows.flatMap(function(r){return[r.from,r.to];}))];
+  var fromSaved=Object.keys(_trBranch);
+  return [...new Set([...fromData,...fromSaved])].sort();
+}
+window.renderBSMRows=function(){
+  var q=(document.getElementById('bsmSearch')||{value:''}).value.trim().toLowerCase();
+  var branches=_bsmAllBranches().filter(function(b){
+    return !q||b.toLowerCase().indexOf(q)>=0||(getStaff(b)||'').toLowerCase().indexOf(q)>=0;
+  });
+  var wrap=document.getElementById('branchStaffRows');
+  if(!wrap)return;
+  if(!branches.length){
+    wrap.innerHTML='<div style="color:var(--text2);font-size:12px;padding:8px">لا توجد فروع — ارفع ملف أو أضف فرعاً يدوياً</div>';
+    return;
+  }
+  // Build owned-by-colleague map for display
+  var ownedByCol={};
+  _bsmCols.forEach(function(col){
+    col.branches.forEach(function(b){ ownedByCol[b]=col.name; });
+  });
+  wrap.innerHTML=branches.map(function(b){
+    var staff=getStaff(b);
+    var safeB=b.replace(/"/g,'&quot;');
+    var safeStaff=staff.replace(/"/g,'&quot;');
+    var isColOwned=!!ownedByCol[b];
+    if(isColOwned){
+      // Read-only row — managed from Tab2
+      return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="min-width:90px;font-size:12px;font-weight:700;color:var(--cyan)">'+b+'</span>'
+        +'<span style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--emerald);border-radius:7px;padding:6px 9px;font-size:12px;opacity:0.75">'+safeStaff+'</span>'
+        +'<span style="font-size:10px;color:var(--emerald);background:var(--emerald3);border:1px solid rgba(0,200,150,0.3);border-radius:5px;padding:2px 7px;white-space:nowrap;flex-shrink:0">🔗 زميل</span>'
+        +'</div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="min-width:90px;font-size:12px;font-weight:700;color:var(--cyan)">'+b+'</span>'
+      +'<input value="'+safeStaff+'" data-branch="'+safeB+'" placeholder="اسم الزميل المسؤول"'
+      +' style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:6px 9px;font-size:12px">'
+      +'<button class="_bsm_del" data-branch="'+safeB+'"'
+      +' style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);color:var(--rose);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;flex-shrink:0">✕</button>'
+      +'</div>';
+  }).join('');
+};
+window.deleteBSMRow=function(branch){
+  delete _trBranch[branch];
+  saveBranchStaffLocal();
+  renderBSMRows();
+  renderBranchStaffChips();
+  renderTransferTable();
+};
+// Event delegation for delete buttons (avoids inline onclick quote issues)
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('_bsm_del')){
+    var br=e.target.getAttribute('data-branch');
+    if(br) deleteBSMRow(br);
+  }
+});
+window.addManualBSMRow=function(){
+  var b=(document.getElementById('bsmNewBranch')||{value:''}).value.trim().toUpperCase();
+  var s=(document.getElementById('bsmNewStaff') ||{value:''}).value.trim();
+  if(!b){toast('اكتب كود الفرع','#ffb340');return;}
+  _trBranch[b]=s;
+  saveBranchStaffLocal();
+  if(document.getElementById('bsmNewBranch')) document.getElementById('bsmNewBranch').value='';
+  if(document.getElementById('bsmNewStaff'))  document.getElementById('bsmNewStaff').value='';
+  renderBSMRows();
+  renderBranchStaffChips();
+  renderTransferTable();
+};
+/* openBranchStaffModal replaced below */
+/* saveBranchStaff replaced by bsmSaveAll */
+
+/* ── export helpers ─────────────────────────────────── */
+function getFilteredRows(){
+  var fromF=(document.getElementById('trFromFilter')||{}).value||'';
+  var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var q    =((document.getElementById('trSearch')||{}).value||'').trim().toLowerCase();
+  return _trRows.filter(function(r){
+    if(fromF&&r.from!==fromF)return false;
+    if(toF&&r.to!==toF)return false;
+    if(q&&r.name.toLowerCase().indexOf(q)<0&&r.code.toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+function buildExportRows(){
+  return getFilteredRows().map(function(r){
+    return{'الكود':r.code,'اسم الصنف':r.name,'من':r.from,'إلى':r.to,'الكمية':r.qty,'اسم الزميل':getStaff(r.to)||'—'};
+  });
+}
+
+/* ── Excel export ───────────────────────────────────── */
+window.exportTransferExcel=function(){
+  if(!_trRows.length){toast('لا توجد بيانات للتصدير','#ffb340');return;}
+  ensureXLSX(function(){
+    var rows=buildExportRows();
+    var ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:12},{wch:40},{wch:22},{wch:22},{wch:10},{wch:22}];
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'تحويلات');
+    XLSX.writeFile(wb,'transfer_'+new Date().toISOString().slice(0,10)+'.xlsx');
+    toast('✅ تم تصدير Excel');
+  });
+};
+
+/* ── PDF / Print export  (A4 portrait — full page) ──── */
+window.exportTransferPDF=function(){
+  if(!_trRows.length){toast('لا توجد بيانات','#ffb340');return;}
+  var rows=buildExportRows();
+  var fromF=(document.getElementById('trFromFilter')||{}).value||'';
+  var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var dateStr=new Date().toLocaleDateString('ar-EG');
+  var branchLabel=fromF?fromF:(toF?toF:'');
+  function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  /* checkbox column + rest of columns — LTR order */
+  /* group rows by "إلى" branch, insert thick separator between groups */
+  var grouped=[];
+  var lastTo=null;
+  rows.forEach(function(r,i){
+    var curTo=r['إلى']||'';
+    if(lastTo!==null && curTo!==lastTo){
+      grouped.push({sep:true});
+    }
+    grouped.push({row:r,idx:i});
+    lastTo=curTo;
+  });
+
+  var rowNum=0;
+  var tableRows=grouped.map(function(item){
+    if(item.sep){
+      return '<tr class="branch-sep"><td colspan="8"></td></tr>';
+    }
+    var r=item.row; rowNum++;
+    var staff=r['اسم الزميل']||'';
+    var sc=(staff&&staff!=='—')?'<span class="staff-ok">'+escH(staff)+'</span>':'<span class="staff-none">—</span>';
+    var even=rowNum%2===1;
+    return '<tr'+(even?' class="alt"':'')+'>'
+      +'<td class="cb"><input type="checkbox"></td>'
+      +'<td class="cnum">'+rowNum+'</td>'
+      +'<td class="code">'+escH(r['الكود'])+'</td>'
+      +'<td class="name">'+escH(r['اسم الصنف'])+'</td>'
+      +'<td class="c from">'+escH(r['من'])+'</td>'
+      +'<td class="c to">'+escH(r['إلى'])+'</td>'
+      +'<td class="c qty">'+escH(String(r['الكمية']))+'</td>'
+      +'<td class="staff">'+sc+'</td>'
+      +'</tr>';
+  }).join('');
+
+  var css=
+    '@page{size:A4 portrait;margin:10mm 8mm 10mm 8mm}'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'html,body{width:100%;font-family:"Segoe UI",Arial,sans-serif;font-size:9pt;color:#111;background:#fff;direction:ltr}'+
+    /* ── toolbar (screen only) ── */
+    '.toolbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1e293b;color:#fff;position:sticky;top:0;z-index:10}'+
+    '.toolbar h1{font-size:13pt;font-weight:700;flex:1}'+
+    '.btn-print{background:#0ea5e9;color:#fff;border:none;padding:8px 20px;border-radius:7px;font-size:11pt;font-weight:700;cursor:pointer}'+
+    '.btn-close{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:7px;font-size:11pt;cursor:pointer}'+
+    /* ── page wrapper ── */
+    '.page{padding:4mm 0;min-height:calc(297mm - 20mm)}'+
+    /* ── header ── */
+    '.doc-header{margin-bottom:5mm;padding-bottom:3mm;border-bottom:2px solid #1e293b;text-align:center}'+
+    '.doc-title{font-size:15pt;font-weight:800;color:#1e293b}'+
+    '.doc-meta{font-size:9pt;color:#64748b;margin-top:3px}'+
+    /* ── table — full LTR ── */
+    'table{width:100%;border-collapse:collapse;table-layout:fixed;direction:ltr}'+
+    /* col widths: cb=7mm, num=8mm, code=22mm, name=auto, from=20mm, to=20mm, qty=12mm, staff=30mm */
+    'col.cb{width:7mm}col.cn{width:8mm}col.cc{width:22mm}col.cn2{width:auto}col.cf{width:20mm}col.ct{width:20mm}col.cq{width:12mm}col.cs{width:30mm}'+
+    'thead{display:table-header-group}'+
+    'th{background:#1e293b;color:#fff;padding:4pt 5pt;font-size:8.5pt;font-weight:700;text-align:left;border:0.5pt solid #334155;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'th.c,td.c{text-align:center}'+
+    'td{padding:3.5pt 5pt;border:0.5pt solid #cbd5e1;font-size:8.5pt;vertical-align:middle;line-height:1.3;text-align:left;direction:ltr}'+
+    'td.name{white-space:normal;word-break:break-word;font-weight:600}'+
+    'td.code{font-family:monospace;font-size:10pt;font-weight:700;color:#1e293b}'+
+    'td.cnum{text-align:center;color:#94a3b8;font-size:8pt}'+
+    'td.cb{text-align:center;padding:2pt}'+
+    'td.from{color:#b45309;font-weight:600;background:rgba(251,191,36,0.08);text-align:center}'+
+    'td.to{color:#0f766e;font-weight:600;background:rgba(20,184,166,0.08);text-align:center}'+
+    'td.qty{font-weight:700;color:#1e40af;text-align:center}'+
+    'td.staff{text-align:left;font-size:10pt;font-weight:700;color:#1e293b}'+
+    '.alt td{background:#f8fafc}'+
+    '.alt td.from{background:rgba(251,191,36,0.06)}'+
+    '.alt td.to{background:rgba(20,184,166,0.06)}'+
+    '.staff-ok{color:#0f766e}'+
+    '.staff-none{color:#94a3b8;font-weight:400}'+
+    'tr.branch-sep td{padding:0;height:5pt;background:#1e293b;border:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'input[type=checkbox]{width:10pt;height:10pt;accent-color:#1e293b;cursor:pointer}'+
+    /* ── footer ── */
+    '.doc-footer{margin-top:4mm;padding-top:2mm;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:8pt;color:#94a3b8}'+
+    /* ── print overrides ── */
+    '@media print{.toolbar{display:none!important}html,body{background:#fff}'+
+    'input[type=checkbox]{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'td.from{background:rgba(251,191,36,0.08)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'td.to{background:rgba(20,184,166,0.08)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '.alt td{background:#f8fafc!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'th{background:#1e293b!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '}';
+
+  var html='<!DOCTYPE html><html dir="ltr"><head><meta charset="utf-8">'+
+    '<title>تحويلات إعادة التوزيع</title>'+
+    '<style>'+css+'</style></head><body>'+
+
+    /* toolbar (screen only) */
+    '<div class="toolbar">'+
+    '<h1>تحويلات إعادة التوزيع</h1>'+
+    '<button class="btn-print" onclick="window.print()">🖨 طباعة</button>'+
+    '<button class="btn-close" onclick="window.close()">✕ إغلاق</button>'+
+    '</div>'+
+
+    '<div class="page">'+
+    /* document header — Arabic text RTL, clean */
+    '<div class="doc-header">'+
+    '<div class="doc-title">تحويلات إعادة التوزيع</div>'+
+    '<div class="doc-meta">'+
+    (branchLabel?'الفرع: '+escH(branchLabel)+'&nbsp;&nbsp;|&nbsp;&nbsp;':'')+
+    'التاريخ: '+escH(dateStr)+
+    '</div>'+
+    '</div>'+
+
+    /* table — LTR */
+    '<table><colgroup>'+
+    '<col class="cb"><col class="cn"><col class="cc"><col class="cn2"><col class="cf"><col class="ct"><col class="cq"><col class="cs">'+
+    '</colgroup><thead><tr>'+
+    '<th class="c">&#9633;</th>'+
+    '<th class="c">#</th>'+
+    '<th>Code</th>'+
+    '<th>Item Name</th>'+
+    '<th class="c">From</th>'+
+    '<th class="c">To</th>'+
+    '<th class="c">Qty</th>'+
+    '<th>Staff</th>'+
+    '</tr></thead><tbody>'+tableRows+'</tbody></table>'+
+
+    /* footer */
+    '<div class="doc-footer">'+
+    '<span>RxPerform Pro</span>'+
+    '<span>'+rows.length+' items &nbsp;|&nbsp; '+escH(dateStr)+'</span>'+
+    '</div>'+
+    '</div>'+
+
+    '<scri'+'pt>window.onload=function(){window.print();}<\/scr'+'ipt>'+
+    '</body></html>';
+
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var w=window.open(url,'_blank');
+  if(w)setTimeout(function(){URL.revokeObjectURL(url);},60000);
+  toast('🖨 جارٍ فتح نافذة الطباعة…','#0d9488');
+}
+
+
+/* ── Branch-Staff Modal open/save ─── */
+window.openBranchStaffModal = function(){
+  bsmLoadColleagues();
+  reconcileBranchStaffFromColleagues();
+  openModal('branchStaffModal');
+  bsmSwitchTab(1);
+  var s=document.getElementById('bsmSearch'); if(s) s.value='';
+  renderBSMRows();
+};
+
+/* ── Tab switching ─── */
+window.bsmSwitchTab = function(n){
+  var p1=document.getElementById('bsmPanel1');
+  var p2=document.getElementById('bsmPanel2');
+  var b1=document.getElementById('bsmTab1Btn');
+  var b2=document.getElementById('bsmTab2Btn');
+  if(n===1){
+    // Sync Tab2 colleague assignments into _trBranch before showing Tab1
+    _bsmCols.forEach(function(col){
+      Object.keys(_trBranch).forEach(function(b){
+        if(_trBranch[b]===col.name && col.branches.indexOf(b)<0){ delete _trBranch[b]; }
+      });
+      col.branches.forEach(function(b){ _trBranch[b]=col.name; });
+    });
+    if(p1){p1.style.display='flex';}
+    if(p2){p2.style.display='none';}
+    if(b1){b1.style.background='rgba(0,212,255,0.15)';b1.style.color='var(--cyan)';}
+    if(b2){b2.style.background='transparent';b2.style.color='var(--text2)';}
+    renderBSMRows();
+  } else {
+    if(p1){p1.style.display='none';}
+    if(p2){p2.style.display='flex';}
+    if(b2){b2.style.background='rgba(0,212,255,0.15)';b2.style.color='var(--cyan)';}
+    if(b1){b1.style.background='transparent';b1.style.color='var(--text2)';}
+    bsmRenderColleagues();
+  }
+};
+
+/* ── Colleague data (Tab 2) ─── */
+var _bsmCols = [];
+function bsmLoadColleagues(){
+  try{ _bsmCols=JSON.parse(localStorage.getItem('rxp_bsm_cols')||'[]'); }catch(e){ _bsmCols=[]; }
+  var changed=false;
+  _bsmCols.forEach(function(col){
+    if(!Array.isArray(col.branches)) return;
+    var up=col.branches.map(function(b){return String(b).toUpperCase();});
+    if(JSON.stringify(up)!==JSON.stringify(col.branches)){ col.branches=up; changed=true; }
+  });
+  if(changed) bsmSaveColleagues();
+}
+function bsmSaveColleagues(){
+  localStorage.setItem('rxp_bsm_cols', JSON.stringify(_bsmCols));
+}
+
+window.bsmAddColleague = function(){
+  var inp=document.getElementById('bsmNewColName');
+  var name=inp?inp.value.trim():'';
+  if(!name){ toast('اكتب اسم الزميل','#ffb340'); return; }
+  if(_bsmCols.find(function(x){return x.name===name;})){ toast('الاسم موجود بالفعل','#ffb340'); return; }
+  _bsmCols.push({name:name, branches:[]});
+  if(inp) inp.value='';
+  bsmRenderColleagues();
+};
+
+window.bsmRemoveColleague = function(idx){
+  if(_bsmCols[idx]){
+    var colName=_bsmCols[idx].name;
+    _bsmCols[idx].branches.forEach(function(b){
+      // Only delete from _trBranch if this colleague is still the owner
+      if(_trBranch[b]===colName){ delete _trBranch[b]; }
+    });
+    _bsmCols.splice(idx,1);
+    bsmSaveColleagues();
+    saveBranchStaffLocal();
+    bsmRenderColleagues();
+  }
+};
+
+window.bsmToggleBranch = function(colIdx, branch){
+  // Remove branch from any other colleague
+  _bsmCols.forEach(function(col,i){
+    if(i!==colIdx){
+      col.branches = col.branches.filter(function(b){ return b!==branch; });
+    }
+  });
+  // Toggle on this colleague
+  var col = _bsmCols[colIdx];
+  if(!col) return;
+  var pos = col.branches.indexOf(branch);
+  if(pos>=0){
+    col.branches.splice(pos,1);
+    // Remove from _trBranch only if no other colleague owns it
+    var stillOwned=_bsmCols.some(function(c,i){ return i!==colIdx && c.branches.indexOf(branch)>=0; });
+    if(!stillOwned){ delete _trBranch[branch]; }
+  } else {
+    col.branches.push(branch);
+    _trBranch[branch]=col.name;
+  }
+  bsmRenderColleagues();
+};
+
+window.bsmRenderColleagues = function(){
+  var wrap = document.getElementById('bsmColleagueList');
+  if(!wrap) return;
+  var allBranches = [];
+  var seen = {};
+  _trRows.forEach(function(r){
+    if(r.from && !seen[r.from]){ seen[r.from]=1; allBranches.push(r.from); }
+    if(r.to   && !seen[r.to  ]){ seen[r.to  ]=1; allBranches.push(r.to  ); }
+  });
+  Object.keys(_trBranch).forEach(function(b){ if(!seen[b]){ seen[b]=1; allBranches.push(b); } });
+  allBranches.sort();
+
+  if(!_bsmCols.length){
+    wrap.innerHTML='<div style="color:var(--text2);font-size:12px;padding:12px">أضف زميلاً للبدء ↑</div>';
+    return;
+  }
+
+  // Build owned map: branch -> colIdx
+  var owned = {};
+  _bsmCols.forEach(function(col,i){
+    col.branches.forEach(function(b){ owned[b]=i; });
+  });
+
+  wrap.innerHTML = '';
+  _bsmCols.forEach(function(col, colIdx){
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:10px 12px';
+
+    // Header
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
+    var nm = document.createElement('span');
+    nm.style.cssText = 'font-size:13px;font-weight:700;color:var(--white)';
+    nm.textContent = '👤 ' + col.name;
+    var db2 = document.createElement('button');
+    db2.style.cssText = 'background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);color:var(--rose);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer';
+    db2.textContent = '✕ حذف';
+    (function(i){ db2.onclick = function(){ bsmRemoveColleague(i); }; })(colIdx);
+    hdr.appendChild(nm); hdr.appendChild(db2);
+    card.appendChild(hdr);
+
+    // Chips
+    if(!allBranches.length){
+      var nb = document.createElement('div');
+      nb.style.cssText='font-size:11px;color:var(--text2)';
+      nb.textContent='لا توجد فروع — ارفع ملف أولاً';
+      card.appendChild(nb);
+    } else {
+      var chips = document.createElement('div');
+      chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px';
+      allBranches.forEach(function(b){
+        var mine = col.branches.indexOf(b)>=0;
+        var takenBy = (owned[b]!==undefined && owned[b]!==colIdx) ? owned[b] : -1;
+        var chip = document.createElement('span');
+        if(mine){
+          chip.style.cssText='display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(0,200,150,0.2);border:1.5px solid rgba(0,200,150,0.7);color:var(--emerald)';
+          chip.textContent='✔ '+b;
+        } else if(takenBy>=0){
+          chip.style.cssText='display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:not-allowed;opacity:0.35;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:var(--text2)';
+          chip.title='محجوز لـ '+_bsmCols[takenBy].name;
+          chip.textContent=b;
+        } else {
+          chip.style.cssText='display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--text)';
+          chip.textContent=b;
+        }
+        if(!mine && takenBy<0){
+          (function(ci,br){ chip.onclick=function(){ bsmToggleBranch(ci,br); }; })(colIdx,b);
+        } else if(mine){
+          (function(ci,br){ chip.onclick=function(){ bsmToggleBranch(ci,br); }; })(colIdx,b);
+        }
+        chips.appendChild(chip);
+      });
+      card.appendChild(chips);
+    }
+    wrap.appendChild(card);
+  });
+};
+
+/* ── Save all (both tabs) ─── */
+window.bsmSaveAll = function(){
+  // Step 1: collect Tab1 visible inputs (manual free-text)
+  document.querySelectorAll('#branchStaffRows input[data-branch]').forEach(function(inp){
+    var val=inp.value.trim();
+    var br=inp.dataset.branch;
+    if(!br) return;
+    // Only apply Tab1 value if this branch is NOT owned by a colleague in Tab2
+    var ownedByCol=_bsmCols.some(function(col){ return col.branches.indexOf(br)>=0; });
+    if(!ownedByCol){
+      if(val){ _trBranch[br]=val; }
+      else { delete _trBranch[br]; }
+    }
+  });
+  // Step 2: Tab2 colleague chips are authoritative for their own branches.
+  // First clear any stale links (branch was removed from a colleague's list).
+  _bsmCols.forEach(function(col){
+    Object.keys(_trBranch).forEach(function(b){
+      if(_trBranch[b]===col.name && col.branches.indexOf(b)<0){ delete _trBranch[b]; }
+    });
+  });
+  // Then (re)apply current colleague → branch assignments.
+  _bsmCols.forEach(function(col){
+    col.branches.forEach(function(b){ _trBranch[b]=col.name; });
+  });
+  bsmSaveColleagues();
+  saveBranchStaffLocal();
+  closeModal('branchStaffModal');
+  renderBranchStaffChips();
+  renderTransferTable();
+  toast('✅ تم حفظ بيانات الفروع');
+};
+
+})(); // end transfer IIFE
+
 </script>
 
 
@@ -7146,6 +8202,152 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 #waMsgArea::-webkit-scrollbar-thumb { background: rgba(37,211,102,0.3); border-radius: 2px; }
 </style>
 
+
+
+<!-- ══════════════════════════════════════════════
+     TRANSFER PAGE OVERLAY
+══════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     TRANSFER PAGE OVERLAY v2
+══════════════════════════════════════════════ -->
+
+
+
+
+<div id="transferPage" style="display:none;position:fixed;inset:0;z-index:99990;background:var(--bg);flex-direction:column;overflow:hidden">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap">
+    <button onclick="closeTransferPage()" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:var(--rose);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">✕ إغلاق</button>
+    <div style="font-size:14px;font-weight:800;color:var(--white)">🔄 تحويلات إعادة التوزيع</div>
+    <div style="flex:1"></div>
+    <label style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);color:var(--purple2);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px">📂 رفع Excel<input type="file" id="transferExcelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadTransferExcel(this)"></label>
+    <button onclick="exportTransferExcel()" id="trExportXLSX" style="display:none;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">⬇ Excel</button>
+    <button onclick="exportTransferPDF()"  id="trExportPDF"  style="display:none;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">🖨 PDF</button>
+    <button onclick="deleteSelectedTransfers()" id="trDeleteBtn" style="display:none;background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:var(--rose);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">🗑 حذف المحدد</button>
+  </div>
+
+  <!-- Filters -->
+  <div id="trFilters" style="display:flex;gap:8px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap">من:</span>
+      <select id="trFromFilter" onchange="renderTransferTable()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;min-width:110px"><option value="">كل الفروع</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap">إلى:</span>
+      <select id="trToFilter" onchange="renderTransferTable()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;min-width:110px"><option value="">كل الفروع</option></select>
+    </div>
+    <input id="trSearch" oninput="renderTransferTable()" placeholder="🔍 بحث بالاسم أو الكود…" style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:5px 9px;font-size:11px;flex:1;min-width:140px">
+    <span style="font-size:11px;color:var(--text2)" id="trCount"></span>
+    <button onclick="selectAllTransfers(true)"  style="background:var(--glass);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">تحديد الكل</button>
+    <button onclick="selectAllTransfers(false)" style="background:var(--glass);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">إلغاء الكل</button>
+  </div>
+
+  <!-- Inline Upload Status Bar -->
+  <div id="trUploadBar" style="display:none;flex-shrink:0;padding:8px 16px;background:#0a1628;border-bottom:1px solid rgba(255,255,255,0.08);align-items:center;gap:10px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <span id="trBarFileName" style="font-size:11px;font-weight:700;color:#eef4ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%"></span>
+        <span id="trBarMsg" style="font-size:11px;font-weight:700;color:#8fa3c0;white-space:nowrap"></span>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border-radius:99px;height:6px;overflow:hidden">
+        <div id="trProgressBar" style="height:100%;width:0%;border-radius:99px;transition:width 0.25s ease;background:linear-gradient(90deg,#00d4ff,#00c896)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branch-Staff bar -->
+  <div id="trStaffPanel" style="display:flex;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--text2);white-space:nowrap">👤</span>
+    <div id="trBranchStaffChips" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
+    <button onclick="openBranchStaffModal()" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:var(--purple2);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0">⚙ ربط الزملاء</button>
+  </div>
+
+  <!-- Body: table + history -->
+  <div style="display:flex;flex:1;overflow:hidden">
+
+    <!-- Table -->
+    <div id="trTableWrap" style="flex:1;overflow:auto;padding:12px 16px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--bg2);position:sticky;top:0;z-index:2">
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);width:32px"><input type="checkbox" id="trCheckAll" onchange="selectAllTransfers(this.checked)" style="accent-color:var(--purple2);cursor:pointer"></th>
+            <th style="padding:9px 6px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">الكود</th>
+            <th style="padding:9px 6px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px">اسم الصنف</th>
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">من</th>
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">إلى</th>
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">الكمية</th>
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">اسم الزميل</th>
+          </tr>
+        </thead>
+        <tbody id="trTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- History sidebar -->
+    <div style="width:200px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column">
+      <div style="padding:10px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--border);color:var(--text2);flex-shrink:0">📋 سجل الملفات</div>
+      <div id="trHistoryList" style="flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Branch-Staff Modal -->
+<div class="modal-overlay" id="branchStaffModal" onclick="if(event.target===this)closeModal('branchStaffModal')" style="z-index:99999">
+  <div class="modal-box" style="max-width:620px;max-height:92vh;display:flex;flex-direction:column">
+    <div class="modal-title" style="flex-shrink:0">⚙ ربط الفروع بأسماء الزملاء</div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-shrink:0;background:var(--bg3);border-radius:10px;padding:4px;border:1px solid var(--border)">
+      <button id="bsmTab1Btn" onclick="bsmSwitchTab(1)"
+        style="flex:1;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:rgba(0,212,255,0.15);color:var(--cyan)">
+        🔗 فرع ← زميل
+      </button>
+      <button id="bsmTab2Btn" onclick="bsmSwitchTab(2)"
+        style="flex:1;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--text2)">
+        👤 زميل ← فروعه
+      </button>
+    </div>
+
+    <!-- TAB 1 -->
+    <div id="bsmPanel1" style="display:flex;flex-direction:column;flex:1;min-height:0">
+      <input id="bsmSearch" oninput="renderBSMRows()" placeholder="🔍 ابحث عن فرع…"
+        style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:8px;padding:7px 11px;font-size:12px;margin-bottom:10px;flex-shrink:0">
+      <div id="branchStaffRows" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-left:2px;min-height:0"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-shrink:0">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:7px;font-weight:600">➕ إضافة فرع يدوي</div>
+        <div style="display:flex;gap:8px">
+          <input id="bsmNewBranch" placeholder="كود الفرع (مثال: ALEX)"
+            style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:6px 9px;font-size:12px">
+          <input id="bsmNewStaff" placeholder="اسم الزميل"
+            style="flex:1.5;background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:6px 9px;font-size:12px">
+          <button onclick="addManualBSMRow()"
+            style="background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">+ إضافة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2 -->
+    <div id="bsmPanel2" style="display:none;flex-direction:column;flex:1;min-height:0">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;flex-shrink:0">
+        اكتب اسم الزميل ثم اضغط على الفروع المخصصة له — الفرع المحدد لا يمكن اختياره لزميل آخر.
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0">
+        <input id="bsmNewColName" placeholder="✏ اسم الزميل الجديد…"
+          style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:8px;padding:7px 11px;font-size:12px">
+        <button onclick="bsmAddColleague()"
+          style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ إضافة</button>
+      </div>
+      <div id="bsmColleagueList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
+      <button class="btn btn-ghost" onclick="closeModal('branchStaffModal')">إغلاق</button>
+      <button class="btn btn-primary" onclick="bsmSaveAll()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
