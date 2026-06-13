@@ -6633,7 +6633,11 @@ var TR_EP_POST = SUPA_URL+'/rest/v1/rxperform';
 var _trSyncT=null, _trSq=Promise.resolve();
 
 function trSnapshot(){
-  return {rows:_trRows, branchStaff:_trBranch, marks:_trMarks, colleagues:_bsmCols};
+  // history: cap to last 10 files, and cap rows per file to 500, to keep cloud payload light
+  var hist=(_trHistory||[]).slice(0,10).map(function(h){
+    return {name:h.name, date:h.date, rows:(h.rows||[]).slice(0,500)};
+  });
+  return {rows:_trRows, branchStaff:_trBranch, marks:_trMarks, colleagues:_bsmCols, history:hist};
 }
 function trSetSyncSt(icon,msg){
   var el=document.getElementById('trSyncStatus');
@@ -6645,6 +6649,7 @@ function trSaveAllLocal(){
   localStorage.setItem('rxp_branch_staff',JSON.stringify(_trBranch));
   localStorage.setItem('rxp_tr_marks',JSON.stringify(_trMarks));
   localStorage.setItem('rxp_bsm_cols',JSON.stringify(_bsmCols));
+  try{ localStorage.setItem('rxp_tr_history',JSON.stringify(_trHistory)); }catch(e){}
 }
 function loadTrRowsLocal(){
   try{ var r=localStorage.getItem('rxp_tr_rows'); if(r){ var p=JSON.parse(r); if(Array.isArray(p)) _trRows=p; } }catch(e){}
@@ -6685,18 +6690,19 @@ var TrStore={
       var rowsRes=await r.json();
       if(rowsRes&&rowsRes.length&&rowsRes[0].data){
         var rem=rowsRes[0].data;
-        var remHas=(rem.rows&&rem.rows.length)||(rem.branchStaff&&Object.keys(rem.branchStaff).length)||(rem.colleagues&&rem.colleagues.length)||(rem.marks&&Object.keys(rem.marks).length);
+        var remHas=(rem.rows&&rem.rows.length)||(rem.branchStaff&&Object.keys(rem.branchStaff).length)||(rem.colleagues&&rem.colleagues.length)||(rem.marks&&Object.keys(rem.marks).length)||(rem.history&&rem.history.length);
         if(remHas){
           _trRows   = rem.rows||[];
           _trBranch = rem.branchStaff||{};
           _trMarks  = rem.marks||{};
           _bsmCols  = rem.colleagues||[];
+          _trHistory= rem.history||_trHistory||[];
           trSaveAllLocal();
           trSetSyncSt('✅','متزامن '+now12());
           return true;
         }
         // الريموت فاضي — لو عندي بيانات محلية، ارفعها كأول مزامنة
-        if(_trRows.length||Object.keys(_trBranch).length||_bsmCols.length||Object.keys(_trMarks).length){
+        if(_trRows.length||Object.keys(_trBranch).length||_bsmCols.length||Object.keys(_trMarks).length||(_trHistory&&_trHistory.length)){
           TrStore.push(JSON.stringify(trSnapshot()));
         }
         trSetSyncSt('✅','متزامن '+now12());
@@ -6713,6 +6719,7 @@ window.trManualSync=function(){
     populateTransferFilters();
     renderTransferTable();
     renderBranchStaffChips();
+    renderHistoryPanel();
     renderUnexecutedBadge();
     if(ok) toast('✅ تم تحديث البيانات من السحابة');
     else   toast('✅ البيانات متزامنة');
@@ -6739,9 +6746,9 @@ function loadHistory(){
   try{ _trHistory=JSON.parse(localStorage.getItem('rxp_tr_history')||'[]'); }catch(e){ _trHistory=[]; }
 }
 function saveHistory(){
-  // keep last 20 files, store rows (cap at 2000 rows per file to stay under quota)
-  // local-only cache (not synced to Supabase) — keeps cloud payload light
+  // keep last 20 files locally; first 10 (capped rows) also synced to Supabase via trSnapshot()
   localStorage.setItem('rxp_tr_history',JSON.stringify(_trHistory.slice(0,20)));
+  TrStore.queuePush();
 }
 /* ── done/not-done marks + notes ─────────────────────── */
 function loadTrMarks(){
