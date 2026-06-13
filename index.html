@@ -6633,9 +6633,9 @@ var TR_EP_POST = SUPA_URL+'/rest/v1/rxperform';
 var _trSyncT=null, _trSq=Promise.resolve();
 
 function trSnapshot(){
-  // history: cap to last 10 files, and cap rows per file to 500, to keep cloud payload light
+  // history: last 10 files, full rows (no truncation)
   var hist=(_trHistory||[]).slice(0,10).map(function(h){
-    return {name:h.name, date:h.date, rows:(h.rows||[]).slice(0,500)};
+    return {name:h.name, date:h.date, rows:h.rows||[]};
   });
   return {rows:_trRows, branchStaff:_trBranch, marks:_trMarks, colleagues:_bsmCols, history:hist};
 }
