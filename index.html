@@ -1311,6 +1311,19 @@ function now12(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:
    HELPERS
 ══════════════════════════════════════ */
 function cs(){return db.settings?.cycleStart||16;}
+/* Period range: from day C of (mo-1) to day (C-1) of mo — same cycle definition
+   used everywhere else (shifts, performance matrix, notes...). ym='YYYY-MM' */
+function periodRange(ym){
+  const C=cs();const[y,mo]=ym.split('-').map(Number);
+  return{ps:new Date(y,mo-2,C),pe:new Date(y,mo-1,C-1)};
+}
+/* Is a 'YYYY-MM-DD' date string inside the given period? */
+function dateInPeriod(dateStr,ym){
+  if(!dateStr)return false;
+  const{ps,pe}=periodRange(ym);
+  const d=new Date(dateStr+'T00:00:00');
+  return d>=ps&&d<=pe;
+}
 function availMonths(){const now=new Date();return Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});}
 function getPeriodLabel(m){
   const[y,mo]=m.split('-').map(Number);
@@ -3566,7 +3579,10 @@ function getTxList(){
   if(curMonth && curMonth!=='all'){
     list=list.filter(tx=>{
       if(!tx.date)return true;
-      return tx.date.slice(0,7)===curMonth;
+      // Use the same custom cycle-period (day C of prev month → C-1 of this month)
+      // as Shifts/Performance, NOT the raw calendar month — otherwise
+      // transactions near the period boundary leak into the wrong period.
+      return dateInPeriod(tx.date,curMonth);
     });
   }
   return list;
@@ -4727,13 +4743,11 @@ function _p5(D){
 
   /* ── جمع الفواتير للفترة الحالية ── */
   var allTx=Object.values((db.transactions&&db.transactions[D.c.id])||{});
-  var pParts=D.month.split('-').map(Number);
-  var cs=(db.settings&&db.settings.cycleStart)||16;
-  var pStart=new Date(pParts[0],pParts[1]-1,cs);
-  var pEnd=new Date(pParts[0],pParts[1],cs-1);
+  var _pr5=periodRange(D.month);
+  var pStart=_pr5.ps, pEnd=_pr5.pe;
   var txList=allTx.filter(function(tx){
     if(!tx.date) return false;
-    var d=new Date(tx.date);
+    var d=new Date(tx.date+'T00:00:00');
     return d>=pStart&&d<=pEnd;
   }).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
 
@@ -4939,15 +4953,12 @@ function _p6(D){
   var shiftHistory=(db.shifts&&db.shifts[D.c.id]&&db.shifts[D.c.id].history)||[];
   shiftHistory.forEach(function(h){
     if(!h.date) return;
-    /* فلتر: نفس الفترة المحددة */
+    /* فلتر: نفس الفترة المحددة (نفس تعريف الفترة المستخدم في كل مكان آخر:
+       من اليوم C من الشهر السابق إلى اليوم C-1 من شهر الفترة) */
     var hDate=new Date(h.date);
-    var hY=hDate.getFullYear(), hM=hDate.getMonth()+1;
     var periodYM=D.month; /* "YYYY-MM" */
-    var pParts=periodYM.split('-').map(Number);
-    var cs=(db.settings&&db.settings.cycleStart)||16;
-    /* الفترة: من cs/pM/pY إلى (cs-1)/(pM+1)/pY */
-    var pStart=new Date(pParts[0],pParts[1]-1,cs);
-    var pEnd=new Date(pParts[0],pParts[1],cs-1);
+    var pr=periodRange(periodYM);
+    var pStart=pr.ps, pEnd=pr.pe;
     if(hDate>=pStart&&hDate<=pEnd){
       (h.activities||[]).forEach(function(a){
         allActs.push({
@@ -6609,7 +6620,104 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeNotifPan
 var _trRows   = [];
 var _trBranch = {};
 var _trSel    = new Set();
-var _trHistory= [];   // [{name, date, rows}]
+var _trHistory= [];   // [{name, date, rows}]  -- local-only cache, NOT synced (kept light)
+var _trMarks  = {};   // key -> {status:'done'|'notdone', note:''}
+
+/* ══════════════════════════════════════════════════════
+   Supabase sync — التحويلات في "شطر" (صف) منفصل تماماً
+   عن بيانات الموقع الأساسية (id='main').
+   لا يلمس أي شيء في db/Store الخاصين بالموقع.
+   ══════════════════════════════════════════════════════ */
+var TR_EP      = SUPA_URL+'/rest/v1/rxperform?id=eq.transfers&select=data,updated_at';
+var TR_EP_POST = SUPA_URL+'/rest/v1/rxperform';
+var _trSyncT=null, _trSq=Promise.resolve();
+
+function trSnapshot(){
+  return {rows:_trRows, branchStaff:_trBranch, marks:_trMarks, colleagues:_bsmCols};
+}
+function trSetSyncSt(icon,msg){
+  var el=document.getElementById('trSyncStatus');
+  if(el) el.innerHTML=icon+' '+msg;
+}
+/* يحفظ كل شيء محلياً (نفس مفاتيح localStorage الأصلية — بدون أي تغيير) */
+function trSaveAllLocal(){
+  try{ localStorage.setItem('rxp_tr_rows',JSON.stringify(_trRows)); }catch(e){}
+  localStorage.setItem('rxp_branch_staff',JSON.stringify(_trBranch));
+  localStorage.setItem('rxp_tr_marks',JSON.stringify(_trMarks));
+  localStorage.setItem('rxp_bsm_cols',JSON.stringify(_bsmCols));
+}
+function loadTrRowsLocal(){
+  try{ var r=localStorage.getItem('rxp_tr_rows'); if(r){ var p=JSON.parse(r); if(Array.isArray(p)) _trRows=p; } }catch(e){}
+}
+function saveTrRowsLocal(){
+  try{ localStorage.setItem('rxp_tr_rows',JSON.stringify(_trRows)); }catch(e){}
+  TrStore.queuePush();
+}
+
+var TrStore={
+  /* رفع مؤجَّل (debounce) — يجمع كل التعديلات القريبة في طلب واحد */
+  queuePush(){
+    clearTimeout(_trSyncT);
+    _trSyncT=setTimeout(function(){
+      var snap=JSON.stringify(trSnapshot());
+      _trSq=_trSq.then(function(){return TrStore.push(snap);}).catch(function(){});
+    },600);
+  },
+  async push(snap){
+    trSetSyncSt('⏳','جارٍ الحفظ…');
+    var pushTime=Date.now();
+    var payload={id:'transfers',data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()};
+    try{
+      var r=await fetch(TR_EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:payload.data,updated_at:payload.updated_at})});
+      if(!r.ok||(r.status===200&&(await r.clone().text())==='[]')){
+        var SH2=Object.assign({},SH,{'Prefer':'resolution=merge-duplicates,return=minimal'});
+        r=await fetch(TR_EP_POST,{method:'POST',headers:SH2,body:JSON.stringify(payload)});
+      }
+      trSetSyncSt(r.ok?'✅':'⚠',r.ok?'تم الحفظ '+now12():'فشل الحفظ');
+      if(!r.ok) console.warn('TrStore.push failed:',r.status,await r.text().catch(function(){return'';}));
+    }catch(e){ trSetSyncSt('⚠','غير متصل'); console.warn('TrStore.push error:',e); }
+  },
+  async pull(){
+    trSetSyncSt('⏳','مزامنة…');
+    try{
+      var r=await fetch(TR_EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
+      if(!r.ok){ trSetSyncSt('⚠','خطأ في المزامنة'); console.warn('TrStore.pull failed:',r.status); return false; }
+      var rowsRes=await r.json();
+      if(rowsRes&&rowsRes.length&&rowsRes[0].data){
+        var rem=rowsRes[0].data;
+        var remHas=(rem.rows&&rem.rows.length)||(rem.branchStaff&&Object.keys(rem.branchStaff).length)||(rem.colleagues&&rem.colleagues.length)||(rem.marks&&Object.keys(rem.marks).length);
+        if(remHas){
+          _trRows   = rem.rows||[];
+          _trBranch = rem.branchStaff||{};
+          _trMarks  = rem.marks||{};
+          _bsmCols  = rem.colleagues||[];
+          trSaveAllLocal();
+          trSetSyncSt('✅','متزامن '+now12());
+          return true;
+        }
+        // الريموت فاضي — لو عندي بيانات محلية، ارفعها كأول مزامنة
+        if(_trRows.length||Object.keys(_trBranch).length||_bsmCols.length||Object.keys(_trMarks).length){
+          TrStore.push(JSON.stringify(trSnapshot()));
+        }
+        trSetSyncSt('✅','متزامن '+now12());
+        return false;
+      }
+      trSetSyncSt('✅','متزامن '+now12());
+      return false;
+    }catch(e){ trSetSyncSt('⚠','غير متصل'); console.warn('TrStore.pull error:',e); return false; }
+  }
+};
+/* زر مزامنة يدوي */
+window.trManualSync=function(){
+  TrStore.pull().then(function(ok){
+    populateTransferFilters();
+    renderTransferTable();
+    renderBranchStaffChips();
+    renderUnexecutedBadge();
+    if(ok) toast('✅ تم تحديث البيانات من السحابة');
+    else   toast('✅ البيانات متزامنة');
+  });
+};
 
 /* ── localStorage helpers ───────────────────────────── */
 function loadBranchStaff(){
@@ -6625,14 +6733,28 @@ function loadBranchStaff(){
 }
 function saveBranchStaffLocal(){
   localStorage.setItem('rxp_branch_staff',JSON.stringify(_trBranch));
+  TrStore.queuePush();
 }
 function loadHistory(){
   try{ _trHistory=JSON.parse(localStorage.getItem('rxp_tr_history')||'[]'); }catch(e){ _trHistory=[]; }
 }
 function saveHistory(){
   // keep last 20 files, store rows (cap at 2000 rows per file to stay under quota)
+  // local-only cache (not synced to Supabase) — keeps cloud payload light
   localStorage.setItem('rxp_tr_history',JSON.stringify(_trHistory.slice(0,20)));
 }
+/* ── done/not-done marks + notes ─────────────────────── */
+function loadTrMarks(){
+  try{ _trMarks=JSON.parse(localStorage.getItem('rxp_tr_marks')||'{}'); }catch(e){ _trMarks={}; }
+}
+function saveTrMarks(){
+  localStorage.setItem('rxp_tr_marks',JSON.stringify(_trMarks));
+  TrStore.queuePush();
+}
+function trMarkKey(r){
+  return (r.code||'')+'|'+(r.from||'')+'|'+(r.to||'')+'|'+(r.name||'')+'|'+(r.qty||'');
+}
+function escH2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getStaff(branch){ return _trBranch[branch]||''; }
 
 /* Rebuild _trBranch links from saved colleague assignments (rxp_bsm_cols),
@@ -6656,6 +6778,9 @@ function reconcileBranchStaffFromColleagues(){
 window.openTransferPage = function(){
   loadBranchStaff();
   loadHistory();
+  loadTrMarks();
+  loadTrRowsLocal();
+  bsmLoadColleagues();
   reconcileBranchStaffFromColleagues();
   var page=document.getElementById('transferPage');
   page.style.display='flex';
@@ -6665,8 +6790,26 @@ window.openTransferPage = function(){
   document.getElementById('trFilters').style.display='flex';
   document.getElementById('trStaffPanel').style.display='flex';
   renderHistoryPanel();
-  renderTransferTable();   // empty table on first open
+  populateTransferFilters();
+  renderTransferTable();   // render cached/local data immediately (no flicker)
   renderBranchStaffChips();
+  renderUnexecutedBadge();
+  ['trExportXLSX','trExportPDF'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=_trRows.length?'':'none';
+  });
+  // ثم اسحب آخر نسخة من سوبابيز (صف "transfers" المنفصل) — يحدّث كل الأجهزة
+  TrStore.pull().then(function(ok){
+    if(ok){
+      populateTransferFilters();
+      renderTransferTable();
+      renderBranchStaffChips();
+      renderHistoryPanel();
+      renderUnexecutedBadge();
+      ['trExportXLSX','trExportPDF'].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.style.display=_trRows.length?'':'none';
+      });
+    }
+  });
 };
 window.closeTransferPage = function(){
   document.getElementById('transferPage').style.display='none';
@@ -6988,6 +7131,7 @@ function processRows(raw, fileName){
 
   _trRows = parsed;
   _trSel  = new Set();
+  saveTrRowsLocal();
 
   var histEntry = {
     id:'h'+Date.now(), name:fileName,
@@ -7001,6 +7145,7 @@ function processRows(raw, fileName){
   renderTransferTable();
   renderBranchStaffChips();
   renderHistoryPanel();
+  renderUnexecutedBadge();
 
   ['trExportXLSX','trExportPDF'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display='';
@@ -7023,17 +7168,31 @@ function populateTransferFilters(){
   }
   fill('trFromFilter',froms);
   fill('trToFilter',tos);
+  populateStaffFilter();
+}
+/* ── staff (colleague) filter ─────────────────────────── */
+function populateStaffFilter(){
+  var names=[...new Set(Object.values(_trBranch).filter(function(s){return s;}))].sort();
+  var sel=document.getElementById('trStaffFilter');
+  if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">كل الزملاء</option>'+names.map(function(n){
+    return '<option value="'+escH2(n)+'">'+escH2(n)+'</option>';
+  }).join('');
+  if(names.indexOf(cur)>=0) sel.value=cur;
 }
 
 /* ── render table ───────────────────────────────────── */
 window.renderTransferTable = function(){
   var fromF=(document.getElementById('trFromFilter')||{}).value||'';
   var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var staffF=(document.getElementById('trStaffFilter')||{}).value||'';
   var q    =((document.getElementById('trSearch')||{}).value||'').trim().toLowerCase();
 
   var filtered=_trRows.filter(function(r){
     if(fromF&&r.from!==fromF)return false;
     if(toF  &&r.to  !==toF  )return false;
+    if(staffF&&getStaff(r.to)!==staffF)return false;
     if(q&&r.name.toLowerCase().indexOf(q)<0&&r.code.toLowerCase().indexOf(q)<0)return false;
     return true;
   });
@@ -7045,11 +7204,11 @@ window.renderTransferTable = function(){
   if(!tbody)return;
 
   if(!_trRows.length){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text2)">ارفع ملف Excel لعرض التحويلات</td></tr>';
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">ارفع ملف Excel لعرض التحويلات</td></tr>';
     return;
   }
   if(!filtered.length){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text2)">لا توجد نتائج مطابقة</td></tr>';
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text2)">لا توجد نتائج مطابقة</td></tr>';
     return;
   }
 
@@ -7058,6 +7217,18 @@ window.renderTransferTable = function(){
     var checked=_trSel.has(origIdx)?'checked':'';
     var staff=getStaff(r.to)||'—';
     var bg=fi%2?'rgba(255,255,255,0.02)':'';
+    var st=(_trMarks[trMarkKey(r)]||{}).status||'';
+    var doneActive=st==='done', notdoneActive=st==='notdone';
+    var doneStyle = doneActive
+      ? 'background:var(--emerald);color:#fff;border-color:var(--emerald)'
+      : 'background:rgba(0,200,150,0.08);color:var(--emerald);border-color:rgba(0,200,150,0.3)';
+    var notdoneStyle = notdoneActive
+      ? 'background:var(--rose);color:#fff;border-color:var(--rose)'
+      : 'background:rgba(255,77,109,0.08);color:var(--rose);border-color:rgba(255,77,109,0.3)';
+    var statusCell='<td style="padding:6px 4px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap">'
+      +'<button onclick="toggleTrMark('+origIdx+',\'done\')" title="تم التحويل" style="width:25px;height:25px;border-radius:6px;border:1.5px solid;cursor:pointer;font-size:12px;font-weight:900;margin:0 2px;line-height:1;'+doneStyle+'">✓</button>'
+      +'<button onclick="toggleTrMark('+origIdx+',\'notdone\')" title="لم يتم التحويل" style="width:25px;height:25px;border-radius:6px;border:1.5px solid;cursor:pointer;font-size:12px;font-weight:900;margin:0 2px;line-height:1;'+notdoneStyle+'">✗</button>'
+      +'</td>';
     return'<tr style="background:'+bg+'" onmouseenter="this.style.background=\'rgba(167,139,250,0.06)\'" onmouseleave="this.style.background=\''+bg+'\'">'
       +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><input type="checkbox" '+checked+' data-idx="'+origIdx+'" onchange="toggleTrSel('+origIdx+',this.checked)" style="accent-color:var(--purple2);cursor:pointer;width:15px;height:15px"></td>'
       +'<td style="padding:9px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2)">'+r.code+'</td>'
@@ -7066,6 +7237,7 @@ window.renderTransferTable = function(){
       +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:rgba(0,200,150,0.13);color:var(--emerald);border-radius:5px;padding:2px 8px;font-size:11px;white-space:nowrap">'+r.to+'</span></td>'
       +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-family:var(--mono);font-weight:700;color:var(--cyan)">'+r.qty+'</td>'
       +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-size:11px;color:var(--purple2)">'+staff+'</td>'
+      +statusCell
       +'</tr>';
   }).join('');
 
@@ -7083,6 +7255,76 @@ window.toggleTrSel=function(idx,checked){
   if(checked)_trSel.add(idx);else _trSel.delete(idx);
   var delBtn=document.getElementById('trDeleteBtn');
   if(delBtn)delBtn.style.display=_trSel.size?'':'none';
+};
+
+/* ── done / not-done marks ─────────────────────────────
+   - toggling the same icon again clears the mark (simple toggle)
+   - "notdone" rows ALSO appear in the "تحويلات غير منفذة" panel,
+     but stay normally in the main list either way               */
+window.toggleTrMark=function(idx,type){
+  var r=_trRows[idx];
+  if(!r)return;
+  var key=trMarkKey(r);
+  var cur=_trMarks[key]||{status:'',note:''};
+  cur.status=(cur.status===type)?'':type;
+  _trMarks[key]=cur;
+  saveTrMarks();
+  renderTransferTable();
+  renderUnexecutedList();
+  renderUnexecutedBadge();
+};
+window.updateTrNote=function(idx,val){
+  var r=_trRows[idx];
+  if(!r)return;
+  var key=trMarkKey(r);
+  var cur=_trMarks[key]||{status:'notdone',note:''};
+  cur.note=val;
+  _trMarks[key]=cur;
+  saveTrMarks();
+};
+function renderUnexecutedBadge(){
+  var count=_trRows.filter(function(r){return (_trMarks[trMarkKey(r)]||{}).status==='notdone';}).length;
+  var badge=document.getElementById('trUnexecutedBadge');
+  var btn=document.getElementById('trUnexecutedBtn');
+  if(badge)badge.textContent=count;
+  if(btn)btn.style.opacity=count?'1':'0.55';
+}
+window.openUnexecutedModal=function(){
+  renderUnexecutedList();
+  openModal('unexecutedModal');
+};
+window.renderUnexecutedList=function(){
+  var wrap=document.getElementById('unexList');
+  var countEl=document.getElementById('unexCount');
+  if(!wrap)return;
+  var items=[];
+  _trRows.forEach(function(r,idx){
+    var m=_trMarks[trMarkKey(r)];
+    if(m&&m.status==='notdone')items.push({r:r,idx:idx,note:m.note||''});
+  });
+  if(countEl)countEl.textContent=items.length;
+  if(!items.length){
+    wrap.innerHTML='<div style="text-align:center;padding:30px 10px;color:var(--text2);font-size:12px">لا توجد تحويلات غير منفذة 🎉</div>';
+    return;
+  }
+  wrap.innerHTML=items.map(function(it){
+    var r=it.r;
+    var staff=getStaff(r.to)||'—';
+    return'<div style="background:var(--bg3);border:1px solid rgba(255,77,109,0.25);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:7px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:12px;font-weight:700;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-family:var(--mono);color:var(--text2)">'+escH2(r.code)+'</span> — '+escH2(r.name)+'</div>'
+          +'<div style="font-size:10px;color:var(--text2);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'
+            +'<span><span style="color:var(--amber)">'+escH2(r.from)+'</span> → <span style="color:var(--emerald)">'+escH2(r.to)+'</span></span>'
+            +'<span>الكمية: <b style="color:var(--cyan)">'+escH2(String(r.qty))+'</b></span>'
+            +'<span>الزميل: <b style="color:var(--purple2)">'+escH2(staff)+'</b></span>'
+          +'</div>'
+        +'</div>'
+        +'<button onclick="toggleTrMark('+it.idx+',\'notdone\')" title="إزالة من القائمة" style="background:rgba(255,255,255,0.05);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0">✕</button>'
+      +'</div>'
+      +'<input value="'+escH2(it.note)+'" oninput="updateTrNote('+it.idx+',this.value)" placeholder="✏ سبب عدم التحويل…" style="background:var(--bg2);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:7px 10px;font-size:12px;width:100%">'
+    +'</div>';
+  }).join('');
 };
 window.selectAllTransfers=function(checked){
   var fromF=(document.getElementById('trFromFilter')||{}).value||'';
@@ -7103,8 +7345,10 @@ window.deleteSelectedTransfers=function(){
   if(!confirm('حذف '+_trSel.size+' صنف من القائمة؟'))return;
   _trRows=_trRows.filter(function(_,i){return!_trSel.has(i);});
   _trSel=new Set();
+  saveTrRowsLocal();
   populateTransferFilters();
   renderTransferTable();
+  renderUnexecutedBadge();
 };
 
 /* ── history panel ──────────────────────────────────── */
@@ -7133,9 +7377,11 @@ window.restoreHistory=function(i){
     return c;
   });
   _trSel=new Set();
+  saveTrRowsLocal();
   populateTransferFilters();
   renderTransferTable();
   renderBranchStaffChips();
+  renderUnexecutedBadge();
   ['trExportXLSX','trExportPDF'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
   toast('✅ تم تحميل "'+_trHistory[i].name+'"');
 };
@@ -7234,10 +7480,12 @@ window.addManualBSMRow=function(){
 function getFilteredRows(){
   var fromF=(document.getElementById('trFromFilter')||{}).value||'';
   var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var staffF=(document.getElementById('trStaffFilter')||{}).value||'';
   var q    =((document.getElementById('trSearch')||{}).value||'').trim().toLowerCase();
   return _trRows.filter(function(r){
     if(fromF&&r.from!==fromF)return false;
     if(toF&&r.to!==toF)return false;
+    if(staffF&&getStaff(r.to)!==staffF)return false;
     if(q&&r.name.toLowerCase().indexOf(q)<0&&r.code.toLowerCase().indexOf(q)<0)return false;
     return true;
   });
@@ -7268,6 +7516,7 @@ window.exportTransferPDF=function(){
   var rows=buildExportRows();
   var fromF=(document.getElementById('trFromFilter')||{}).value||'';
   var toF  =(document.getElementById('trToFilter')  ||{}).value||'';
+  var staffF=(document.getElementById('trStaffFilter')||{}).value||'';
   var dateStr=new Date().toLocaleDateString('ar-EG');
   var branchLabel=fromF?fromF:(toF?toF:'');
   function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -7372,6 +7621,7 @@ window.exportTransferPDF=function(){
     '<div class="doc-title">تحويلات إعادة التوزيع</div>'+
     '<div class="doc-meta">'+
     (branchLabel?'الفرع: '+escH(branchLabel)+'&nbsp;&nbsp;|&nbsp;&nbsp;':'')+
+    (staffF?'الزميل: '+escH(staffF)+'&nbsp;&nbsp;|&nbsp;&nbsp;':'')+
     'التاريخ: '+escH(dateStr)+
     '</div>'+
     '</div>'+
@@ -7406,6 +7656,129 @@ window.exportTransferPDF=function(){
   if(w)setTimeout(function(){URL.revokeObjectURL(url);},60000);
   toast('🖨 جارٍ فتح نافذة الطباعة…','#0d9488');
 }
+
+/* ── PDF / Print export — "تحويلات غير منفذة" (Unexecuted) ──
+   includes a "سبب عدم التحويل" column. Respects the staff
+   filter if one is selected, so a single colleague's
+   unexecuted items can be printed separately too.        ──── */
+window.exportUnexecutedPDF=function(){
+  var staffF=(document.getElementById('trStaffFilter')||{}).value||'';
+  var items=[];
+  _trRows.forEach(function(r){
+    var m=_trMarks[trMarkKey(r)];
+    if(!m||m.status!=='notdone')return;
+    if(staffF&&getStaff(r.to)!==staffF)return;
+    items.push({r:r,note:m.note||''});
+  });
+  if(!items.length){toast('لا توجد تحويلات غير منفذة'+(staffF?' لهذا الزميل':'')+' للطباعة','#ffb340');return;}
+
+  var dateStr=new Date().toLocaleDateString('ar-EG');
+  function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  var rowNum=0;
+  var tableRows=items.map(function(it){
+    var r=it.r; rowNum++;
+    var staff=getStaff(r.to)||'—';
+    var sc=(staff&&staff!=='—')?'<span class="staff-ok">'+escH(staff)+'</span>':'<span class="staff-none">—</span>';
+    var even=rowNum%2===1;
+    return '<tr'+(even?' class="alt"':'')+'>'
+      +'<td class="cnum">'+rowNum+'</td>'
+      +'<td class="code">'+escH(r.code)+'</td>'
+      +'<td class="name">'+escH(r.name)+'</td>'
+      +'<td class="c from">'+escH(r.from)+'</td>'
+      +'<td class="c to">'+escH(r.to)+'</td>'
+      +'<td class="c qty">'+escH(String(r.qty))+'</td>'
+      +'<td class="staff">'+sc+'</td>'
+      +'<td class="reason">'+(it.note?escH(it.note):'<span class="staff-none">—</span>')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  var css=
+    '@page{size:A4 landscape;margin:10mm 8mm 10mm 8mm}'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'html,body{width:100%;font-family:"Segoe UI",Arial,sans-serif;font-size:9pt;color:#111;background:#fff;direction:ltr}'+
+    '.toolbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1e293b;color:#fff;position:sticky;top:0;z-index:10}'+
+    '.toolbar h1{font-size:13pt;font-weight:700;flex:1}'+
+    '.btn-print{background:#0ea5e9;color:#fff;border:none;padding:8px 20px;border-radius:7px;font-size:11pt;font-weight:700;cursor:pointer}'+
+    '.btn-close{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:7px;font-size:11pt;cursor:pointer}'+
+    '.page{padding:4mm 0;min-height:calc(210mm - 20mm)}'+
+    '.doc-header{margin-bottom:5mm;padding-bottom:3mm;border-bottom:2px solid #be123c;text-align:center}'+
+    '.doc-title{font-size:15pt;font-weight:800;color:#be123c}'+
+    '.doc-meta{font-size:9pt;color:#64748b;margin-top:3px}'+
+    'table{width:100%;border-collapse:collapse;table-layout:fixed;direction:ltr}'+
+    'col.cn{width:8mm}col.cc{width:24mm}col.cn2{width:26%}col.cf{width:22mm}col.ct{width:22mm}col.cq{width:13mm}col.cs{width:34mm}col.cr{width:auto}'+
+    'thead{display:table-header-group}'+
+    'th{background:#be123c;color:#fff;padding:4pt 5pt;font-size:8.5pt;font-weight:700;text-align:left;border:0.5pt solid #9f1239;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'th.c,td.c{text-align:center}'+
+    'td{padding:3.5pt 5pt;border:0.5pt solid #cbd5e1;font-size:8.5pt;vertical-align:middle;line-height:1.3;text-align:left;direction:ltr}'+
+    'td.name{white-space:normal;word-break:break-word;font-weight:600}'+
+    'td.code{font-family:monospace;font-size:10pt;font-weight:700;color:#1e293b}'+
+    'td.cnum{text-align:center;color:#94a3b8;font-size:8pt}'+
+    'td.from{color:#b45309;font-weight:600;background:rgba(251,191,36,0.08);text-align:center}'+
+    'td.to{color:#0f766e;font-weight:600;background:rgba(20,184,166,0.08);text-align:center}'+
+    'td.qty{font-weight:700;color:#1e40af;text-align:center}'+
+    'td.staff{text-align:left;font-size:10pt;font-weight:700;color:#1e293b}'+
+    'td.reason{text-align:right;white-space:normal;word-break:break-word;color:#334155;direction:rtl}'+
+    '.alt td{background:#f8fafc}'+
+    '.alt td.from{background:rgba(251,191,36,0.06)}'+
+    '.alt td.to{background:rgba(20,184,166,0.06)}'+
+    '.staff-ok{color:#0f766e}'+
+    '.staff-none{color:#94a3b8;font-weight:400}'+
+    '.doc-footer{margin-top:4mm;padding-top:2mm;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:8pt;color:#94a3b8}'+
+    '@media print{.toolbar{display:none!important}html,body{background:#fff}'+
+    'td.from{background:rgba(251,191,36,0.08)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'td.to{background:rgba(20,184,166,0.08)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '.alt td{background:#f8fafc!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'th{background:#be123c!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '}';
+
+  var html='<!DOCTYPE html><html dir="ltr"><head><meta charset="utf-8">'+
+    '<title>تحويلات غير منفذة</title>'+
+    '<style>'+css+'</style></head><body>'+
+
+    '<div class="toolbar">'+
+    '<h1>⚠ تحويلات غير منفذة</h1>'+
+    '<button class="btn-print" onclick="window.print()">🖨 طباعة</button>'+
+    '<button class="btn-close" onclick="window.close()">✕ إغلاق</button>'+
+    '</div>'+
+
+    '<div class="page">'+
+    '<div class="doc-header">'+
+    '<div class="doc-title">⚠ تحويلات غير منفذة</div>'+
+    '<div class="doc-meta">'+
+    (staffF?'الزميل: '+escH(staffF)+'&nbsp;&nbsp;|&nbsp;&nbsp;':'')+
+    'التاريخ: '+escH(dateStr)+
+    '</div>'+
+    '</div>'+
+
+    '<table><colgroup>'+
+    '<col class="cn"><col class="cc"><col class="cn2"><col class="cf"><col class="ct"><col class="cq"><col class="cs"><col class="cr">'+
+    '</colgroup><thead><tr>'+
+    '<th class="c">#</th>'+
+    '<th>Code</th>'+
+    '<th>Item Name</th>'+
+    '<th class="c">From</th>'+
+    '<th class="c">To</th>'+
+    '<th class="c">Qty</th>'+
+    '<th>Staff</th>'+
+    '<th style="text-align:right">سبب عدم التحويل</th>'+
+    '</tr></thead><tbody>'+tableRows+'</tbody></table>'+
+
+    '<div class="doc-footer">'+
+    '<span>RxPerform Pro</span>'+
+    '<span>'+items.length+' items &nbsp;|&nbsp; '+escH(dateStr)+'</span>'+
+    '</div>'+
+    '</div>'+
+
+    '<scri'+'pt>window.onload=function(){window.print();}<\/scr'+'ipt>'+
+    '</body></html>';
+
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var w=window.open(url,'_blank');
+  if(w)setTimeout(function(){URL.revokeObjectURL(url);},60000);
+  toast('🖨 جارٍ فتح نافذة الطباعة…','#0d9488');
+};
 
 
 /* ── Branch-Staff Modal open/save ─── */
@@ -7460,6 +7833,7 @@ function bsmLoadColleagues(){
 }
 function bsmSaveColleagues(){
   localStorage.setItem('rxp_bsm_cols', JSON.stringify(_bsmCols));
+  TrStore.queuePush();
 }
 
 window.bsmAddColleague = function(){
@@ -7666,6 +8040,7 @@ window.bsmSaveAll = function(){
   saveBranchStaffLocal();
   closeModal('branchStaffModal');
   renderBranchStaffChips();
+  populateStaffFilter();
   renderTransferTable();
   toast('✅ تم حفظ بيانات الفروع');
 };
@@ -8278,11 +8653,14 @@ window.bsmSaveAll = function(){
   <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap">
     <button onclick="closeTransferPage()" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:var(--rose);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">✕ إغلاق</button>
     <div style="font-size:14px;font-weight:800;color:var(--white)">🔄 تحويلات إعادة التوزيع</div>
+    <div id="trSyncStatus" style="font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--border2);border-radius:99px;padding:3px 10px;display:flex;align-items:center;gap:5px;white-space:nowrap">☁ —</div>
+    <button onclick="trManualSync()" title="مزامنة الآن" style="background:rgba(0,212,255,0.10);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:13px;flex-shrink:0">🔄</button>
     <div style="flex:1"></div>
     <label style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);color:var(--purple2);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px">📂 رفع Excel<input type="file" id="transferExcelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadTransferExcel(this)"></label>
     <button onclick="exportTransferExcel()" id="trExportXLSX" style="display:none;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">⬇ Excel</button>
     <button onclick="exportTransferPDF()"  id="trExportPDF"  style="display:none;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">🖨 PDF</button>
     <button onclick="deleteSelectedTransfers()" id="trDeleteBtn" style="display:none;background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:var(--rose);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">🗑 حذف المحدد</button>
+    <button onclick="openUnexecutedModal()" id="trUnexecutedBtn" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.35);color:var(--rose);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;opacity:0.55;transition:var(--trans)">⚠ غير منفذة<span id="trUnexecutedBadge" style="background:var(--rose);color:#fff;border-radius:99px;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;padding:0 4px">0</span></button>
   </div>
 
   <!-- Filters -->
@@ -8294,6 +8672,10 @@ window.bsmSaveAll = function(){
     <div style="display:flex;align-items:center;gap:5px">
       <span style="font-size:11px;color:var(--text2);white-space:nowrap">إلى:</span>
       <select id="trToFilter" onchange="renderTransferTable()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;min-width:110px"><option value="">كل الفروع</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap">👤 الزميل:</span>
+      <select id="trStaffFilter" onchange="renderTransferTable()" style="background:var(--bg3);border:1px solid var(--purple2);color:var(--purple2);border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;min-width:120px;font-weight:700"><option value="">كل الزملاء</option></select>
     </div>
     <input id="trSearch" oninput="renderTransferTable()" placeholder="🔍 بحث بالاسم أو الكود…" style="background:var(--bg3);border:1px solid var(--border2);color:var(--white);border-radius:7px;padding:5px 9px;font-size:11px;flex:1;min-width:140px">
     <span style="font-size:11px;color:var(--text2)" id="trCount"></span>
@@ -8336,6 +8718,7 @@ window.bsmSaveAll = function(){
             <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">إلى</th>
             <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">الكمية</th>
             <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">اسم الزميل</th>
+            <th style="padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;white-space:nowrap">الحالة</th>
           </tr>
         </thead>
         <tbody id="trTableBody"></tbody>
@@ -8403,6 +8786,24 @@ window.bsmSaveAll = function(){
     <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
       <button class="btn btn-ghost" onclick="closeModal('branchStaffModal')">إغلاق</button>
       <button class="btn btn-primary" onclick="bsmSaveAll()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Unexecuted Transfers Modal -->
+<div class="modal-overlay" id="unexecutedModal" onclick="if(event.target===this)closeModal('unexecutedModal')" style="z-index:99999">
+  <div class="modal-box" style="max-width:680px;max-height:92vh;display:flex;flex-direction:column">
+    <div class="modal-title" style="flex-shrink:0;display:flex;align-items:center;gap:8px;color:var(--rose)">
+      <span>⚠ تحويلات غير منفذة</span>
+      <span id="unexCount" style="background:var(--rose);color:#fff;border-radius:99px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;padding:0 6px">0</span>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;flex-shrink:0">
+      هذه الأصناف وُضعت عليها علامة ✗ في قائمة التحويلات — اكتب سبب عدم التحويل لكل صنف. الصنف يظل موجوداً في القائمة الأساسية كما هو.
+    </div>
+    <div id="unexList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;padding-left:2px"></div>
+    <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
+      <button class="btn btn-ghost" onclick="closeModal('unexecutedModal')">إغلاق</button>
+      <button class="btn btn-primary" onclick="exportUnexecutedPDF()" style="background:rgba(255,77,109,0.15);border-color:rgba(255,77,109,0.4);color:var(--rose)">🖨 طباعة منفصلة</button>
     </div>
   </div>
 </div>
