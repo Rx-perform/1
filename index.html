@@ -6696,9 +6696,16 @@ var TrStore={
           _trBranch = rem.branchStaff||{};
           _trMarks  = rem.marks||{};
           _bsmCols  = rem.colleagues||[];
-          _trHistory= rem.history||_trHistory||[];
+          // لو السحابة عندها history ارجع منه، ولو فاضي/غير موجود ورديًا عندي محلي، ارفعه
+          var remHistoryEmpty = !rem.history || !rem.history.length;
+          if(!remHistoryEmpty){
+            _trHistory = rem.history;
+          }
           trSaveAllLocal();
           trSetSyncSt('✅','متزامن '+now12());
+          if(remHistoryEmpty && _trHistory && _trHistory.length){
+            TrStore.push(JSON.stringify(trSnapshot()));
+          }
           return true;
         }
         // الريموت فاضي — لو عندي بيانات محلية، ارفعها كأول مزامنة
