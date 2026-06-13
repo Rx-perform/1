@@ -4305,7 +4305,7 @@ function _p1(D){
       +'<div style="flex-shrink:0">'+svgRing+'</div>'
       +'<div style="flex:1">'
         +'<div style="font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:7px">'+(ar?'تقرير الأداء الشامل':'Comprehensive Performance Report')+'</div>'
-        +'<div style="font-size:28px;font-weight:900;line-height:1.1;margin-bottom:3px">'+D.c.name+'</div>'
+        +'<div style="font-size:28px;font-weight:900;line-height:1.1;margin-bottom:3px">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div>'
         +'<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:14px">'+( D.c.role||'')+'</div>'
         +'<div style="font-size:20px;color:#f59e0b;letter-spacing:3px;margin-bottom:8px">'+starRow+'</div>'
         +'<div style="display:flex;gap:14px;font-size:10px;color:rgba(255,255,255,.6)">'
@@ -4359,7 +4359,7 @@ function _p2(D){
     +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'الملخص التنفيذي':'Executive Summary')+'</div></div></div>'
-      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
       +'<div class="g4">'+kpiHtml+'</div>'
@@ -4500,7 +4500,7 @@ function _p3(D){
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'سجل الأداء اليومي التفصيلي':'Detailed Daily Performance Log')+'</div></div></div>'
       +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div>'
-      +'<div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
 
@@ -4645,7 +4645,7 @@ function _p3b(D){
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'التقييم الرقمي التفصيلي — كل يوم بالدرجة الفعلية':'Numeric Score Detail — Actual Scores Per Day')+'</div></div></div>'
       +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div>'
-      +'<div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
 
@@ -4698,7 +4698,7 @@ function _p4(D){
     +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'تحليل المعايير التفصيلي':'Detailed Criteria Analysis')+'</div></div></div>'
-      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
       +'<div class="sec">'+(ar?'تفاصيل كل معيار':'Per-Criterion Breakdown')+'</div>'
@@ -4901,7 +4901,7 @@ function _p5(D){
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'الفواتير والتقييم — فلاش كارد':'Invoices & QA — Flash Cards')+'</div></div></div>'
       +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div>'
-      +'<div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
 
@@ -5052,7 +5052,7 @@ function _p6(D){
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'سجل الأنشطة':'Activities Log')+'</div></div></div>'
       +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div>'
-      +'<div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
 
@@ -5208,7 +5208,7 @@ function _p7(D){
     +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'الاتجاهات والتحليل المتقدم':'Trends & Advanced Analytics')+'</div></div></div>'
-      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
 
@@ -5298,12 +5298,12 @@ function _p8(D){
   var trendColor=D.trendDir==='improving'?'#059669':D.trendDir==='declining'?'#dc2626':'#d97706';
   var trendLbl=D.trendDir==='improving'?(ar?'تحسن ↑':'Improving ↑'):D.trendDir==='declining'?(ar?'تراجع ↓':'Declining ↓'):(ar?'مستقر →':'Stable →');
   var summaryText=ar
-    ?('يُظهر '+D.c.name+' أداءً بمعدل '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) خلال '+D.mLbl
+    ?('يُظهر '+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+' أداءً بمعدل '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) خلال '+D.mLbl
       +(D.trendDiff!==null?'، '+(D.trendDir==='improving'?'تحسّن':'تراجَع')+' بمقدار '+Math.abs(D.trendDiff)+' عن الفترة السابقة.':'.')
       +' الترتيب: #'+D.rnk+' من '+D.rankTotal+'.'
       +' الاتساق: '+D.con+'%.'
       +(D.br>60?' ⚠ مؤشر إرهاق مرتفع ('+D.br+'%).':''))
-    :(D.c.name+' scored '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) for '+D.mLbl
+    :((ar&&D.c.nameAr?D.c.nameAr:D.c.name)+' scored '+D.overallAvg.toFixed(2)+'/10 ('+pct+'%) for '+D.mLbl
       +(D.trendDiff!==null?', '+(D.trendDir==='improving'?'improved':'declined')+' by '+Math.abs(D.trendDiff)+' vs previous period.':'.')
       +' Rank: #'+D.rnk+'/'+D.rankTotal+'.'
       +' Consistency: '+D.con+'%.'
@@ -5319,7 +5319,7 @@ function _p8(D){
     +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
       +'<div><div class="ph-name">Rx<span>Perform</span><span class="ph-badge">PRO</span></div>'
       +'<div class="ph-sec">'+(ar?'التوصيات النهائية':'Final Recommendations')+'</div></div></div>'
-      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+D.c.name+'</div></div>'
+      +'<div class="ph-r"><div class="ph-period">'+D.mLbl+'</div><div class="ph-date">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div></div>'
     +'</div>'
     +'<div class="body">'
       +'<div style="background:linear-gradient(135deg,#f0fdf4,#e0f2fe);border:1px solid #a7f3d0;border-'+(ar?'right':'left')+':6px solid '+ac+';border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px">'
@@ -5329,7 +5329,7 @@ function _p8(D){
           +'<div style="font-size:13px;color:#f59e0b;letter-spacing:2px;margin-top:4px">'+starRow+'</div>'
         +'</div>'
         +'<div style="flex:1">'
-          +'<div style="font-size:15px;font-weight:900;color:#0f172a">'+D.c.name+'</div>'
+          +'<div style="font-size:15px;font-weight:900;color:#0f172a">'+(ar&&D.c.nameAr?D.c.nameAr:D.c.name)+'</div>'
           +'<div style="font-size:10.6px;color:#64748b;margin-top:1px">'+(D.c.role||'')+' · '+D.mLbl+'</div>'
           +'<div style="font-size:10.5px;font-weight:700;color:'+ac+';margin-top:4px">'+H.lbl(D.overallAvg,ar)+'</div>'
           +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px">'
@@ -5716,7 +5716,7 @@ function printActivitiesOnly() {
       +'@media print{body{background:white}.toolbar{display:none}.wrap{box-shadow:none;border-radius:0;margin:0;width:100%;padding:16px}}'
       +'</style></head><body>'
       +'<div class="toolbar">'
-      +'  <div><div style="font-size:13px;font-weight:800">'+(ar?'سجل الأنشطة':'Activities Log')+' — '+Dx.c.name+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">'+Dx.mLbl+'</div></div>'
+      +'  <div><div style="font-size:13px;font-weight:800">'+(ar?'سجل الأنشطة':'Activities Log')+' — '+(ar&&Dx.c.nameAr?Dx.c.nameAr:Dx.c.name)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">'+Dx.mLbl+'</div></div>'
       +'  <div style="display:flex;align-items:center;gap:8px">'
       +'    <select class="period-sel" onchange="location.href=location.pathname+\'?m=\'+this.value" id="psel">'+periodOpts+'</select>'
       +'    <button class="btn-print" onclick="window.print()">'+(ar?'🖨 طباعة':'🖨 Print')+'</button>'
