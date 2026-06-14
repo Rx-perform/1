@@ -3763,6 +3763,12 @@ function renderTxFeed(){
         setTxStatus(tx.id,btn.dataset.status);
       });
     });
+    // Edit invoice data
+    const editBtn=card.querySelector('.tx-edit-btn');
+    if(editBtn)editBtn.addEventListener('click',()=>openEditTxModal(tx.id));
+    // Save invoice data (draft → finalized)
+    const saveDraftBtn=card.querySelector('.tx-save-draft-btn');
+    if(saveDraftBtn)saveDraftBtn.addEventListener('click',()=>openEditTxModal(tx.id));
     // Delete
     const delBtn=card.querySelector('.tx-del-btn');
     if(delBtn)delBtn.addEventListener('click',()=>deleteTx(tx.id));
@@ -3774,6 +3780,16 @@ function renderTxFeed(){
       if(lb&&li){li.src=img.src;lb.style.display='flex';}
     });
   });
+  // فاتورة مُضافة حديثًا: افتحها وأظهرها للمستخدم تلقائيًا
+  if(_justAddedTxId){
+    const newCard=document.getElementById('txCard-'+_justAddedTxId);
+    if(newCard){
+      const body=newCard.querySelector('.tx-card-body');
+      if(body)body.classList.add('open');
+      newCard.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    _justAddedTxId=null;
+  }
 }
 
 function buildTxCard(tx){
@@ -3878,10 +3894,12 @@ function buildTxCard(tx){
         ${(tx.products||[]).length?`<div style="margin-top:10px"><div style="font-size:10px;color:var(--text2);margin-bottom:5px">المنتجات:</div><div class="tx-products">${products}</div></div>`:''}
         ${tx.quickNote?`<div style="margin-top:8px;padding:8px;background:var(--glass);border-radius:var(--r);font-size:11px;color:var(--text2)">${tx.quickNote}</div>`:''}
         <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap">
+          ${tx.draft?`<button class="tx-del-btn m-btn" style="font-size:10px;color:var(--rose)">🗑 حذف</button>`:`
+          <button class="tx-edit-btn m-btn" style="font-size:10px">✏️ تعديل بيانات الفاتورة</button>
           <button class="tx-status-btn m-btn" data-status="reviewed" style="font-size:10px">✅ مُراجَعة</button>
           <button class="tx-status-btn m-btn" data-status="flagged" style="font-size:10px">🚩 مُعلَّمة</button>
           <button class="tx-status-btn m-btn" data-status="pending" style="font-size:10px">🕐 معلّقة</button>
-          <button class="tx-del-btn m-btn" style="font-size:10px;color:var(--rose)">🗑 حذف</button>
+          <button class="tx-del-btn m-btn" style="font-size:10px;color:var(--rose)">🗑 حذف</button>`}
         </div>
       </div>
 
@@ -3900,6 +3918,8 @@ function buildTxCard(tx){
       <div class="tx-col-title" style="margin-bottom:8px">💬 تغذية راجعة من المدير</div>
       <textarea class="tx-feedback-box" placeholder="اكتب ملاحظاتك وتوجيهاتك للزميل هنا…" style="width:100%;resize:vertical">${tx.feedback||''}</textarea>
     </div>
+
+    ${tx.draft?`<button class="tx-save-draft-btn btn btn-primary" style="width:100%;padding:14px;font-size:14px">💾 حفظ بيانات الفاتورة</button>`:''}
   </div>
 </div>`;
 }
@@ -4003,6 +4023,7 @@ function deleteTx(txId){
 let _txProducts2=[];
 let _txImgData2=null;
 let _txImgLoading2=false;
+let _justAddedTxId=null;
 
 function openAddTxModal(){
   if(role!=='admin'){toast('للمديرين فقط','#ff4d6d');return;}
@@ -4012,24 +4033,64 @@ function openAddTxModal(){
 
 function chooseTxType(type){
   closeModal('txTypeModal');
-  _txProducts2=[];_txImgData2=null;_txImgLoading2=false;
-  document.getElementById('txEditId').value='';
-  document.getElementById('txInvType').value=type;
-  ['txInvNum','txInvValue','txQuickNote','txProductInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  if(role!=='admin'){toast('للمديرين فقط','#ff4d6d');return;}
+  if(!curColId){toast('اختر زميلاً أولاً','#ffb340');return;}
+  if(!db.transactions)db.transactions={};
+  if(!db.transactions[curColId])db.transactions[curColId]={};
+  const id='tx'+Date.now();
   const d=new Date();
-  document.getElementById('txInvDate').value=d.toISOString().split('T')[0];
-  document.getElementById('txInvTime').value=d.toTimeString().slice(0,5);
-  document.getElementById('txCustType').value='new';
-  document.getElementById('txProductsList').innerHTML='';
-  document.getElementById('txImgPreview').style.display='none';
-  // Update modal title based on type
+  db.transactions[curColId][id]={
+    id,
+    invNum:'',
+    txType:type,
+    value:null,
+    date:d.toISOString().split('T')[0],
+    time:d.toTimeString().slice(0,5),
+    custType:'',
+    products:[],
+    quickNote:'',
+    imgData:null,
+    scores:{},qa:{},feedback:'',
+    status:'pending',
+    draft:true,
+    createdAt:Date.now()
+  };
+  _justAddedTxId=id;
+  Store.save();
+  renderTxFeed();
+  toast(type==='review'?'✅ تمت إضافة فاتورة مراجعة — جاوب على الأسئلة، ثم اضغط "💾 حفظ بيانات الفاتورة"':'✅ تمت إضافة فاتورة بيع — جاوب على الأسئلة، ثم اضغط "💾 حفظ بيانات الفاتورة"');
+}
+
+function openEditTxModal(txId){
+  if(role!=='admin'){toast('للمديرين فقط','#ff4d6d');return;}
+  const tx=db.transactions[curColId]?.[txId];
+  if(!tx){toast('الفاتورة غير موجودة','#ff4d6d');return;}
+  _txProducts2=[...(tx.products||[])];
+  _txImgData2=tx.imgData||null;
+  _txImgLoading2=false;
+  document.getElementById('txEditId').value=txId;
+  document.getElementById('txInvType').value=tx.txType||'sale';
+  document.getElementById('txInvNum').value=tx.invNum||'';
+  document.getElementById('txInvValue').value=tx.value||'';
+  document.getElementById('txInvDate').value=tx.date||new Date().toISOString().split('T')[0];
+  document.getElementById('txInvTime').value=tx.time||new Date().toTimeString().slice(0,5);
+  document.getElementById('txCustType').value=tx.custType||'new';
+  document.getElementById('txQuickNote').value=tx.quickNote||'';
+  renderTxProductChips();
+  const prev=document.getElementById('txImgPreview');
+  if(_txImgData2){prev.src=_txImgData2;prev.style.display='block';}
+  else{prev.style.display='none';}
   const titleEl=document.getElementById('addTxModalTitle');
-  if(titleEl) titleEl.textContent=type==='review'?'🔍 إضافة فاتورة مراجعة (كنترول)':'🛒 إضافة فاتورة بيع';
-  // Update date/time labels
-  const dateLabel=document.querySelector('label[for="txInvDate"],.form-label:has(+#txInvDate)');
+  if(titleEl){
+    if(tx.draft){
+      titleEl.textContent=tx.txType==='review'?'💾 حفظ بيانات فاتورة المراجعة':'💾 حفظ بيانات فاتورة البيع';
+    }else{
+      titleEl.textContent=tx.txType==='review'?'✏️ تعديل بيانات فاتورة المراجعة':'✏️ تعديل بيانات فاتورة البيع';
+    }
+  }
   openModal('addTxModal');
   const pi=document.getElementById('txProductInput');
-  if(pi){pi.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTxProduct();}}}
+  if(pi){pi.value='';pi.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTxProduct();}}}
 }
 
 function addTxProduct(){
@@ -4142,16 +4203,20 @@ function previewTxImg(input){
 
 function saveTxInvoice(){
   const invNum=document.getElementById('txInvNum').value.trim();
-  if(!invNum){toast('رقم الفاتورة مطلوب','#ffb340');return;}
+  if(!invNum){
+    toast('⚠ رقم الفاتورة مطلوب — لا يمكن حفظ بيانات الفاتورة بدونه','#ff4d6d');
+    const f=document.getElementById('txInvNum');
+    if(f)f.focus();
+    return;
+  }
   if(_txImgLoading2){toast('⏳ انتظر تحميل الصورة قبل الحفظ','#ffb340');return;}
   if(!db.transactions)db.transactions={};
   if(!db.transactions[curColId])db.transactions[curColId]={};
-  const id='tx'+Date.now();
+  const editId=document.getElementById('txEditId').value;
   const txType=document.getElementById('txInvType')?.value||'sale';
-  db.transactions[curColId][id]={
-    id,
+
+  const fields={
     invNum,
-    txType,
     value:document.getElementById('txInvValue').value||null,
     date:document.getElementById('txInvDate').value,
     time:document.getElementById('txInvTime').value,
@@ -4159,14 +4224,29 @@ function saveTxInvoice(){
     products:[..._txProducts2],
     quickNote:document.getElementById('txQuickNote').value.trim(),
     imgData:_txImgData2||null,
-    scores:{},qa:{},feedback:'',
-    status:'pending',
-    createdAt:Date.now()
   };
+
+  if(editId&&db.transactions[curColId][editId]){
+    // ── حفظ/تعديل بيانات فاتورة موجودة: نحدّث بيانات الفاتورة فقط، ونحافظ على
+    //    الإجابات والتقييم والحالة وملاحظات المدير كما هي ──
+    const wasDraft=!!db.transactions[curColId][editId].draft;
+    Object.assign(db.transactions[curColId][editId],fields);
+    if(wasDraft)delete db.transactions[curColId][editId].draft;
+  }else{
+    // مسار احتياطي (نادر الاستخدام بعد التحديث الجديد)
+    const id='tx'+Date.now();
+    db.transactions[curColId][id]={
+      id,txType,...fields,
+      scores:{},qa:{},feedback:'',
+      status:'pending',
+      createdAt:Date.now()
+    };
+  }
+
   closeModal('addTxModal');
   Store.save();
   renderTxFeed();
-  toast('✅ تم حفظ الفاتورة');
+  toast('✅ تم حفظ بيانات الفاتورة');
 }
 
 // ── renderTxFeed is called from switchInner in the main renderSwitch block ──
