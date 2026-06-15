@@ -613,6 +613,16 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
 .tx-cr-bar-fill{height:100%;border-radius:99px;transition:width 0.5s ease}
 .tx-cr-bar-val{font-size:10px;font-weight:700;font-family:var(--mono);width:22px;text-align:right;flex-shrink:0}
 
+/* Lock / freeze QA section — تجميد الإجابات والسلايدر بعد الحفظ، لحد ما يدوس "تعديل" */
+.tx-lock-toggle{font-size:10px;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer;border:1px solid;transition:var(--trans);flex-shrink:0}
+.tx-lock-toggle.locked{background:var(--amber2);border-color:var(--amber);color:var(--amber)}
+.tx-lock-toggle.unlocked{background:rgba(0,200,150,0.12);border-color:var(--emerald);color:var(--emerald)}
+.tx-card.locked .tx-q-btn,
+.tx-card.locked .tx-score-inp,
+.tx-card.locked .tx-step-btn{pointer-events:none;opacity:0.5}
+.tx-card.locked .tx-feedback-box{pointer-events:none;opacity:0.75}
+.tx-card.locked .tx-criteria-bars,.tx-card.locked .tx-questions{position:relative}
+
 /* Questions */
 .tx-questions{display:flex;flex-direction:column;gap:6px}
 .tx-q-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:var(--r);background:var(--glass);border:1px solid var(--border);transition:var(--trans)}
@@ -3623,18 +3633,26 @@ function getTxStats(){
   const list=getTxList();
   if(!list.length)return{total:0,avg:0,upsell:0,cross:0,topIssue:'—'};
   const scored=list.filter(tx=>tx.scores&&Object.keys(tx.scores).length>0);
-  const avg=scored.length?+(scored.reduce((s,tx)=>{
-    const vals=Object.values(tx.scores);
-    return s+(vals.reduce((a,b)=>a+b,0)/vals.length);
-  },0)/scored.length).toFixed(1):0;
+  const avg=scored.length?+(scored.reduce((s,tx)=>s+(calcTxOverall(tx)||0),0)/scored.length).toFixed(1):0;
   // Upsell: q_up_avail=yes AND q_up_done=yes / q_up_avail=yes
   const upAvail=list.filter(tx=>tx.qa&&tx.qa['q_up_avail']==='yes');
   const upDone=upAvail.filter(tx=>tx.qa&&tx.qa['q_up_done']==='yes');
   const crossAvail=list.filter(tx=>tx.qa&&tx.qa['q_cross_avail']==='yes');
   const crossDone=crossAvail.filter(tx=>tx.qa&&tx.qa['q_cross_done']==='yes');
-  // Top issue: most 'no' answers
+  // Top issue: most 'no' answers — مع استثناء أسئلة "هل كان متاحًا؟" لأن "لا" هناك
+  // معناه إن الفرصة مكانت متاحة أصلاً، وده ليس تقصيرًا من الزميل
   const noCounts={};
-  list.forEach(tx=>{if(!tx.qa)return;Object.entries(tx.qa).forEach(([k,v])=>{if(v==='no'){noCounts[k]=(noCounts[k]||0)+1;}});});
+  list.forEach(tx=>{
+    if(!tx.qa)return;
+    Object.entries(tx.qa).forEach(([k,v])=>{
+      if(v!=='no')return;
+      if(k==='q_cross_avail'||k==='q_up_avail')return; // غير متاح أصلاً → ليست مشكلة
+      // أسئلة "هل قام الزميل بالفعل بعرض..." تُحسب كمشكلة فقط لو كانت الفرصة متاحة (نعم على السؤال الرئيسي)
+      if(k==='q_cross_done'&&tx.qa['q_cross_avail']!=='yes')return;
+      if(k==='q_up_done'&&tx.qa['q_up_avail']!=='yes')return;
+      noCounts[k]=(noCounts[k]||0)+1;
+    });
+  });
   let topKey=Object.keys(noCounts).sort((a,b)=>noCounts[b]-noCounts[a])[0];
   const qMap={}; TX_QUESTIONS.forEach(q=>{qMap[q.id]=q.text; if(q.sub)qMap[q.sub.id]=q.sub.text;});
   const topIssue=topKey?(qMap[topKey]||''):'—';
@@ -3703,6 +3721,9 @@ function renderTxFeed(){
     // Header click toggles body
     const hdr=card.querySelector('.tx-card-header');
     if(hdr)hdr.addEventListener('click',e=>{if(e.target.closest('button'))return;const body=card.querySelector('.tx-card-body');if(body)body.classList.toggle('open');});
+    // Lock / unlock toggle (تجميد أو فتح الإجابات والسلايدر للتعديل)
+    const lockBtn=card.querySelector('.tx-lock-toggle');
+    if(lockBtn)lockBtn.addEventListener('click',e=>{e.stopPropagation();toggleTxLock(tx.id,card);});
     // Q buttons
     card.querySelectorAll('.tx-q-btn').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -3811,6 +3832,9 @@ function buildTxCard(tx){
   const dash=ov?Math.round(ov/10*126):0;
   const statusLabel={pending:'🕐 معلّقة',reviewed:'✅ مُراجَعة',flagged:'🚩 مُعلَّمة'}[tx.status||'pending'];
   const statusCls={pending:'tx-status-pending',reviewed:'tx-status-reviewed',flagged:'tx-status-flagged'}[tx.status||'pending'];
+  // فاتورة لسه draft (لم تُحفظ بياناتها الأساسية بعد) → تبقى مفتوحة للتعديل دايمًا
+  // أما الفواتير المحفوظة فتُقفل تلقائيًا (تجميد الإجابات والسلايدر) إلا لو دوس "تعديل"
+  const isLocked=tx.draft?false:tx.locked!==false;
 
   // Products
   const products=(tx.products||[]).map(p=>`<span class="tx-product-tag">${p}</span>`).join('');
@@ -3870,7 +3894,7 @@ function buildTxCard(tx){
 
   const date=tx.date?new Date(tx.date).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'}):'—';
 
-  return`<div class="tx-card" id="txCard-${tx.id}">
+  return`<div class="tx-card${isLocked?' locked':''}" id="txCard-${tx.id}">
   <div class="tx-card-header">
     <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;flex-wrap:wrap">
       <div>
@@ -3918,7 +3942,10 @@ function buildTxCard(tx){
 
       <!-- Right: Scores + Questions -->
       <div>
-        <div class="tx-col-title">📊 تقييم الأداء</div>
+        <div class="tx-col-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span>📊 تقييم الأداء</span>
+          ${!tx.draft?`<button class="tx-lock-toggle${isLocked?' locked':' unlocked'}">${isLocked?'🔒 مقفول — اضغط للتعديل':'🔓 وضع التعديل — اضغط للقفل'}</button>`:''}
+        </div>
         <div class="tx-criteria-bars" style="margin-bottom:14px">${critBars}</div>
 
         <div class="tx-col-title">❓ أسئلة المراجعة</div>
@@ -3938,6 +3965,25 @@ function buildTxCard(tx){
 }
 
 // ── Save helpers ──────────────────────────────────
+// تجميد/فتح قسم تقييم الأداء وأسئلة المراجعة لمنع التعديل بالخطأ أثناء التمرير
+function toggleTxLock(txId,card){
+  if(!db.transactions[curColId]||!db.transactions[curColId][txId])return;
+  const tx=db.transactions[curColId][txId];
+  const wasLocked=tx.locked!==false;
+  tx.locked=wasLocked?false:true;
+  Store.save();
+  if(card){
+    const locked=tx.locked!==false;
+    card.classList.toggle('locked',locked);
+    const btn=card.querySelector('.tx-lock-toggle');
+    if(btn){
+      btn.textContent=locked?'🔒 مقفول — اضغط للتعديل':'🔓 وضع التعديل — اضغط للقفل';
+      btn.classList.toggle('locked',locked);
+      btn.classList.toggle('unlocked',!locked);
+    }
+  }
+}
+
 function saveTxQA(txId,qid,ans,card){
   if(!db.transactions[curColId]||!db.transactions[curColId][txId])return;
   const tx=db.transactions[curColId][txId];
@@ -4980,6 +5026,24 @@ function _p4(D){
     +'</div>';
 }
 
+/* ── ملاحظة سريعة (الزميل) + تعليق المسؤول/المدير — يظهروا كصندوقين منفصلين ── */
+function _noteBoxes(tx,ar,outerMargin){
+  var parts=[];
+  if(tx.quickNote){
+    parts.push('<div style="margin:'+outerMargin+';padding:6px 9px;border-radius:6px;background:#fffbeb;border:1px solid #fde68a;border-right:3px solid #f59e0b">'
+      +'<div style="font-size:8.8px;font-weight:700;color:#92400e;margin-bottom:2px">'+(ar?'📌 ملاحظة':'📌 Note')+'</div>'
+      +'<div style="font-size:9.4px;color:#78350f">'+tx.quickNote+'</div>'
+      +'</div>');
+  }
+  if(tx.feedback){
+    parts.push('<div style="margin:'+outerMargin+';padding:6px 9px;border-radius:6px;background:#eff6ff;border:1px solid #bfdbfe;border-right:3px solid #3b82f6">'
+      +'<div style="font-size:8.8px;font-weight:700;color:#1e40af;margin-bottom:2px">'+(ar?'💬 تعليق المسؤول':'💬 Manager Feedback')+'</div>'
+      +'<div style="font-size:9.4px;color:#1e3a8a">'+tx.feedback+'</div>'
+      +'</div>');
+  }
+  return parts.join('');
+}
+
 /* ══════════════════════════════════════════════════════
    PAGE 5 — INVOICES & QA (فلاش كارد — الفاتورة + الأسئلة + الملاحظة)
 ══════════════════════════════════════════════════════ */
@@ -5037,8 +5101,9 @@ function _p5(D){
     var statusFg={pending:'#92400e',reviewed:'#065f46',flagged:'#b91c1c'}[tx.status||'pending'];
     var prods=(tx.products||[]).join('، ')||(ar?'—':'—');
 
-    /* حساب المتوسط الكلي */
-    var scoreVals=TX_CR.map(function(cr){return parseFloat(tx.scores&&tx.scores[cr.id])||0;}).filter(function(v){return v>0;});
+    /* حساب المتوسط الكلي — معايير الفاتورة بحسب نوعها (بيع/مراجعة) */
+    var crList=typeof getTxCriteria!=='undefined'?getTxCriteria(tx.txType):TX_CR;
+    var scoreVals=crList.map(function(cr){return parseFloat(tx.scores&&tx.scores[cr.id])||0;}).filter(function(v){return v>0;});
     var overall=scoreVals.length?+(scoreVals.reduce(function(a,b){return a+b;},0)/scoreVals.length).toFixed(1):0;
     var oc=overall>=9?'#059669':overall>=7?'#0891b2':overall>=5?'#d97706':'#dc2626';
 
@@ -5061,8 +5126,8 @@ function _p5(D){
         +'<div><span style="color:#94a3b8;display:block;font-size:8.8px;margin-bottom:1px">'+(ar?'المنتجات':'Products')+'</span><span style="font-size:9.5px">'+prods.slice(0,30)+'</span></div>'
       +'</div>'
       /* معايير التقييم (شريط) */
-      +(TX_CR.length>0?'<div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap">'
-        +TX_CR.map(function(cr){
+      +(crList.length>0?'<div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap">'
+        +crList.map(function(cr){
           var val=parseFloat(tx.scores&&tx.scores[cr.id])||0;
           var pct=val*10;
           var cc=val>=9?'#059669':val>=7?'#0891b2':val>=5?'#d97706':'#dc2626';
@@ -5128,14 +5193,7 @@ function _p5(D){
       +'</div>';
 
     /* ── الملاحظة على الفاتورة (إن وجدت) ── */
-    var noteSection='';
-    if(tx.quickNote||tx.feedback){
-      var noteText=tx.quickNote||tx.feedback||'';
-      noteSection='<div style="margin:0 12px 8px;padding:6px 9px;border-radius:6px;background:#fffbeb;border:1px solid #fde68a;border-right:3px solid #f59e0b">'
-        +'<div style="font-size:8.8px;font-weight:700;color:#92400e;margin-bottom:2px">'+(ar?'📌 ملاحظة':'📌 Note')+'</div>'
-        +'<div style="font-size:9.4px;color:#78350f">'+noteText+'</div>'
-        +'</div>';
-    }
+    var noteSection=_noteBoxes(tx,ar,'0 12px 8px');
 
     /* الكارد الكاملة: بيانات → صورة → أسئلة وملاحظات */
     var cardBorderColor=reviewed>idx?'#059669':'#e2e8f0';
@@ -5164,7 +5222,7 @@ function _p5(D){
     if(!st) return '';
     var pct=st.pct;
     var barCol=pct>=80?'#059669':pct>=60?'#d97706':'#dc2626';
-    var qShort=q.text.slice(0,50)+(q.text.length>50?'…':'');
+    var qShort=q.text;
     return '<tr>'
       +'<td style="padding:3px 6px;border:1px solid #f1f5f9;font-size:9.5px">'+qShort+'</td>'
       +'<td style="padding:3px 6px;border:1px solid #f1f5f9;text-align:center;color:#059669;font-weight:700;font-size:9.5px">'+st.yes+'</td>'
@@ -5281,14 +5339,7 @@ function _p5img(D){
     }).filter(Boolean).join('');
 
     /* ── الملاحظة العامة على الفاتورة (إن وجدت) ── */
-    var noteSection='';
-    if(tx.quickNote||tx.feedback){
-      var noteText=tx.quickNote||tx.feedback||'';
-      noteSection='<div style="margin-top:8px;padding:6px 9px;border-radius:6px;background:#fffbeb;border:1px solid #fde68a;border-right:3px solid #f59e0b">'
-        +'<div style="font-size:8.8px;font-weight:700;color:#92400e;margin-bottom:2px">'+(ar?'📌 ملاحظة':'📌 Note')+'</div>'
-        +'<div style="font-size:9.4px;color:#78350f">'+noteText+'</div>'
-        +'</div>';
-    }
+    var noteSection=_noteBoxes(tx,ar,'8px 0 0');
 
     return '<div class="A4"><div class="accent" style="background:linear-gradient(to bottom,#059669,#0891b2)"></div>'
       +'<div class="ph"><div class="ph-brand"><div class="ph-logo">Rx</div>'
@@ -5664,7 +5715,7 @@ function _p7(D){
     +'<div class="foot">'
       +'<span>RxPerform Pro — '+(ar?'سري':'Confidential')+'</span>'
       +'<span>'+D.mLbl+'</span>'
-      +'<span>'+(ar?'صفحة 6 من 7':'Page 6 of 7')+'</span>'
+      +'<span>'+(ar?'صفحة 6 من 6':'Page 6 of 6')+'</span>'
     +'</div>'
     +'</div>';
 }
@@ -5854,7 +5905,7 @@ function print(opts){
     var pages;
     if(!sections){
       /* كل الخواص */
-      pages=[_p1(D),_p3(D),_p4(D)].concat(_p5(D),[_p7(D),_p8(D)]);
+      pages=[_p1(D),_p3(D),_p4(D)].concat(_p5(D),[_p7(D)]);
     } else {
       pages=[];
       var added_p8=false;
@@ -5908,7 +5959,7 @@ function printMulti(jobs,paper,preview){
   function done(){_busy=false;}
   try{
     var pages=[];
-    jobs.forEach(function(j){var D=_getData(j.colId,j.month);if(D)pages.push.apply(pages,[_p1(D),_p3b(D),_p3(D),_p4(D)].concat(_p5(D),[_p7(D),_p8(D)]));});
+    jobs.forEach(function(j){var D=_getData(j.colId,j.month);if(D)pages.push.apply(pages,[_p1(D),_p3b(D),_p3(D),_p4(D)].concat(_p5(D),[_p7(D)]));});
     if(!pages.length){done();if(typeof toast==='function')toast(isAr?'⚠ لا توجد بيانات':'⚠ No data','#ffb340');return;}
     var ar=typeof lang!=='undefined'&&lang==='ar';
     if(preview){
