@@ -1353,7 +1353,26 @@ function dateInPeriod(dateStr,ym){
   const d=new Date(dateStr+'T00:00:00');
   return d>=ps&&d<=pe;
 }
-function availMonths(){const now=new Date();return Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});}
+function availMonths(){
+  const now=new Date();
+  // نشمل شهر واحد مستقبلي عشان الفترة النشطة تظهر دايماً في القائمة لما اليوم >= يوم الدورة
+  const all=Array.from({length:13},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()+1-i,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});
+  // نحذف الفترات الخاملة: فترة ١٦ ديسمبر-١٥ يناير (مفتاحها 2026-01) وما قبلها
+  // نبقّي فقط فترة ١٦ يناير-١٥ فبراير (مفتاحها 2026-02) وما بعدها
+  return all.filter(m=>m>='2026-02');
+}
+
+// الفترة النشطة بناءً على يوم الدورة:
+// لو اليوم الحالي >= يوم البداية → الفترة هي الشهر التالي (لأن الفترة تبدأ من يوم 16 هذا الشهر وتنتهي في الشهر القادم)
+// لو اليوم الحالي < يوم البداية → الفترة هي الشهر الحالي
+function getActivePeriod(){
+  const now=new Date();
+  const C=cs();
+  const d=now.getDate();
+  // لو اليوم >= بداية الدورة → نحن داخل فترة الشهر القادم
+  const periodMonth=d>=C?new Date(now.getFullYear(),now.getMonth()+1,1):new Date(now.getFullYear(),now.getMonth(),1);
+  return`${periodMonth.getFullYear()}-${String(periodMonth.getMonth()+1).padStart(2,'0')}`;
+}
 function getPeriodLabel(m){
   const[y,mo]=m.split('-').map(Number);
   const C=cs();
@@ -1472,7 +1491,11 @@ function launch(){
   document.getElementById('profileName').textContent=role==='admin'?(db.settings?.adminDisplayName||'Admin'):'Viewer';
   document.getElementById('profileRole').textContent=role==='admin'?t('admin_title'):t('viewer_title');
   document.querySelectorAll('.admin-only').forEach(el=>el.style.display=role==='admin'?'':'none');
-  const months=availMonths();curMonth=months[0];
+  // الفترة النشطة: لو اليوم >= يوم بداية الدورة (مثلاً 16)، الفترة هي الشهر القادم
+  // مثال: اليوم 20 يونيو → الفترة 2026-07 (تبدأ 16 يونيو وتنتهي 15 يوليو)
+  const months=availMonths();curMonth=getActivePeriod();
+  // لو الفترة الحالية مش موجودة في القائمة (مستقبلية جداً) نرجع للأحدث
+  if(!months.includes(curMonth))curMonth=months[0];
   buildQAGrid();startClock();applyLang();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();
   // auto-open first colleague
   if(db.colleagues.length){selectTab(db.colleagues[0].id);}
@@ -1482,6 +1505,17 @@ function launch(){
   window._autoSyncInterval=setInterval(function(){
     Store.pull().then(function(changed){updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(changed&&curColId)renderWorkspace();});
   },120000);
+  // فحص تلقائي كل دقيقة: لو وصلنا ليوم بداية الدورة (مثلاً 16) يتحول للفترة الجديدة أوتوماتيك
+  if(window._periodCheckInterval)clearInterval(window._periodCheckInterval);
+  window._periodCheckInterval=setInterval(function(){
+    const shouldBe=getActivePeriod();
+    if(shouldBe!==curMonth){
+      curMonth=shouldBe;
+      updateTopbar();
+      if(curColId)renderWorkspace();
+      toast('🔄 '+(lang==='ar'?'تم التحويل إلى الفترة الجديدة تلقائياً':'Auto-switched to new period'));
+    }
+  },60000);
   // periodic pull disabled - push-only sync to avoid overwriting local data
 }
 function launchApp(){ launch(); }
@@ -3581,6 +3615,8 @@ const TX_QUESTIONS_REVIEW=[
     sub:null, requireNote:false},
   {id:'r_docs',     text:'هل راجع الوصفة الطبية والجرعات بدقة؟',
     sub:null, requireNote:false},
+  {id:'r_correct',  text:'هل يصحح أخطاء المسؤول عن البيع بالطريقة السليمة؟',
+    sub:null, requireNote:false},
   {id:'r_manner',   text:'هل تعامل مع العميل باحترافية وصبر أثناء عملية المراجعة؟',
     sub:null, requireNote:false},
 ];
@@ -3599,13 +3635,13 @@ const TX_CRITERIA=[
   {id:'prof',  label:'الاحترافية',        color:'var(--rose)'},
 ];
 
-// "جودة المراجعة" تخص فواتير المراجعة (كنترول) فقط — تُستبعد من فواتير البيع
+// "جودة المراجعة"
 function getTxCriteria(txType){
   return txType==='review' ? TX_CRITERIA : TX_CRITERIA.filter(c=>c.id!=='up');
 }
 
 // الأسئلة التي تحتاج إجابة ثالثة "غير متاح" بالإضافة إلى نعم/لا
-const TX_NA_QUESTIONS=['q_explain','q_subst','q_complaint','r_usage','r_interact','r_docs'];
+const TX_NA_QUESTIONS=['q_explain','q_subst','q_complaint','r_usage','r_interact','r_docs','r_correct'];
 
 const TX_CUST_LABELS={new:'عميل جديد',regular:'عميل منتظم',vip:'عميل VIP',insurance:'تأمين طبي',other:'أخرى'};
 
