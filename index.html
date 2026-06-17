@@ -669,6 +669,9 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
 .modal-bg.open{display:flex}
 .modal{background:var(--bg2,#0d1b2e);border:1px solid var(--border,rgba(255,255,255,0.08));border-radius:16px;padding:24px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
 .modal-title{font-size:16px;font-weight:800;margin-bottom:16px}
+tr.ice-row{background:linear-gradient(180deg,rgba(210,245,255,0.13) 0%,rgba(0,160,255,0.08) 35%,rgba(0,100,200,0.11) 70%,rgba(0,60,140,0.13) 100%)!important;box-shadow:inset 0 2px 3px rgba(200,240,255,0.18),inset 0 -2px 4px rgba(0,140,220,0.15),0 0 28px rgba(0,200,255,0.10),0 0 8px rgba(0,180,255,0.08);border-top:2px solid rgba(160,230,255,0.55)!important;border-bottom:2px solid rgba(0,150,220,0.40)!important;outline:1px solid rgba(100,200,255,0.18)}
+tr.ice-row:hover{background:linear-gradient(180deg,rgba(220,248,255,0.18) 0%,rgba(0,180,255,0.12) 35%,rgba(0,120,210,0.15) 100%)!important;box-shadow:inset 0 2px 3px rgba(220,248,255,0.28),0 0 40px rgba(0,212,255,0.22)!important;border-top:2px solid rgba(180,240,255,0.75)!important}
+tr.ice-row td{border-top:none!important;border-bottom:none!important}
 </style>
 </head>
 <body>
@@ -7742,6 +7745,19 @@ window.renderTransferTable = function(){
       +'<button onclick="toggleTrMark('+origIdx+',\'done\')" title="تم التحويل" style="width:25px;height:25px;border-radius:6px;border:1.5px solid;cursor:pointer;font-size:12px;font-weight:900;margin:0 2px;line-height:1;'+doneStyle+'">✓</button>'
       +'<button onclick="toggleTrMark('+origIdx+',\'notdone\')" title="لم يتم التحويل" style="width:25px;height:25px;border-radius:6px;border:1.5px solid;cursor:pointer;font-size:12px;font-weight:900;margin:0 2px;line-height:1;'+notdoneStyle+'">✗</button>'
       +'</td>';
+    var isFridgeRow=/\+\+\+/.test(r.name);
+    if(isFridgeRow){
+      return'<tr class="ice-row">'
+        +'<td style="padding:9px 8px;text-align:center"><input type="checkbox" '+checked+' data-idx="'+origIdx+'" onchange="toggleTrSel('+origIdx+',this.checked)" style="accent-color:#00d4ff;cursor:pointer;width:15px;height:15px"></td>'
+        +'<td style="padding:9px 8px;font-family:var(--mono);font-size:11px;color:rgba(160,225,255,0.72)">'+r.code+'</td>'
+        +'<td style="padding:9px 8px;font-weight:700;color:#e4f8ff;text-shadow:0 0 12px rgba(0,212,255,0.40)"><span style="display:inline-flex;align-items:center;gap:9px"><span style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(0,160,255,0.50),rgba(0,80,180,0.62));color:#c8eeff;border:1.5px solid rgba(130,215,255,0.72);border-radius:6px;padding:2px 10px 2px 7px;font-size:10px;font-weight:900;white-space:nowrap;letter-spacing:0.7px;box-shadow:0 0 14px rgba(0,180,255,0.40),inset 0 1px 0 rgba(255,255,255,0.20);text-shadow:0 0 10px rgba(0,240,255,1)">&#10052; تبريد</span>'+r.name+'</span></td>'
+        +'<td style="padding:9px 8px;text-align:center"><span style="background:rgba(255,180,64,0.18);color:#ffd080;border-radius:5px;padding:2px 8px;font-size:11px;white-space:nowrap;text-shadow:0 0 6px rgba(255,160,40,0.45)">'+r.from+'</span></td>'
+        +'<td style="padding:9px 8px;text-align:center"><span style="background:rgba(0,200,150,0.18);color:#4dffd8;border-radius:5px;padding:2px 8px;font-size:11px;white-space:nowrap;text-shadow:0 0 6px rgba(0,200,150,0.45)">'+r.to+'</span></td>'
+        +'<td style="padding:9px 8px;text-align:center;font-family:var(--mono);font-weight:700;color:#7df4ff;text-shadow:0 0 10px rgba(0,212,255,0.65)">'+r.qty+'</td>'
+        +'<td style="padding:9px 8px;text-align:center;font-size:11px;color:#c8aaff">'+staff+'</td>'
+        +statusCell
+        +'</tr>';
+    }
     return'<tr style="background:'+bg+'" onmouseenter="this.style.background=\'rgba(167,139,250,0.06)\'" onmouseleave="this.style.background=\''+bg+'\'">'
       +'<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)"><input type="checkbox" '+checked+' data-idx="'+origIdx+'" onchange="toggleTrSel('+origIdx+',this.checked)" style="accent-color:var(--purple2);cursor:pointer;width:15px;height:15px"></td>'
       +'<td style="padding:9px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2)">'+r.code+'</td>'
@@ -8056,11 +8072,12 @@ window.exportTransferPDF=function(){
     var staff=r['اسم الزميل']||'';
     var sc=(staff&&staff!=='—')?'<span class="staff-ok">'+escH(staff)+'</span>':'<span class="staff-none">—</span>';
     var even=rowNum%2===1;
-    return '<tr'+(even?' class="alt"':'')+'>'
+    var isFridgePrint=/\+\+\+/.test(r['اسم الصنف']||'');
+    return '<tr'+(isFridgePrint?' class="'+(even?'alt ':'')+'fridge-row"':(even?' class="alt"':''))+'>'  
       +'<td class="cb"><input type="checkbox"></td>'
       +'<td class="cnum">'+rowNum+'</td>'
       +'<td class="code">'+escH(r['الكود'])+'</td>'
-      +'<td class="name">'+escH(r['اسم الصنف'])+'</td>'
+      +(function(){var nm=r['اسم الصنف']||'';var isFridge=/\+\+\+/.test(nm);return'<td class="name'+(isFridge?' fridge':'')+'">'+(isFridge?'<span class="fridge-badge">تلاجة</span>&nbsp;&nbsp;':'')+escH(nm)+'</td>';})()
       +'<td class="c from">'+escH(r['من'])+'</td>'
       +'<td class="c to">'+escH(r['إلى'])+'</td>'
       +'<td class="c qty">'+escH(String(r['الكمية']))+'</td>'
@@ -8092,6 +8109,10 @@ window.exportTransferPDF=function(){
     'th.c,td.c{text-align:center}'+
     'td{padding:3.5pt 5pt;border:0.5pt solid #cbd5e1;font-size:8.5pt;vertical-align:middle;line-height:1.3;text-align:left;direction:ltr}'+
     'td.name{white-space:normal;word-break:break-word;font-weight:600}'+
+    '.fridge-badge{display:inline-block;background:#1e293b;color:#fff;border:1.5pt solid #1e293b;border-radius:4pt;padding:1.5pt 6pt;font-size:7.5pt;font-weight:900;letter-spacing:0.4pt;line-height:1.4;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'tr.fridge-row td{border-top:2.5pt solid #1e293b!important;border-bottom:2.5pt solid #1e293b!important;background:#efefef!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'tr.fridge-row td:first-child{border-left:2.5pt solid #1e293b!important}'+
+    'tr.fridge-row td:last-child{border-right:2.5pt solid #1e293b!important}'+
     'td.code{font-family:monospace;font-size:10pt;font-weight:700;color:#1e293b}'+
     'td.cnum{text-align:center;color:#94a3b8;font-size:8pt}'+
     'td.cb{text-align:center;padding:2pt}'+
@@ -8194,10 +8215,11 @@ window.exportUnexecutedPDF=function(){
     var staff=getStaff(r.to)||'—';
     var sc=(staff&&staff!=='—')?'<span class="staff-ok">'+escH(staff)+'</span>':'<span class="staff-none">—</span>';
     var even=rowNum%2===1;
-    return '<tr'+(even?' class="alt"':'')+'>'
+    var isFridgeUnex=/\+\+\+/.test(r.name||'');
+    return '<tr'+(isFridgeUnex?' class="'+(even?'alt ':'')+'fridge-row"':(even?' class="alt"':''))+'>'  
       +'<td class="cnum">'+rowNum+'</td>'
       +'<td class="code">'+escH(r.code)+'</td>'
-      +'<td class="name">'+escH(r.name)+'</td>'
+      +(function(){var isFridge=/\+\+\+/.test(r.name||'');return'<td class="name'+(isFridge?' fridge':'')+'">'+(isFridge?'<span class="fridge-badge">تلاجة</span>&nbsp;&nbsp;':'')+escH(r.name)+'</td>';})()
       +'<td class="c from">'+escH(r.from)+'</td>'
       +'<td class="c to">'+escH(r.to)+'</td>'
       +'<td class="c qty">'+escH(String(r.qty))+'</td>'
@@ -8225,6 +8247,10 @@ window.exportUnexecutedPDF=function(){
     'th.c,td.c{text-align:center}'+
     'td{padding:3.5pt 5pt;border:0.5pt solid #cbd5e1;font-size:8.5pt;vertical-align:middle;line-height:1.3;text-align:left;direction:ltr}'+
     'td.name{white-space:normal;word-break:break-word;font-weight:600}'+
+    '.fridge-badge{display:inline-block;background:#1e293b;color:#fff;border:1.5pt solid #1e293b;border-radius:4pt;padding:1.5pt 6pt;font-size:7.5pt;font-weight:900;letter-spacing:0.4pt;line-height:1.4;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'tr.fridge-row td{border-top:2.5pt solid #1e293b!important;border-bottom:2.5pt solid #1e293b!important;background:#efefef!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    'tr.fridge-row td:first-child{border-left:2.5pt solid #1e293b!important}'+
+    'tr.fridge-row td:last-child{border-right:2.5pt solid #1e293b!important}'+
     'td.code{font-family:monospace;font-size:10pt;font-weight:700;color:#1e293b}'+
     'td.cnum{text-align:center;color:#94a3b8;font-size:8pt}'+
     'td.from{color:#b45309;font-weight:600;background:rgba(251,191,36,0.08);text-align:center}'+
