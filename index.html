@@ -1505,15 +1505,21 @@ function launch(){
   window._autoSyncInterval=setInterval(function(){
     Store.pull().then(function(changed){updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(changed&&curColId)renderWorkspace();});
   },120000);
-  // فحص تلقائي كل دقيقة: لو وصلنا ليوم بداية الدورة (مثلاً 16) يتحول للفترة الجديدة أوتوماتيك
+  // فحص تلقائي: لو الدورة الفعلية اتغيرت (يعني وصلنا ليوم بداية الدورة فعلاً وإحنا فاتحين الفترة الحالية)
+  // يتحول للفترة الجديدة تلقائياً — لكن لو المستخدم بيتصفح فترة قديمة يدويًا، نسيبه عليها وما نلمسها
+  window._lastActivePeriod=getActivePeriod();
   if(window._periodCheckInterval)clearInterval(window._periodCheckInterval);
   window._periodCheckInterval=setInterval(function(){
     const shouldBe=getActivePeriod();
-    if(shouldBe!==curMonth){
-      curMonth=shouldBe;
-      updateTopbar();
-      if(curColId)renderWorkspace();
-      toast('🔄 '+(lang==='ar'?'تم التحويل إلى الفترة الجديدة تلقائياً':'Auto-switched to new period'));
+    if(shouldBe!==window._lastActivePeriod){
+      // الدورة اتغيرت فعلاً (عبرنا يوم بداية الدورة) — نحول فقط لو كان المستخدم على الفترة النشطة القديمة
+      if(curMonth===window._lastActivePeriod){
+        curMonth=shouldBe;
+        updateTopbar();
+        if(curColId)renderWorkspace();
+        toast('🔄 '+(lang==='ar'?'تم التحويل إلى الفترة الجديدة تلقائياً':'Auto-switched to new period'));
+      }
+      window._lastActivePeriod=shouldBe;
     }
   },60000);
   // periodic pull disabled - push-only sync to avoid overwriting local data
@@ -4372,6 +4378,13 @@ var H={
     return v>=9?(ar?'ممتاز':'Excellent'):v>=7?(ar?'جيد جداً':'Very Good'):v>=5?(ar?'جيد':'Good'):(ar?'يحتاج تحسين':'Needs Work');
   },
   pct:function(v,max){return v&&max?Math.min(100,Math.round(v/max*100)):0;},
+  dayLabel:function(dayObj,ar){
+    if(!dayObj||!dayObj.date) return '—';
+    var dt=dayObj.date;
+    var wdEn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var wdAr=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    return (ar?wdAr[dt.getDay()]:wdEn[dt.getDay()])+' '+dt.getDate();
+  },
   bar:function(pct,col,h){
     h=h||5;
     return '<div style="width:100%;height:'+h+'px;background:#e2e8f0;border-radius:3px;overflow:hidden">'
@@ -4435,8 +4448,9 @@ function _getData(colId,month){
   var overallAvg=filled.length?+(filled.reduce(function(a,x){return a+x.avg;},0)/filled.length).toFixed(2):0;
   var daysScored=dayData.filter(function(x){return x.n>0;}).length;
   var totalEnt=dayData.reduce(function(a,x){return a+x.n;},0);
-  var bestDay=dayData.reduce(function(a,x){return x.avg>a.avg?x:a;},{avg:0,d:0});
-  var worstDay=dayData.filter(function(x){return x.avg>0;}).reduce(function(a,x){return x.avg<a.avg?x:a;},{avg:99,d:0});
+  var scoredDays=dayData.filter(function(x){return x.n>0&&x.avg>0;});
+  var bestDay=scoredDays.length?scoredDays.reduce(function(a,x){return x.avg>a.avg?x:a;}):{avg:0,d:0,date:null};
+  var worstDay=scoredDays.length?scoredDays.reduce(function(a,x){return x.avg<a.avg?x:a;}):{avg:0,d:0,date:null};
   var abv8Days=dayData.filter(function(x){return x.avg>=8;}).length;
   var con=typeof consistency==='function'?consistency(colId,month):0;
   var br=typeof burnoutRisk==='function'?burnoutRisk(colId,month):0;
@@ -4714,7 +4728,7 @@ function _p2(D){
           +'<table class="T"><tbody>'
             +'<tr><td>'+(ar?'أيام مسجلة':'Days Scored')+'</td><td style="font-family:monospace;font-weight:700;text-align:center">'+D.daysScored+'/'+D.dim+'</td></tr>'
             +'<tr><td>'+(ar?'أيام ≥ 80%':'Days ≥ 80%')+'</td><td style="font-family:monospace;font-weight:700;color:#059669;text-align:center">'+D.abv8Days+'</td></tr>'
-            +'<tr><td>'+(ar?'أفضل يوم':'Best Day')+'</td><td style="font-family:monospace;font-weight:700;text-align:center">'+(ar?'يوم ':'Day ')+( D.bestDay.d||'—')+'</td></tr>'
+            +'<tr><td>'+(ar?'أفضل يوم':'Best Day')+'</td><td style="font-family:monospace;font-weight:700;text-align:center">'+(D.bestDay.d?H.dayLabel(D.bestDay,ar):'—')+'</td></tr>'
             +'<tr><td>'+(ar?'ترتيب الفريق':'Team Rank')+'</td><td style="font-family:monospace;font-weight:700;text-align:center">'+D.rnk+'/'+db.colleagues.length+'</td></tr>'
             +'<tr><td>'+(ar?'خطر الإرهاق':'Burnout Risk')+'</td><td style="font-family:monospace;font-weight:700;text-align:center;color:'+(D.br>60?'#dc2626':D.br>30?'#d97706':'#059669')+'">'+D.br+'%</td></tr>'
           +'</tbody></table>'
@@ -4803,8 +4817,8 @@ function _p3(D){
 
   /* ── ملخص الأعلى ── */
   var best=D.bestDay, worst=D.worstDay;
-  var bestLbl=best.d?dayLabel(D.dayData[best.d-1]):'—';
-  var worstLbl=worst.d&&worst.avg<99?dayLabel(D.dayData[worst.d-1]):'—';
+  var bestLbl=best.d?dayLabel(best):'—';
+  var worstLbl=worst.d?dayLabel(worst):'—';
 
   /* ── legend ── */
   var legend=[
@@ -5143,11 +5157,17 @@ function _p5(D){
     var overall=scoreVals.length?+(scoreVals.reduce(function(a,b){return a+b;},0)/scoreVals.length).toFixed(1):0;
     var oc=overall>=9?'#059669':overall>=7?'#0891b2':overall>=5?'#d97706':'#dc2626';
 
+    var isReview=tx.txType==='review';
+    var typeBadgeLbl=isReview?(ar?'🔍 فاتورة مراجعة':'🔍 Control Invoice'):(ar?'🛒 فاتورة بيع':'🛒 Sale Invoice');
+    var typeBadgeBg=isReview?'#ede9fe':'#dbeafe';
+    var typeBadgeFg=isReview?'#6d28d9':'#1d4ed8';
+
     /* ── ١) الجزء العلوي: بيانات الفاتورة والعميل ── */
     var topSection=''
       +'<div style="background:linear-gradient(135deg,#f0f9ff,#f0fdf4);border-radius:10px 10px 0 0;padding:10px 12px;border-bottom:2px dashed #e2e8f0">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-        +'<div style="display:flex;align-items:center;gap:7px">'
+        +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+          +'<span style="padding:2px 7px;border-radius:6px;font-size:9px;font-weight:800;background:'+typeBadgeBg+';color:'+typeBadgeFg+'">'+typeBadgeLbl+'</span>'
           +'<div style="background:#0f172a;color:#fff;padding:2px 8px;border-radius:5px;font-family:monospace;font-size:10.6px;font-weight:800"># '+(tx.invNum||'—')+'</div>'
           +'<span style="font-size:9.4px;color:#64748b">'+dateStr+(tx.time?' · '+tx.time:'')+'</span>'
         +'</div>'
@@ -5158,7 +5178,7 @@ function _p5(D){
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;font-size:9.4px">'
         +'<div><span style="color:#94a3b8;display:block;font-size:8.8px;margin-bottom:1px">'+(ar?'نوع العميل':'Customer')+'</span><strong>'+custLbl+'</strong></div>'
-        +'<div><span style="color:#94a3b8;display:block;font-size:8.8px;margin-bottom:1px">'+(ar?'القيمة':'Value')+'</span><strong style="color:#059669;font-family:monospace">'+(tx.value?tx.value+(ar?' ر.س':' SAR'):'—')+'</strong></div>'
+        +'<div><span style="color:#94a3b8;display:block;font-size:8.8px;margin-bottom:1px">'+(ar?'القيمة':'Value')+'</span><strong style="color:#059669;font-family:monospace">'+(tx.value?tx.value+(ar?' ج.م':' EGP'):'—')+'</strong></div>'
         +'<div><span style="color:#94a3b8;display:block;font-size:8.8px;margin-bottom:1px">'+(ar?'المنتجات':'Products')+'</span><span style="font-size:9.5px">'+prods.slice(0,30)+'</span></div>'
       +'</div>'
       /* معايير التقييم (شريط) */
@@ -5395,7 +5415,7 @@ function _p5img(D){
           +'</div>'
           +'<div style="display:flex;gap:10px;font-size:10px">'
             +'<div><span style="color:#94a3b8">'+(ar?'نوع العميل: ':'Customer: ')+'</span><strong>'+custLbl+'</strong></div>'
-            +(tx.value?'<div><span style="color:#94a3b8">'+(ar?'القيمة: ':'Value: ')+'</span><strong style="color:#059669;font-family:monospace">'+tx.value+(ar?' ر.س':' SAR')+'</strong></div>':'')
+            +(tx.value?'<div><span style="color:#94a3b8">'+(ar?'القيمة: ':'Value: ')+'</span><strong style="color:#059669;font-family:monospace">'+tx.value+(ar?' ج.م':' EGP')+'</strong></div>':'')
           +'</div>'
         +'</div>'
 
@@ -6291,7 +6311,7 @@ function printAllNotesReport() {
         + '<div style="font-size:10px;color:#1e293b;line-height:1.5">' + (n.text || '—') + '</div>'
         + '</div></div>';
     }).join('');
-    return '<div style="background:#fff;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.08);overflow:hidden;margin-bottom:18px;border:1px solid #f1f5f9">'
+    return '<div class="note-card" style="background:#fff;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.08);overflow:hidden;margin-bottom:18px;border:1px solid #f1f5f9">'
       + '<div style="padding:14px 18px;border-bottom:2px solid ' + colColor + ';display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,' + colColor + '12,' + colColor + '04)">'
       + '<div style="width:38px;height:38px;border-radius:10px;background:' + colColor + '22;color:' + colColor + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">' + ini + '</div>'
       + '<div><div style="font-size:13px;font-weight:800;color:#0f172a">' + (item.col.name || '—') + '</div>'
@@ -6313,6 +6333,7 @@ function printAllNotesReport() {
     + '.kpi-val{font-size:26px;font-weight:900;font-family:monospace;color:var(--c,#0ea5e9)}'
     + '.kpi-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:#64748b;margin-top:4px}'
     + '@media print{body{background:white}.toolbar{display:none}.wrap{margin:0;width:100%;padding:16px}}'
+    + '.note-card{page-break-inside:avoid;break-inside:avoid}'
     + '</style></head><body>'
     + '<div class="toolbar"><div><div style="font-size:13px;font-weight:800">' + (ar ? '📝 ملاحظات الفريق' : '📝 Team Notes') + (periodLabel ? ' — ' + periodLabel : (ar ? ' — جميع الفترات' : ' — All Periods')) + '</div><div style="font-size:10px;color:#64748b;margin-top:2px">' + (periodLabel ? (ar ? 'فترة: ' + periodLabel : 'Period: ' + periodLabel) : (ar ? 'جميع الزملاء مجمّعين' : 'All colleagues combined')) + ' · ' + new Date().toLocaleDateString(ar ? 'ar-EG' : 'en-GB') + '</div></div>'
     + '<div style="display:flex;gap:8px"><button class="btn-print" onclick="window.print()">' + (ar ? '🖨 طباعة' : '🖨 Print') + '</button><button class="btn-close" onclick="window.close()">' + (ar ? '✕ إغلاق' : '✕ Close') + '</button></div></div>'
