@@ -1406,16 +1406,142 @@ let db={
   settings:{cycleStart:16},shifts:{},activities:{}
 };
 
-const Store={
-  save(){db._savedAt=Date.now();_lastLocalEdit=Date.now();_pendingPush=true;
-    clearTimeout(_localT);_localT=setTimeout(()=>{
-      try{localStorage.setItem('rxp_db',JSON.stringify(db));}
-      catch(e){
-        console.warn('[Store.save] localStorage failed:',e);
-        if(typeof toast==='function')toast('⚠ فشل الحفظ المحلي — حجم البيانات كبير جدًا','#ff4d6d');
+// ── Safe DB merge: combines remote (source of truth) with local edits ──
+// Strategy: remote wins for structure/metadata, local wins for scores/qa/transactions
+// that are newer (have higher timestamps or more data)
+function _mergeDb(remote, local){
+  // Start with a deep clone of remote (source of truth for structure)
+  const merged = JSON.parse(JSON.stringify(remote));
+
+  // ── Scores: take whichever has MORE data per day ──
+  if(local.scores){
+    Object.keys(local.scores).forEach(colId => {
+      if(!merged.scores) merged.scores = {};
+      if(!merged.scores[colId]) merged.scores[colId] = {};
+      Object.keys(local.scores[colId]).forEach(month => {
+        if(!merged.scores[colId][month]) merged.scores[colId][month] = {};
+        Object.keys(local.scores[colId][month]).forEach(crId => {
+          if(!merged.scores[colId][month][crId]) merged.scores[colId][month][crId] = {};
+          Object.keys(local.scores[colId][month][crId]).forEach(day => {
+            const localEntry = local.scores[colId][month][crId][day];
+            const remoteEntry = merged.scores[colId][month][crId][day];
+            // Local entry exists and either remote doesn't, or local is newer
+            if(localEntry && (!remoteEntry ||
+               (localEntry.ts && remoteEntry.ts && localEntry.ts > remoteEntry.ts) ||
+               (localEntry.ts && !remoteEntry.ts))){
+              merged.scores[colId][month][crId][day] = localEntry;
+            }
+          });
+        });
+      });
+    });
+  }
+
+  // ── Transactions: merge by id, local wins if same id and local is newer ──
+  if(local.transactions){
+    if(!merged.transactions) merged.transactions = {};
+    Object.keys(local.transactions).forEach(colId => {
+      if(!merged.transactions[colId]) merged.transactions[colId] = {};
+      Object.keys(local.transactions[colId]).forEach(txId => {
+        const localTx = local.transactions[colId][txId];
+        const remoteTx = merged.transactions[colId][txId];
+        if(!remoteTx || (localTx.createdAt && remoteTx.createdAt && localTx.createdAt >= remoteTx.createdAt)){
+          merged.transactions[colId][txId] = localTx;
+        }
+      });
+    });
+  }
+
+  // ── Day Status: local wins (user input) ──
+  if(local.dayStatus){
+    if(!merged.dayStatus) merged.dayStatus = {};
+    Object.keys(local.dayStatus).forEach(colId => {
+      if(!merged.dayStatus[colId]) merged.dayStatus[colId] = {};
+      Object.assign(merged.dayStatus[colId], local.dayStatus[colId]);
+    });
+  }
+
+  // ── Notes: merge by ts (timestamp), keep all unique ──
+  if(local.notes){
+    ['positive','negative'].forEach(type => {
+      if(!local.notes[type]) return;
+      if(!merged.notes) merged.notes = {};
+      if(!merged.notes[type]) merged.notes[type] = [];
+      const existingTs = new Set((merged.notes[type]||[]).map(n => n.ts));
+      local.notes[type].forEach(n => {
+        if(!existingTs.has(n.ts)) merged.notes[type].push(n);
+      });
+    });
+  }
+
+  // ── Shifts: local wins ──
+  if(local.shifts){
+    if(!merged.shifts) merged.shifts = {};
+    Object.keys(local.shifts).forEach(k => {
+      if(!merged.shifts[k]) merged.shifts[k] = local.shifts[k];
+    });
+  }
+
+  // ── Activities: local wins ──
+  if(local.activities){
+    if(!merged.activities) merged.activities = {};
+    Object.keys(local.activities).forEach(colId => {
+      if(!merged.activities[colId]) merged.activities[colId] = {};
+      Object.assign(merged.activities[colId], local.activities[colId]);
+    });
+  }
+
+  // ── Errors: merge by record id ──
+  if(local.errors){
+    if(!merged.errors) merged.errors = {};
+    if(local.errors.employees) merged.errors.employees = local.errors.employees;
+    if(local.errors.records){
+      if(!merged.errors.records) merged.errors.records = {};
+      Object.keys(local.errors.records).forEach(periodKey => {
+        if(!merged.errors.records[periodKey]) merged.errors.records[periodKey] = {};
+        Object.keys(local.errors.records[periodKey]).forEach(id => {
+          const localR = local.errors.records[periodKey][id];
+          const remoteR = merged.errors.records[periodKey][id];
+          if(!remoteR || (localR.createdAt && remoteR.createdAt && localR.createdAt >= remoteR.createdAt)){
+            merged.errors.records[periodKey][id] = localR;
+          }
+        });
+      });
+    }
+  }
+
+  // ── Settings: merge (local admin settings override remote for non-critical fields) ──
+  if(local.settings && merged.settings){
+    // Keep remote settings as base, overlay local non-null values
+    ['cycleStart','adminDisplayName','branchName','shiftLimit','pips','crExclusions'].forEach(k => {
+      if(local.settings[k] !== undefined && local.settings[k] !== null){
+        merged.settings[k] = local.settings[k];
       }
-    },250);
-    clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},500);},
+    });
+  }
+
+  return merged;
+}
+
+const Store={
+  save(){
+    db._savedAt=Date.now();
+    _lastLocalEdit=Date.now();
+    _pendingPush=true;
+    // حفظ محلي فوري بدون debounce عشان ما نخسرش بيانات
+    try{localStorage.setItem('rxp_db',JSON.stringify(db));}
+    catch(e){
+      console.warn('[Store.save] localStorage failed:',e);
+      if(typeof toast==='function')toast('⚠ فشل الحفظ المحلي — حجم البيانات كبير جدًا','#ff4d6d');
+    }
+    // sync للسيرفر بـ debounce 1.5 ثانية عشان نجمع كل التعديلات المتتالية في push واحد
+    clearTimeout(_syncT);
+    _syncT=setTimeout(()=>{
+      // خد snapshot من db الحالي وقت التنفيذ (مش وقت الاستدعاء)
+      const snap=JSON.stringify(db);
+      _sq=_sq.then(()=>Store.push(snap)).catch(()=>{});
+    },1500);
+  },
   async push(snap){setSyncSt('⏳',t('period')+'…');
     const pushTime=Date.now();
     const payload={id:'main',data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()};
@@ -1432,29 +1558,39 @@ const Store={
       setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');
     }catch(e){setSyncSt('⚠','Offline');}},
   async pull(){setSyncSt('⏳','Syncing…');
-    // لو فيه تعديل محلي لسه مش متزامن (أو حصل خلال آخر 5 ثوانٍ)، لا تستبدل db بالكامل
-    // لتجنب فقدان التعديلات الحديثة (الصور/الإجابات/الحالة) بسبب سباق بين pull و push
-    if(_pendingPush||(Date.now()-_lastLocalEdit)<5000){
-      setSyncSt('✅','Synced '+now12());return false;
+    // لو فيه تعديل محلي pending، ابعت الأول وارجع — ما تعملش pull ده بيمسح تعديلات
+    if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
+      setSyncSt('✅','Synced '+now12());
+      return false;
     }
-    try{const r=await fetch(EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
-    const rows=await r.json();
-    if(rows?.length&&rows[0].data){
-      const rem=rows[0].data;
-      if(rem?.colleagues?.length||rem?.criteria?.length){
-        // تحقق مرة أخرى قبل الاستبدال (احتمال حصل تعديل محلي وقت انتظار الطلب)
-        if(_pendingPush||(Date.now()-_lastLocalEdit)<5000){
-          setSyncSt('✅','Synced '+now12());return false;
+    try{
+      const r=await fetch(EP,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},cache:'no-store'});
+      const rows=await r.json();
+      if(rows?.length&&rows[0].data){
+        const rem=rows[0].data;
+        if(rem?.colleagues?.length||rem?.criteria?.length){
+          // تحقق مرة ثانية بعد انتهاء الطلب — المستخدم ممكن عمل تعديل وهو شاغل
+          if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
+            setSyncSt('✅','Synced '+now12());
+            return false;
+          }
+          // SAFE MERGE: دمج بيانات السيرفر مع المحلي بدل استبداله
+          // القاعدة: خذ كل شيء من السيرفر، لكن حافظ على التعديلات المحلية الحديثة
+          const merged = _mergeDb(rem, db);
+          db = merged;
+          Store.defaults();
+          try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
+        } else {
+          if(db.colleagues&&db.colleagues.length)Store.push(JSON.stringify(db));
         }
-        // Always use Supabase as source of truth - it has the latest from any device
-        db=rem; Store.defaults();
-        try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
-      } else {
-        if(db.colleagues&&db.colleagues.length)Store.push(JSON.stringify(db));
+        setSyncSt('✅','Synced '+now12());
+        return true;
       }
-      setSyncSt('✅','Synced '+now12());return true;}
-    if(!db.colleagues.length)Store.seed();Store.push(JSON.stringify(db));return false;}
-    catch(e){setSyncSt('⚠','Offline');return false;}},
+      if(!db.colleagues.length)Store.seed();
+      Store.push(JSON.stringify(db));
+      return false;
+    }catch(e){setSyncSt('⚠','Offline');return false;}
+  },
   loadLocal(){try{const r=localStorage.getItem('rxp_db');if(r){const d=JSON.parse(r);if(d?.colleagues)db=d;}}catch(e){}Store.defaults();},
   defaults(){
     if(!db.notes)db.notes={positive:[],negative:[]};
@@ -1872,8 +2008,8 @@ function renderMatrix(){
     html+=`<tr><td class="mt-cr-cell"><div class="mt-cr-name">${crName(cr)}</div></td>`;
     days.forEach((d,ci)=>{
       const key=String(d.day);const e=crSc[key]||{};const lkSt=lockedDays[key];
-      // Lock entire day column unconditionally when day status is set
-      const isLocked=lkSt==='busy';
+      // Lock entire day column for ANY day status (busy, col_off, my_off)
+      const isLocked = !!lkSt;
       const s=e.score||e.status||null;
       const cls=(lkSt&&!e.score)?(lkSt==='busy'?'s-off':'s-vac'):(s?sClass(s):'s-empty');
       const vacIcon=lkSt==='busy'?'⏳':lkSt==='col_off'?'🏖':'🌴';
@@ -1900,8 +2036,8 @@ function renderMatrix(){
   document.getElementById('perfTable').innerHTML=html;
 }
 function showLockedDayMsg(lkSt){
-  const msg=lkSt==='busy'?'⏳ يوم مشغول — غيّر حالة اليوم لرفع القفل':lkSt==='col_off'?'🏖 إجازة الزميل — اليوم مقفل بالكامل':lkSt==='my_off'?'🌴 إجازتك — اليوم مقفل':'⛔ هذا اليوم مقفل';
-  toast(msg,'#ffb340');
+  const msgs={busy:'⏳ يوم مشغول — غيّر حالة اليوم لرفع القفل',col_off:'🏖 إجازة الزميل — غيّر حالة اليوم لرفع القفل',my_off:'🌴 إجازتك — غيّر حالة اليوم لرفع القفل'};
+  toast(msgs[lkSt]||'⛔ هذا اليوم مقفل','#ffb340');
 }
 function openDayStatusModal(day){
   if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
@@ -1918,26 +2054,34 @@ function setDayStatus(st){
   const day=document.getElementById('_dayStatusDay').value;
   if(!day||!curColId)return;
   snapshotUndo();
-  // Use dedicated dayStatus store (separate from scores)
   if(!db.dayStatus)db.dayStatus={};
   if(!db.dayStatus[curColId])db.dayStatus[curColId]={};
   if(!db.dayStatus[curColId][curMonth])db.dayStatus[curColId][curMonth]={};
+  const crs=getActiveCr(curColId);
   if(st==='clear'){
+    // رفع القفل: امسح حالة اليوم + امسح أي status قديمة في الـ scores (بدون مس الدرجات)
     delete db.dayStatus[curColId][curMonth][day];
-  } else {
-    // حفظ القفل + مسح كل الـ scores الموجودة لهذا اليوم عبر كل المعايير
-    db.dayStatus[curColId][curMonth][day]=st;
-    const crs=getActiveCr(curColId);
     crs.forEach(function(cr){
-      if(db.scores[curColId]&&db.scores[curColId][curMonth]&&db.scores[curColId][curMonth][cr.id]){
-        delete db.scores[curColId][curMonth][cr.id][day];
+      if(db.scores[curColId]?.[curMonth]?.[cr.id]?.[day]){
+        const e=db.scores[curColId][curMonth][cr.id][day];
+        // امسح البيانات لو كانت status بس (مش درجة حقيقية)
+        if(e.status&&!e.score) delete db.scores[curColId][curMonth][cr.id][day];
+        else if(e.status) delete e.status; // امسح الـ status بس خلي الدرجة
       }
+    });
+  } else {
+    // قفل اليوم: احفظ الحالة + امسح كل الدرجات والحالات لهذا اليوم
+    db.dayStatus[curColId][curMonth][day]=st;
+    crs.forEach(function(cr){
+      if(db.scores[curColId]?.[curMonth]?.[cr.id])
+        delete db.scores[curColId][curMonth][cr.id][day];
     });
   }
   closeModal('dayStatusModal');
   Store.save();
   renderMatrix();
-  toast(st==='clear'?'✅ تم رفع القفل — يمكن التقييم':st==='busy'?'⏳ اليوم مشغول — مقفل للتقييم':st==='col_off'?'🏖 إجازة الزميل — مقفل':'🌴 إجازتك — مقفل','#00d4ff');
+  const msgs={clear:'✅ تم رفع القفل — يمكن التقييم',busy:'⏳ اليوم مشغول — مقفل للتقييم',col_off:'🏖 إجازة الزميل — مقفل',my_off:'🌴 إجازتك — مقفل'};
+  toast(msgs[st]||'تم','#00d4ff');
 }
 function handleMatrixKey(e,crId,day,ri,ci){
   const crit=getActiveCr(curColId);const c=db.colleagues.find(x=>x.id===curColId);if(!c)return;
@@ -1962,11 +2106,11 @@ function handleMatrixKey(e,crId,day,ri,ci){
 ══════════════════════════════════════ */
 function openScoreModal(crId,day){
   if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
-  // Block if day is locked
+  // Block if day is locked (any status)
   const dayLock=getDayLockStatus(curColId,curMonth,day);
   if(dayLock){
-    const msg=dayLock==='busy'?'⏳ يوم مشغول — غيّر حالة اليوم لرفع القفل':dayLock==='col_off'?'🏖 إجازة الزميل — اليوم مقفل':dayLock==='my_off'?'🌴 إجازتك — اليوم مقفل':'اليوم مقفل';
-    toast(msg,'#ffb340');return;
+    showLockedDayMsg(dayLock);
+    return;
   }
   // Check if this day has a global status (vacation/absent/off) on any criterion
   const _dayScores = db.scores[curColId]?.[curMonth]||{};
@@ -2023,74 +2167,112 @@ function clearScore(){if(!_pendingScore)return;snapshotUndo();const{colId,crId,d
    BULK ENTRY
 ══════════════════════════════════════ */
 function openBulkEntry(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
-  const crit=getActiveCr(curColId);
-  // criteria selector removed - applies to all criteria
-  // Build day options from period
-  const days=periodDayCount(curMonth);
-  const C=cs();const[y,m]=curMonth.split('-').map(Number);
-  const locale=lang==='ar'?'ar-EG':'en-US';
-  let opts='';
-  for(let d=1;d<=days;d++){
-    const date=new Date(y,m-2,C+d-1);
-    const dayOfMonth=date.getDate();
-    const label=date.toLocaleDateString(locale,{weekday:'short',day:'numeric',month:'short'});
-    opts+=`<option value="${dayOfMonth}">${label}</option>`;
+  const {ps, pe} = periodRange(curMonth);
+  const locale = lang==='ar'?'ar-EG':'en-US';
+  // helper: format date as YYYY-MM-DD using LOCAL time (not UTC)
+  function localISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  let opts = '';
+  const cur = new Date(ps); cur.setHours(0,0,0,0);
+  const end = new Date(pe); end.setHours(0,0,0,0);
+  while(cur <= end){
+    const label = cur.toLocaleDateString(locale,{weekday:'short',day:'numeric',month:'short'});
+    opts += `<option value="${localISO(cur)}">${label}</option>`;
+    cur.setDate(cur.getDate()+1);
   }
-  document.getElementById('bulkSingleDay').innerHTML=opts;
-  document.getElementById('bulkFrom').innerHTML=opts;
-  document.getElementById('bulkTo').innerHTML=opts;
-  document.getElementById('bulkSingleDay').value='1';
-  document.getElementById('bulkFrom').value='1';
-  document.getElementById('bulkTo').value='1';
-  // reset to single mode
-  document.getElementById('bulkModeSingle').checked=true;
+  document.getElementById('bulkSingleDay').innerHTML = opts;
+  document.getElementById('bulkFrom').innerHTML = opts;
+  document.getElementById('bulkTo').innerHTML = opts;
+  const psISO = localISO(ps), peISO = localISO(pe);
+  document.getElementById('bulkSingleDay').value = psISO;
+  document.getElementById('bulkFrom').value = psISO;
+  document.getElementById('bulkTo').value = peISO;
+  document.getElementById('bulkModeSingle').checked = true;
   onBulkModeChange();
-  _pendingBulk=null;
+  _pendingBulk = null;
   let p='';for(let s=1;s<=10;s++)p+=`<button style="padding:6px 3px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);" class="${sClass(s)}" onclick="_pendingBulk=${s};document.querySelectorAll('#bulkScorePicker button').forEach(b=>b.style.borderColor='');this.style.borderColor='var(--cyan)'">${s}</button>`;
-  document.getElementById('bulkScorePicker').innerHTML=p;
+  document.getElementById('bulkScorePicker').innerHTML = p;
   openModal('bulkModal');
 }
 function onBulkModeChange(){
-  const single=document.getElementById('bulkModeSingle').checked;
-  document.getElementById('bulkSingleRow').style.display=single?'block':'none';
-  document.getElementById('bulkRangeRow').style.display=single?'none':'grid';
+  const single = document.getElementById('bulkModeSingle').checked;
+  document.getElementById('bulkSingleRow').style.display = single?'block':'none';
+  document.getElementById('bulkRangeRow').style.display = single?'none':'grid';
 }
 function setBulkStatus(st){_pendingBulk=st;document.querySelectorAll('#bulkScorePicker button').forEach(b=>b.style.borderColor='');toast('Status: '+st);}
 function confirmBulk(){if(!_pendingBulk){toast(t('score'),'#ffb340');return;}
-  const single=document.getElementById('bulkModeSingle').checked;
-  let from,to;
+  const single = document.getElementById('bulkModeSingle').checked;
+  let fromStr, toStr;
   if(single){
-    from=to=+document.getElementById('bulkSingleDay').value;
+    fromStr = toStr = document.getElementById('bulkSingleDay').value;
   } else {
-    from=+document.getElementById('bulkFrom').value;
-    to=+document.getElementById('bulkTo').value;
+    fromStr = document.getElementById('bulkFrom').value;
+    toStr   = document.getElementById('bulkTo').value;
   }
+  const fromDate = new Date(fromStr+'T00:00:00');
+  const toDate   = new Date(toStr+'T00:00:00');
+  // normalize to midnight to avoid timezone comparison issues
+  fromDate.setHours(0,0,0,0);
+  toDate.setHours(23,59,59,999);
+  if(fromDate > toDate){ toast('تاريخ البداية بعد النهاية','#ffb340'); return; }
   snapshotUndo();
-  if(!db.scores[curColId])db.scores[curColId]={};
-  if(!db.scores[curColId][curMonth])db.scores[curColId][curMonth]={};
-  const crits=getActiveCr(curColId);
-  // collect all day-of-month keys in selected range using actual dates
-  const C2=cs();const[y2,m2]=curMonth.split('-').map(Number);
-  const totalDays=periodDayCount(curMonth);
-  const dayKeys=[];
-  for(let d=1;d<=totalDays;d++){
-    const date=new Date(y2,m2-2,C2+d-1);
-    const dom=date.getDate();
-    if(single){if(dom===from)dayKeys.push({dom,mo:date.getMonth()+1});}
-    else{
-      // check if date falls between from and to (by day-of-month in order)
-      const fromIdx=from,toIdx=to;
-      if(dom>=Math.min(fromIdx,toIdx)&&dom<=Math.max(fromIdx,toIdx))dayKeys.push({dom,mo:date.getMonth()+1});
-    }
+  if(!db.scores[curColId]) db.scores[curColId]={};
+  if(!db.scores[curColId][curMonth]) db.scores[curColId][curMonth]={};
+  if(!db.dayStatus) db.dayStatus={};
+  if(!db.dayStatus[curColId]) db.dayStatus[curColId]={};
+  if(!db.dayStatus[curColId][curMonth]) db.dayStatus[curColId][curMonth]={};
+  const crits = getActiveCr(curColId);
+
+  // collect every date in range
+  const dayKeys = [];
+  const d = new Date(fromDate);
+  d.setHours(0,0,0,0);
+  while(d.getTime() <= toDate.getTime()){
+    dayKeys.push(d.getDate());
+    d.setDate(d.getDate()+1);
   }
-  crits.forEach(cr=>{
-    const crId=cr.id;
-    if(!db.scores[curColId][curMonth][crId])db.scores[curColId][curMonth][crId]={};
-    dayKeys.forEach(({dom})=>{
-      db.scores[curColId][curMonth][crId][String(dom)]=typeof _pendingBulk==='number'?{score:_pendingBulk}:{status:_pendingBulk};
-    });
+
+  const isStatus = typeof _pendingBulk === 'string'; // busy / col_off / my_off
+  const isScore  = typeof _pendingBulk === 'number';
+
+  let applied = 0, skipped = 0;
+  dayKeys.forEach(dom => {
+    const dayKey = String(dom);
+    const alreadyLocked = getDayLockStatus(curColId, curMonth, dayKey);
+
+    if(isStatus){
+      // حالة إجازة/مشغول: سجّل في dayStatus وامسح الدرجات
+      db.dayStatus[curColId][curMonth][dayKey] = _pendingBulk;
+      crits.forEach(cr=>{
+        if(db.scores[curColId]?.[curMonth]?.[cr.id])
+          delete db.scores[curColId][curMonth][cr.id][dayKey];
+      });
+      applied++;
+    } else if(isScore){
+      // درجة: تجاهل الأيام المقفولة
+      if(alreadyLocked){ skipped++; return; }
+      crits.forEach(cr=>{
+        if(!db.scores[curColId][curMonth][cr.id]) db.scores[curColId][curMonth][cr.id]={};
+        db.scores[curColId][curMonth][cr.id][dayKey] = {score:_pendingBulk};
+      });
+      applied++;
+    }
   });
-  closeModal('bulkModal');Store.save();renderMatrix();toast('✅ '+t('bulk_entry'));_pendingBulk=null;
+  closeModal('bulkModal');
+  Store.save();
+  renderMatrix();
+  const msg = skipped > 0
+    ? `✅ ${t('bulk_entry')} (${applied} أيام — تم تخطي ${skipped} مقفل)`
+    : `✅ ${t('bulk_entry')} (${applied} أيام)`;
+  toast(msg);
+  _pendingBulk = null;
+}
+
+function _domToIdx(dom,C,totalDays,y,m){
+  for(let d=1;d<=totalDays;d++){
+    const date=new Date(y,m-1,C+d-1);
+    if(date.getDate()===dom) return d;
+  }
+  return 1;
 }
 
 /* ══════════════════════════════════════
