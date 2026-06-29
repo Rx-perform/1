@@ -204,8 +204,8 @@ body.light .tb-mode-thumb{transform:translateX(22px)}body[dir='rtl'].light .tb-m
 .inner-tab{display:flex;align-items:center;gap:5px;padding:9px 12px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:var(--trans);white-space:nowrap;flex-shrink:0}
 .inner-tab:hover{color:var(--text)}.inner-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);font-weight:600}
 .inner-tab-badge{font-size:9px;font-weight:700;background:var(--cyan3);color:var(--cyan);padding:1px 5px;border-radius:4px}
-#innerContent{flex:1;overflow:hidden;display:flex}
-.inner-view{display:none;width:100%;height:100%;overflow:auto;padding:14px 18px}
+#innerContent{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;display:flex;flex-direction:column}
+.inner-view{display:none;width:100%;padding:14px 18px;flex-direction:column;gap:14px}
 .inner-view.active{display:flex;gap:14px}
 /* ════ PERF / MATRIX ════ */
 .perf-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
@@ -706,8 +706,9 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 
     <div class="tb-mode-btn" onclick="toggleMode()"><div class="tb-mode-thumb" id="modeThumb">☀️</div></div>
     <button onclick="openTransferPage()" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);color:var(--purple2);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">🔄 تحويلات</button>
-    <button onclick="doExport()" style="background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Export JSON</button>
-    <button onclick="doImport()" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Import JSON</button>
+    <button onclick="switchInner('errors',null)" style="background:rgba(255,179,64,0.12);border:1px solid rgba(255,179,64,0.35);color:var(--amber);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">⚠️ أخطاء الشهر</button>
+    <button onclick="doExport()" style="background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:14px;line-height:1" title="Export JSON">⬆️</button>
+    <button onclick="doImport()" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:14px;line-height:1" title="Import JSON">⬇️</button>
     <button onclick="doLogout()" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.35);color:var(--rose);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">خروج</button>
     <div class="tb-profile" onclick="toggleProfileMenu()"><div class="tb-profile-ava" id="profileAva">A</div><div><div class="tb-profile-name" id="profileName">Admin</div><div class="tb-profile-role" id="profileRole">Administrator</div></div></div>
   </div>
@@ -829,7 +830,7 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
       </div>
 
       <!-- TRANSACTIONS REVIEW -->
-      <div class="inner-view" id="view-tx" style="flex-direction:column;gap:14px;padding:14px;overflow-y:auto">
+      <div class="inner-view" id="view-tx" style="flex-direction:column;gap:14px;padding:14px">
 
         <!-- Weekly Overview Header -->
         <div class="tx-bento" id="txBentoHeader" style="grid-template-columns:repeat(4,1fr)">
@@ -877,6 +878,7 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
               <button class="m-btn" id="txFilter-flagged" onclick="setTxFilter('flagged')" style="font-size:11px">🚩 مُعلَّمة</button>
             </div>
             <button class="m-btn cyan admin-only" onclick="openAddTxModal()" style="font-size:11px;padding:6px 14px">+ إضافة فاتورة</button>
+            <button class="m-btn" onclick="openTxExportModal()" style="font-size:11px;padding:6px 14px;background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.3);color:var(--cyan);display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تصدير PDF</button>
           </div>
         </div>
 
@@ -933,8 +935,169 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 
 
 
-    </div><!-- /innerContent -->
-  </div><!-- /workspace -->
+      <!-- ERRORS TAB (أخطاء الشهر) -->
+      <div class="inner-view" id="view-errors" style="flex-direction:column;gap:14px;padding:14px">
+
+        <!-- Period Banner -->
+        <div id="errPeriodBanner" style="display:none;padding:10px 16px;border-radius:10px;background:rgba(255,179,64,0.08);border:1px solid rgba(255,179,64,0.25);display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">📅</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--amber)">فترة جديدة بدأت</div>
+            <div id="errPeriodBannerText" style="font-size:11px;color:var(--text2);margin-top:1px"></div>
+          </div>
+        </div>
+
+        <!-- Employee Management Card -->
+        <div style="padding:14px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              إدارة الموظفين
+            </div>
+            <button onclick="openErrEmpModal()" style="padding:6px 14px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;transition:var(--trans)">+ إضافة موظف</button>
+          </div>
+          <div id="errEmpChips" style="display:flex;flex-wrap:wrap;gap:7px">
+            <div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد موظفون بعد. أضف موظفاً للبدء.</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Cards + Period selector + Print -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;flex:1;min-width:280px">
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.25);border-top:2px solid var(--emerald)">
+              <div style="font-size:9px;font-weight:700;color:var(--emerald);letter-spacing:.5px;margin-bottom:6px">تم التبليغ</div>
+              <div id="errCard1" style="font-size:24px;font-weight:900;color:var(--emerald);font-family:var(--mono)">0</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.25);border-top:2px solid var(--rose)">
+              <div style="font-size:9px;font-weight:700;color:var(--rose);letter-spacing:.5px;margin-bottom:6px">لم يتم التبليغ</div>
+              <div id="errCard2" style="font-size:24px;font-weight:900;color:var(--rose);font-family:var(--mono)">0</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,179,64,0.07);border:1px solid rgba(255,179,64,0.25);border-top:2px solid var(--amber)">
+              <div style="font-size:9px;font-weight:700;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">تحتاج مناقشة</div>
+              <div id="errCard3" style="font-size:24px;font-weight:900;color:var(--amber);font-family:var(--mono)">0</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+            <select id="errPeriodSel" onchange="renderErrTab()" style="background:var(--glass);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:11px;font-weight:600;padding:7px 10px;cursor:pointer;outline:none"></select>
+            <button onclick="printErrReport()" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;transition:var(--trans)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              طباعة
+            </button>
+            <button onclick="openAddErrModal()" style="display:flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;color:#000;font-size:11px;font-weight:800;cursor:pointer;transition:var(--trans)">
+              + إضافة خطأ
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div style="border-radius:14px;border:1px solid var(--border);background:var(--glass);overflow:hidden">
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table style="width:100%;min-width:420px;border-collapse:collapse;font-size:12px" id="errTable">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,0.03)">
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">#</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">الموظف</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">التاريخ</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">تفاصيل الخطأ</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">📷</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">الحالة</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">نقاش</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">عرض</th>
+                </tr>
+              </thead>
+              <tbody id="errTableBody">
+                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error: Add Employee Modal -->
+      <div class="modal-overlay" id="errEmpModal" style="z-index:10001">
+        <div class="modal-box" style="max-width:420px">
+          <div class="modal-title" style="margin-bottom:16px">👤 إضافة / تعديل موظف</div>
+          <input type="hidden" id="errEmpEditId">
+          <div class="form-group">
+            <label class="form-label">اسم الموظف</label>
+            <input class="form-input" id="errEmpName" placeholder="اسم الموظف…" maxlength="60">
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('errEmpModal')">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveErrEmp()">حفظ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error: Add/Edit Record Modal -->
+      <div class="modal-overlay" id="errAddModal" style="z-index:10001">
+        <div class="modal-box" style="max-width:560px;max-height:90vh;overflow-y:auto">
+          <div class="modal-title" style="margin-bottom:16px" id="errAddModalTitle">➕ إضافة خطأ جديد</div>
+          <input type="hidden" id="errEditId">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group">
+              <label class="form-label">الموظف <span style="color:var(--rose)">*</span></label>
+              <select class="form-input form-select" id="errEmpSel"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">التاريخ <span style="color:var(--rose)">*</span></label>
+              <input class="form-input" type="date" id="errDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">تفاصيل الخطأ <span style="color:var(--rose)">*</span></label>
+            <textarea class="form-input" id="errDetails" rows="4" placeholder="اكتب تفاصيل الخطأ هنا…" style="resize:vertical;min-height:90px"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">الحالة <span style="color:var(--rose)">*</span></label>
+            <div style="display:flex;gap:10px">
+              <label style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1px solid rgba(0,200,150,0.25);background:rgba(0,200,150,0.07);cursor:pointer;flex:1">
+                <input type="radio" name="errStatus" value="reported" style="accent-color:var(--emerald)"> <span style="font-size:12px;font-weight:700;color:var(--emerald)">✅ تم التبليغ</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1px solid rgba(255,77,109,0.25);background:rgba(255,77,109,0.07);cursor:pointer;flex:1">
+                <input type="radio" name="errStatus" value="unreported" style="accent-color:var(--rose)"> <span style="font-size:12px;font-weight:700;color:var(--rose)">❌ لم يتم التبليغ</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+              <input type="checkbox" id="errDiscuss" style="width:16px;height:16px;accent-color:var(--amber);border-radius:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--amber)">⚡ تحتاج مناقشة</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">المرفقات (صور)</label>
+            <input type="file" id="errImgInput" accept="image/*" multiple style="display:none" onchange="handleErrImages(this)">
+            <button onclick="document.getElementById('errImgInput').click()" style="width:100%;padding:28px;border-radius:10px;border:2px dashed var(--border2);background:var(--glass);color:var(--text2);cursor:pointer;font-size:12px;font-weight:600;transition:var(--trans)">📷 انقر لإضافة صور</button>
+            <div id="errImgPreviews" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('errAddModal')">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveErrRecord()">حفظ الخطأ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error: View Detail Modal -->
+      <div class="modal-overlay" id="errViewModal" style="z-index:10002">
+        <div class="modal-box" style="max-width:600px;max-height:92vh;overflow-y:auto;padding:0">
+          <!-- Header -->
+          <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);background:rgba(0,212,255,0.03);position:sticky;top:0;z-index:1;backdrop-filter:blur(20px)">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:15px;font-weight:800;color:var(--white)">📋 تفاصيل الخطأ</div>
+              <button onclick="closeModal('errViewModal')" style="width:30px;height:30px;border-radius:8px;background:var(--glass);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+            </div>
+          </div>
+          <div id="errViewContent" style="padding:20px 22px;display:flex;flex-direction:column;gap:16px"></div>
+          <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;align-items:center">
+            <button id="errViewDeleteBtn" onclick="deleteErrRecord(document.getElementById('errViewEditBtn').dataset.id)" style="padding:8px 16px;border-radius:8px;background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:var(--rose);font-size:12px;font-weight:700;cursor:pointer">🗑 حذف</button>
+            <div style="display:flex;gap:8px">
+              <button id="errViewEditBtn" onclick="editErrFromView()" style="padding:8px 16px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:12px;font-weight:700;cursor:pointer">✏️ تعديل</button>
+              <button onclick="closeModal('errViewModal')" class="btn btn-ghost" style="font-size:12px;padding:8px 16px">إغلاق</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
   <!-- EXECUTIVE DASHBOARD -->
   <div id="execDashboard" style="display:none;flex:1;overflow:auto;padding:14px 18px;flex-direction:column;gap:12px">
@@ -1061,6 +1224,58 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 <!-- IMAGE LIGHTBOX -->
 <div id="txLightbox" onclick="document.getElementById('txLightbox').style.display='none'" style="position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;cursor:zoom-out">
   <img id="txLightboxImg" style="max-width:90vw;max-height:90vh;border-radius:var(--r2);box-shadow:var(--shadow3)">
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     EXPORT PDF MODAL
+═══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="txExportModal" style="z-index:10000">
+  <div class="modal-box" style="max-width:640px;width:95vw;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden;border:1px solid rgba(0,212,255,0.2);box-shadow:0 0 60px rgba(0,212,255,0.08),0 32px 80px rgba(0,0,0,0.7)">
+    <!-- Header -->
+    <div style="padding:20px 24px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(0,168,204,0.03));flex-shrink:0">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:var(--white)">تصدير تقرير الفواتير</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">اختر الفواتير لتضمينها في التقرير</div>
+          </div>
+        </div>
+        <button onclick="closeModal('txExportModal')" style="width:32px;height:32px;border-radius:8px;background:var(--glass);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0">✕</button>
+      </div>
+      <!-- Search + Select All row -->
+      <div style="display:flex;gap:9px;margin-top:14px;align-items:center">
+        <div style="flex:1;position:relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2.2" stroke-linecap="round" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="txExportSearch" class="form-input" placeholder="بحث برقم الفاتورة أو التاريخ…" style="padding-left:33px;padding-right:12px;height:36px;font-size:12px" oninput="filterTxExportList()">
+        </div>
+        <button id="txExportSelectAllBtn" onclick="toggleTxExportAll()" style="height:36px;padding:0 14px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:var(--trans)">تحديد الكل</button>
+      </div>
+    </div>
+
+    <!-- Invoice list -->
+    <div id="txExportList" style="flex:1;overflow-y:auto;padding:12px 20px;display:flex;flex-direction:column;gap:6px;min-height:100px;max-height:360px">
+      <div style="text-align:center;color:var(--text2);padding:40px 0;font-size:13px">جاري التحميل…</div>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:14px 24px;border-top:1px solid var(--border);background:rgba(0,0,0,0.25);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div id="txExportCounter" style="font-size:12px;color:var(--text2);font-weight:600">0 فاتورة محددة</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="closeModal('txExportModal')" class="btn btn-ghost" style="font-size:12px;padding:8px 16px">إلغاء</button>
+        <button onclick="previewTxPDF()" id="txPreviewBtn" style="font-size:12px;padding:8px 16px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:700;transition:var(--trans);opacity:0.4;pointer-events:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          معاينة
+        </button>
+        <button onclick="exportTxPDF()" id="txExportBtn" style="font-size:12px;padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#00d4ff,#0099bb);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:800;transition:var(--trans);opacity:0.4;pointer-events:none;letter-spacing:0.2px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          تصدير PDF
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 </div><!-- /app -->
@@ -1925,6 +2140,7 @@ function switchInner(tab,el){
   if(tab==='analytics'&&curColId)renderAnalytics();
   if(tab==='shift')renderShiftTab();
   if(tab==='tx'&&curColId){if(!db.transactions)db.transactions={};renderTxFeed();}
+  if(tab==='errors'&&curColId)renderErrTab();
   updateBottomNav(tab);
 }
 function updateBottomNav(tab){['perf','stats','charts','shift','notes','analytics'].forEach(tabId=>{const b=document.getElementById('bnav-'+tabId);if(b)b.classList.toggle('active',tabId===tab);});}
@@ -2443,8 +2659,8 @@ function renderCompareContent(){
 /* ══════════════════════════════════════
    SETTINGS + MANAGERS
 ══════════════════════════════════════ */
-function openSettings(){if(role!=='admin'){toast(t('viewer_title'));return;}document.getElementById('settingsCycleStart').value=db.settings?.cycleStart||16;document.getElementById('settingsAdminName').value=db.settings?.adminDisplayName||'';document.getElementById('settingsShiftLimit').value=db.settings?.shiftLimit||8;openModal('settingsModal');}
-function saveSettings(){const c=+document.getElementById('settingsCycleStart').value,n=document.getElementById('settingsAdminName').value.trim(),pw=document.getElementById('settingsPassword').value,sl=+document.getElementById('settingsShiftLimit').value;if(!isNaN(c)&&c>=1&&c<=28)db.settings.cycleStart=c;if(n)db.settings.adminDisplayName=n;if(pw)localStorage.setItem('rxp_admin_pw',pw);if(!isNaN(sl))db.settings.shiftLimit=sl;closeModal('settingsModal');Store.save();updateTopbar();if(curColId)renderWorkspace();toast('✅ '+t('save'));}
+function openSettings(){if(role!=='admin'){toast(t('viewer_title'));return;}document.getElementById('settingsCycleStart').value=db.settings?.cycleStart||16;document.getElementById('settingsAdminName').value=db.settings?.adminDisplayName||'';document.getElementById('settingsBranchName').value=db.settings?.branchName||'';document.getElementById('settingsShiftLimit').value=db.settings?.shiftLimit||8;openModal('settingsModal');}
+function saveSettings(){const c=+document.getElementById('settingsCycleStart').value,n=document.getElementById('settingsAdminName').value.trim(),bn=document.getElementById('settingsBranchName').value.trim(),pw=document.getElementById('settingsPassword').value,sl=+document.getElementById('settingsShiftLimit').value;if(!isNaN(c)&&c>=1&&c<=28)db.settings.cycleStart=c;if(n)db.settings.adminDisplayName=n;if(bn)db.settings.branchName=bn;if(pw)localStorage.setItem('rxp_admin_pw',pw);if(!isNaN(sl))db.settings.shiftLimit=sl;closeModal('settingsModal');Store.save();updateTopbar();if(curColId)renderWorkspace();toast('✅ '+t('save'));}
 let _colMgrTab = 'active';
 
 function setColMgrTab(tab){
@@ -4278,6 +4494,33 @@ async function compressAllTxImages(){
   toast('✅ تم ضغط '+done+' صورة وتوفير ~'+Math.round(saved/1024/1024*10)/10+' MB','#059669');
 }
 
+async function compressAllErrImages(){
+  if(!db.errors||!db.errors.records){toast('لا توجد صور أخطاء','#ffb340');return;}
+  let total=0,done=0,saved=0;
+  const jobs=[];
+  Object.keys(db.errors.records).forEach(pKey=>{
+    Object.keys(db.errors.records[pKey]).forEach(id=>{
+      const r=db.errors.records[pKey][id];
+      (r.images||[]).forEach((img,idx)=>{
+        if(img&&img.startsWith('data:')){jobs.push({pKey,id,idx});total++;}
+      });
+    });
+  });
+  if(!total){toast('لا توجد صور لضغطها','#0d9488');return;}
+  toast('⏳ جاري ضغط '+total+' صورة…','#0ea5e9');
+  for(const job of jobs){
+    const r=db.errors.records[job.pKey][job.id];
+    const before=r.images[job.idx].length;
+    try{
+      const compressed=await compressImageDataUrl(r.images[job.idx]);
+      if(compressed.length<before){r.images[job.idx]=compressed;saved+=before-compressed.length;}
+    }catch(e){console.warn('err img compress failed',job,e);}
+    done++;
+  }
+  Store.save();
+  toast('✅ تم ضغط '+done+' صورة وتوفير ~'+Math.round(saved/1024/1024*10)/10+' MB','#059669');
+}
+
 function previewTxImg(input){
   const file=input.files[0];if(!file)return;
   _txImgLoading2=true;
@@ -4359,6 +4602,476 @@ function saveTxInvoice(){
 
 // ── init: ensure db.transactions exists ──────────
 if(!db.transactions)db.transactions={};
+
+/* ═══════════════════════════════════════════════════════════════════
+   INVOICE PDF EXPORT ENGINE
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+var _selectedTxIds = new Set();
+var _allFilteredIds = [];
+
+// ── Open modal ─────────────────────────────────────────────────────
+window.openTxExportModal = function(){
+  _selectedTxIds.clear();
+  const searchEl = document.getElementById('txExportSearch');
+  if(searchEl) searchEl.value = '';
+  _renderTxExportList('');
+  _updateExportCounter();
+  openModal('txExportModal');
+};
+
+// ── Render invoice rows ─────────────────────────────────────────────
+function _renderTxExportList(q){
+  const listEl = document.getElementById('txExportList');
+  if(!listEl) return;
+  if(!curColId || !db.transactions || !db.transactions[curColId]){
+    listEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px 0;font-size:13px">لا توجد فواتير لهذا الزميل</div>';
+    _allFilteredIds = [];
+    return;
+  }
+  let list = Object.values(db.transactions[curColId] || {})
+    .filter(tx => !tx.draft)
+    .sort((a,b) => b.createdAt - a.createdAt);
+  if(q){
+    const ql = q.toLowerCase();
+    list = list.filter(tx =>
+      (tx.invNum||'').toLowerCase().includes(ql) ||
+      (tx.date||'').includes(ql) ||
+      (tx.custType||'').toLowerCase().includes(ql)
+    );
+  }
+  _allFilteredIds = list.map(tx => tx.id);
+  if(!list.length){
+    listEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px 0;font-size:13px">لا توجد نتائج</div>';
+    return;
+  }
+  listEl.innerHTML = list.map(tx => {
+    const checked = _selectedTxIds.has(tx.id);
+    const statusColors = {
+      pending:  {bg:'rgba(251,191,36,0.12)',  border:'rgba(251,191,36,0.35)',  text:'#fbbf24', label:'معلّقة'},
+      reviewed: {bg:'rgba(0,200,150,0.12)',   border:'rgba(0,200,150,0.35)',   text:'#00c896', label:'مُراجَعة'},
+      flagged:  {bg:'rgba(255,77,109,0.12)',  border:'rgba(255,77,109,0.35)',  text:'#ff4d6d', label:'مُعلَّمة'}
+    };
+    const sc = statusColors[tx.status||'pending'];
+    const dateStr = tx.date ? new Date(tx.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const hasImg = !!tx.imgData;
+    return `<div class="txexp-row" data-id="${tx.id}" onclick="toggleTxExportItem('${tx.id}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:1px solid ${checked?'rgba(0,212,255,0.35)':'var(--border)'};background:${checked?'rgba(0,212,255,0.06)':'var(--glass)'};cursor:pointer;transition:all 0.15s;user-select:none">
+      <div style="width:20px;height:20px;border-radius:6px;border:2px solid ${checked?'var(--cyan)':'var(--border2)'};background:${checked?'var(--cyan)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s">
+        ${checked?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:800;color:var(--white);font-family:var(--mono)">#${tx.invNum||'—'}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:${sc.bg};border:1px solid ${sc.border};color:${sc.text};font-weight:700">${sc.label}</span>
+          ${tx.txType==='review'?'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(0,212,255,0.1);color:var(--cyan);font-weight:700">مراجعة</span>':''}
+          ${hasImg?'<span style="font-size:10px;color:var(--emerald)">📎</span>':''}
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">${dateStr}${tx.time?' · '+tx.time:''} ${tx.value?'· '+Number(tx.value).toLocaleString()+' EGP':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleTxExportItem = function(id){
+  if(_selectedTxIds.has(id)) _selectedTxIds.delete(id);
+  else _selectedTxIds.add(id);
+  _refreshRowVisual(id);
+  _updateExportCounter();
+  _updateSelectAllBtn();
+};
+
+function _refreshRowVisual(id){
+  const row = document.querySelector(`.txexp-row[data-id="${id}"]`);
+  if(!row) return;
+  const checked = _selectedTxIds.has(id);
+  row.style.border = `1px solid ${checked?'rgba(0,212,255,0.35)':'var(--border)'}`;
+  row.style.background = checked ? 'rgba(0,212,255,0.06)' : 'var(--glass)';
+  const box = row.querySelector('div');
+  if(box){
+    box.style.borderColor = checked ? 'var(--cyan)' : 'var(--border2)';
+    box.style.background = checked ? 'var(--cyan)' : 'transparent';
+    box.innerHTML = checked ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+  }
+}
+
+window.toggleTxExportAll = function(){
+  const allSelected = _allFilteredIds.every(id => _selectedTxIds.has(id));
+  if(allSelected){
+    _allFilteredIds.forEach(id => _selectedTxIds.delete(id));
+  } else {
+    _allFilteredIds.forEach(id => _selectedTxIds.add(id));
+  }
+  _renderTxExportList(document.getElementById('txExportSearch')?.value||'');
+  _updateExportCounter();
+  _updateSelectAllBtn();
+};
+
+window.filterTxExportList = function(){
+  const q = document.getElementById('txExportSearch')?.value||'';
+  _renderTxExportList(q);
+  _updateSelectAllBtn();
+};
+
+function _updateExportCounter(){
+  const n = _selectedTxIds.size;
+  const el = document.getElementById('txExportCounter');
+  if(el) el.textContent = n + (n===1?' فاتورة محددة':' فواتير محددة');
+  const previewBtn = document.getElementById('txPreviewBtn');
+  const exportBtn = document.getElementById('txExportBtn');
+  [previewBtn, exportBtn].forEach(btn => {
+    if(!btn) return;
+    btn.style.opacity = n>0 ? '1' : '0.4';
+    btn.style.pointerEvents = n>0 ? 'auto' : 'none';
+  });
+}
+
+function _updateSelectAllBtn(){
+  const btn = document.getElementById('txExportSelectAllBtn');
+  if(!btn) return;
+  const allSelected = _allFilteredIds.length > 0 && _allFilteredIds.every(id => _selectedTxIds.has(id));
+  btn.textContent = allSelected ? 'إلغاء تحديد الكل' : 'تحديد الكل';
+}
+
+// ── Build the PDF HTML document ────────────────────────────────────
+function _buildPdfHtml(txIds){
+  const ar = (typeof lang !== 'undefined' && lang === 'ar');
+  const col = db.colleagues && db.colleagues.find(c => c.id === curColId);
+  const colName = col ? (ar && col.nameAr ? col.nameAr : col.name) || '—' : '—';
+  const branchName = (db.settings && db.settings.branchName)
+    ? db.settings.branchName
+    : (ar ? 'مشعل' : 'Mashaal');
+  const adminName = (db.settings && db.settings.adminDisplayName) ? db.settings.adminDisplayName : (ar?'المسؤول':'Admin');
+  const now = new Date();
+  const exportDate = now.toLocaleDateString(ar?'ar-EG':'en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const exportTime = now.toLocaleTimeString(ar?'ar-EG':'en-GB',{hour:'2-digit',minute:'2-digit'});
+
+  const txList = txIds.map(id => db.transactions[curColId][id]).filter(Boolean);
+
+  // ── label helpers ──
+  const L = {
+    invReviewReport: ar ? 'تقرير مراجعة الفواتير' : 'Invoice Review Report',
+    invoiceId:       ar ? 'رقم الفاتورة'           : 'Invoice ID',
+    branch:          ar ? 'الفرع'                   : 'Branch',
+    employee:        ar ? 'الموظف'                  : 'Employee',
+    status:          ar ? 'الحالة'                  : 'Status',
+    invoiceDate:     ar ? 'تاريخ الفاتورة'          : 'Invoice Date',
+    paymentMethod:   ar ? 'نوع العميل'             : 'Customer Type',
+    amount:          ar ? 'المبلغ'                   : 'Amount',
+    reviewedBy:      ar ? 'راجعه'                   : 'Reviewed By',
+    invoiceImage:    ar ? 'صورة الفاتورة'           : 'Invoice Image',
+    questionsNotes:  ar ? 'الأسئلة والملاحظات'     : 'Questions & Notes',
+    notes:           ar ? 'ملاحظة المسؤول'          : 'Manager Notes',
+    noImage:         ar ? 'لا توجد صورة للفاتورة'   : 'No invoice image',
+    noAnswer:        ar ? 'لم تُجَب'                : 'Not answered',
+    writeNotes:      ar ? 'اكتب ملاحظاتك هنا…'     : 'Write your notes here…',
+    pageOf:          (a,b) => ar ? `صفحة ${a} من ${b}` : `Page ${a} of ${b}`,
+    totalInvoices:   ar ? 'إجمالي الفواتير'         : 'Total Invoices',
+    exportDate:      ar ? 'تاريخ التصدير'           : 'Export Date',
+    generatedBy:     ar ? 'أنشأه'                   : 'Generated By',
+    generatedByFull: ar ? 'تم إنشاؤه بواسطة RxPerform Pro' : 'Generated by RxPerform Pro',
+    exportedOn:      ar ? `تم التصدير في ${exportDate} ${exportTime}` : `Exported on ${exportDate} ${exportTime}`,
+    thankYou:        ar ? 'شكراً لاستخدامك RxPerform Pro ♥' : 'Thank you for using RxPerform Pro ♥',
+    perfPlatform:    ar ? 'منصة ذكاء الأداء'       : 'PERFORMANCE INTELLIGENCE PLATFORM',
+  };
+
+  function statusInfo(s){
+    const map = {
+      pending:  {
+        label: ar?'معلّقة':'Pending',
+        color:'#fbbf24', bg:'rgba(251,191,36,0.15)', border:'rgba(251,191,36,0.4)'
+      },
+      reviewed: {
+        label: ar?'مُراجَعة':'Completed',
+        color:'#00c896', bg:'rgba(0,200,150,0.15)', border:'rgba(0,200,150,0.4)'
+      },
+      flagged:  {
+        label: ar?'مُعلَّمة':'Flagged',
+        color:'#ff4d6d', bg:'rgba(255,77,109,0.15)', border:'rgba(255,77,109,0.4)'
+      }
+    };
+    return map[s||'pending'];
+  }
+
+  function custLabel(ct){
+    const map = {
+      new:       ar ? 'عميل جديد'   : 'New Customer',
+      regular:   ar ? 'عميل منتظم'  : 'Regular Customer',
+      vip:       'VIP',
+      insurance: ar ? 'تأمين'        : 'Insurance',
+      other:     ar ? 'أخرى'         : 'Other'
+    };
+    return map[ct] || ct || '—';
+  }
+
+  function qaChip(ans){
+    if(ans==='yes') return {text:ar?'نعم':'Yes', color:'#00c896', bg:'rgba(0,200,150,0.15)', border:'rgba(0,200,150,0.4)', icon:'check'};
+    if(ans==='no')  return {text:ar?'لا':'No',   color:'#ff4d6d', bg:'rgba(255,77,109,0.15)', border:'rgba(255,77,109,0.4)', icon:'x'};
+    if(ans==='na')  return {text:ar?'غير متاح':'Not Available', color:'#8fa3c0', bg:'rgba(143,163,192,0.12)', border:'rgba(143,163,192,0.3)', icon:'dash'};
+    return null;
+  }
+
+  function chipIcon(icon, color, size){
+    const s = size||10;
+    if(icon==='check') return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    if(icon==='x')     return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    return `<span style="font-size:${s}px;color:${color};font-weight:900;line-height:1">—</span>`;
+  }
+
+  const dir = ar ? 'rtl' : 'ltr';
+  const align = ar ? 'right' : 'left';
+
+  const pages = txList.map((tx, idx) => {
+    const sc = statusInfo(tx.status);
+    const questions = typeof getTxQuestions === 'function' ? getTxQuestions(tx.txType) : TX_QUESTIONS_SALE;
+    const dateStr = tx.date ? new Date(tx.date+'T00:00:00').toLocaleDateString(ar?'ar-EG':'en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+    // Build Q&A rows — each question in its own bordered card
+    const qaRows = questions.map((q, qi) => {
+      const ans = tx.qa && tx.qa[q.id];
+      const chip = qaChip(ans);
+      const noteVal = tx.qa && (tx.qa[q.id+'_note'] || '');
+
+      // Sub-question (only if parent = yes)
+      let subHtml = '';
+      if(q.sub && ans === 'yes'){
+        const subAns = tx.qa && tx.qa[q.sub.id];
+        const subChip = qaChip(subAns);
+        subHtml = `
+          <div style="margin-top:6px;padding:6px 10px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;gap:8px;direction:${dir}">
+            <div style="font-size:9px;color:#8fa3c0;flex:1;text-align:${align}">↳ ${q.sub.text}</div>
+            ${subChip
+              ? `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+                   <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${subChip.border};background:${subChip.bg};display:flex;align-items:center;justify-content:center">${chipIcon(subChip.icon,subChip.color,8)}</div>
+                   <span style="font-size:9px;font-weight:700;color:${subChip.color}">${subChip.text}</span>
+                 </div>`
+              : `<span style="font-size:9px;color:#546a87;font-style:italic">${L.noAnswer}</span>`
+            }
+          </div>`;
+      }
+
+      return `
+        <div style="margin-bottom:5px;padding:8px 10px;border-radius:8px;border:1px solid ${chip?chip.border:'rgba(255,255,255,0.08)'};background:${chip?chip.bg:'rgba(255,255,255,0.02)'}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;direction:${dir}">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:9.5px;color:#c8d8f0;line-height:1.5;text-align:${align}">${qi+1}. ${q.text}</div>
+            </div>
+            <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding-top:1px">
+              ${chip
+                ? `<div style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${chip.border};background:${chip.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${chipIcon(chip.icon,chip.color,9)}</div>
+                   <span style="font-size:9.5px;font-weight:800;color:${chip.color};white-space:nowrap">${chip.text}</span>`
+                : `<span style="font-size:9px;color:#546a87;font-style:italic;white-space:nowrap">${L.noAnswer}</span>`
+              }
+            </div>
+          </div>
+          ${noteVal ? `<div style="margin-top:5px;padding:5px 8px;border-radius:6px;background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.2);font-size:9px;color:#f9a8b4;direction:${dir};text-align:${align};white-space:pre-wrap;line-height:1.5">${noteVal}</div>` : ''}
+          ${subHtml}
+        </div>`;
+    }).join('');
+
+    const imgSection = tx.imgData
+      ? `<img src="${tx.imgData}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;display:block">`
+      : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#334155;gap:12px">
+           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+           <span style="font-size:11px;font-weight:600">${L.noImage}</span>
+         </div>`;
+
+    return `
+    <div style="width:210mm;min-height:297mm;background:linear-gradient(160deg,#060c18 0%,#0a1628 40%,#07111f 100%);position:relative;page-break-after:always;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;direction:ltr">
+
+      <div style="position:absolute;top:-60px;left:-40px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.06) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="position:absolute;bottom:-80px;right:-60px;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(0,168,204,0.04) 0%,transparent 70%);pointer-events:none"></div>
+
+      <!-- HEADER -->
+      <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(0,212,255,0.12);background:rgba(0,212,255,0.03);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(0,168,204,0.1));border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:900;color:#00d4ff;letter-spacing:1.2px">RXPERFORM PRO</div>
+              <div style="font-size:8.5px;color:#546a87;letter-spacing:0.4px;font-weight:600">${L.invReviewReport}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:15px;font-weight:900;color:#eef4ff;letter-spacing:0.4px">${ar?'تقرير مراجعة الفواتير':'INVOICE REVIEW REPORT'}</div>
+            <div style="font-size:8.5px;color:#546a87;margin-top:2px">${L.pageOf(idx+1, txList.length)}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD CARDS -->
+      <div style="padding:11px 20px 9px;flex-shrink:0">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          ${[
+            {label:L.invoiceId,  val:`<span style="font-family:'Courier New',monospace;font-size:12px;font-weight:900;color:#eef4ff">${tx.invNum||'—'}</span>`,
+              icon:'<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>',
+              bg:'rgba(255,255,255,0.04)',border:'rgba(255,255,255,0.08)',ic:'#546a87'},
+            {label:L.branch, val:`<span style="font-size:12px;font-weight:800;color:#eef4ff">${branchName}</span>`,
+              icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+              bg:'rgba(255,255,255,0.04)',border:'rgba(255,255,255,0.08)',ic:'#546a87'},
+            {label:L.employee, val:`<span style="font-size:12px;font-weight:800;color:#eef4ff">${colName}</span>`,
+              icon:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+              bg:'rgba(255,255,255,0.04)',border:'rgba(255,255,255,0.08)',ic:'#546a87'},
+            {label:L.status, val:`<span style="font-size:12px;font-weight:900;color:${sc.color}">${sc.label}</span>`,
+              icon:'<polyline points="20 6 9 17 4 12"/>',
+              bg:sc.bg, border:sc.border, ic:sc.color},
+          ].map(c=>`
+            <div style="padding:9px 11px;border-radius:9px;background:${c.bg};border:1px solid ${c.border}">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${c.ic}" stroke-width="2" stroke-linecap="round">${c.icon}</svg>
+                <span style="font-size:8px;color:${c.ic};font-weight:700;letter-spacing:0.3px">${c.label}</span>
+              </div>
+              ${c.val}
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- META ROW -->
+      <div style="padding:0 20px 9px;flex-shrink:0">
+        <div style="padding:9px 13px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;direction:${dir}">
+          ${[
+            {l:L.invoiceDate,  v:`${dateStr}${tx.time?' · '+tx.time:''}`, vc:'#eef4ff'},
+            {l:L.paymentMethod,v:custLabel(tx.custType), vc:'#eef4ff'},
+            {l:L.amount,       v:tx.value?Number(tx.value).toLocaleString('en')+' EGP':'—', vc:'#00c896'},
+            {l:L.reviewedBy,   v:adminName, vc:'#eef4ff'},
+          ].map(m=>`
+            <div style="text-align:${align}">
+              <div style="font-size:8px;color:#546a87;font-weight:600;margin-bottom:3px">${m.l}</div>
+              <div style="font-size:10px;font-weight:700;color:${m.vc};font-family:${m.vc==='#00c896'?"'Courier New',monospace":'inherit'}">${m.v}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT -->
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 12px;min-height:0;overflow:hidden">
+
+        <!-- LEFT: Image -->
+        <div style="display:flex;flex-direction:column;min-height:0">
+          <div style="font-size:8.5px;font-weight:700;color:#546a87;letter-spacing:0.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            ${L.invoiceImage}
+          </div>
+          <div style="flex:1;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px">
+            ${imgSection}
+          </div>
+        </div>
+
+        <!-- RIGHT: Questions -->
+        <div style="display:flex;flex-direction:column;min-height:0;overflow:hidden">
+          <div style="font-size:8.5px;font-weight:700;color:#546a87;letter-spacing:0.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            ${L.questionsNotes}
+          </div>
+
+          <!-- Q&A cards -->
+          <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:0">
+            ${qaRows}
+          </div>
+
+          <!-- Notes -->
+          <div style="margin-top:7px;flex-shrink:0">
+            <div style="font-size:8.5px;font-weight:700;color:#546a87;letter-spacing:0.7px;text-transform:uppercase;margin-bottom:5px">${L.notes}</div>
+            <div style="border-radius:9px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);padding:9px 11px;min-height:46px;direction:${dir};text-align:${align}">
+              ${tx.feedback ? `<div style="font-size:9.5px;color:#c8d8f0;line-height:1.6;white-space:pre-wrap">${tx.feedback}</div>` : ''}
+              ${tx.quickNote ? `<div style="font-size:9.5px;color:#8fa3c0;line-height:1.5;margin-top:${tx.feedback?'5px':'0'};white-space:pre-wrap">${tx.quickNote}</div>` : ''}
+              ${!tx.feedback && !tx.quickNote ? `<div style="font-size:9.5px;color:#2d3f57;font-style:italic">${L.writeNotes}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="padding:7px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div style="font-size:8px;color:#334155;font-weight:600">${L.generatedByFull}</div>
+        <div style="font-size:8px;color:#334155">${L.exportedOn}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Cover page ─────────────────────────────────────────────────
+  const cover = `
+    <div style="width:210mm;min-height:297mm;background:linear-gradient(160deg,#060c18 0%,#0a1628 50%,#07111f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;page-break-after:always;overflow:hidden;box-sizing:border-box;padding:40px;direction:${dir}">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.07) 0%,transparent 65%);pointer-events:none"></div>
+      <div style="text-align:center;position:relative;z-index:1;width:100%">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:36px">
+          <div style="width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(0,168,204,0.08));border:1.5px solid rgba(0,212,255,0.35);display:flex;align-items:center;justify-content:center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div style="text-align:left">
+            <div style="font-size:20px;font-weight:900;color:#00d4ff;letter-spacing:2px;line-height:1">RXPERFORM <span style="color:#eef4ff">PRO</span></div>
+            <div style="font-size:9.5px;color:#546a87;letter-spacing:1.2px;font-weight:600">${L.perfPlatform}</div>
+          </div>
+        </div>
+        <div style="margin:0 auto 28px;width:90px;height:90px;border-radius:20px;background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(0,0,0,0.3));border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.7)" stroke-width="1.3" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div style="font-size:26px;font-weight:900;color:#eef4ff;letter-spacing:0.5px;margin-bottom:8px">${ar?'تقرير مراجعة الفواتير':'INVOICE REVIEW REPORT'}</div>
+        <div style="width:60px;height:3px;background:linear-gradient(90deg,#00d4ff,#00a8cc);border-radius:2px;margin:0 auto 28px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:340px;margin:0 auto 36px">
+          ${[
+            {icon:'<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/>',
+              label:L.totalInvoices, val:`<div style="font-size:34px;font-weight:900;color:#eef4ff;line-height:1">${txList.length}</div>`},
+            {icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+              label:L.exportDate, val:`<div style="font-size:14px;font-weight:800;color:#eef4ff;line-height:1.3">${exportDate}<br><span style="font-size:12px;color:#546a87">${exportTime}</span></div>`},
+            {icon:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+              label:L.generatedBy, val:`<div style="font-size:14px;font-weight:800;color:#eef4ff">${adminName}</div>`},
+            {icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+              label:L.branch, val:`<div style="font-size:14px;font-weight:800;color:#eef4ff">${branchName}</div>`},
+          ].map(c=>`
+            <div style="padding:16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-align:left">
+              <div style="font-size:8.5px;color:#546a87;font-weight:700;letter-spacing:0.4px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#546a87" stroke-width="2.2" stroke-linecap="round">${c.icon}</svg>${c.label}
+              </div>${c.val}
+            </div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:#334155">${L.thankYou}</div>
+      </div>
+    </div>`;
+
+  return `<!DOCTYPE html><html dir="ltr" lang="${ar?'ar':'en'}"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060c18;font-family:${ar?"'Cairo','Segoe UI',sans-serif":"'Segoe UI','Arial',sans-serif"};-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@media print{@page{size:A4;margin:0}body{margin:0}}
+</style></head><body>${cover}${pages}</body></html>`;
+}
+
+// ── Preview ──────────────────────────────────────────────────────
+window.previewTxPDF = function(){
+  const ids = [..._selectedTxIds];
+  if(!ids.length){ toast('اختر فاتورة على الأقل','#ffb340'); return; }
+  const html = _buildPdfHtml(ids);
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url,'_blank');
+  if(win) setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  closeModal('txExportModal');
+};
+
+// ── Export (print to PDF) ─────────────────────────────────────────
+window.exportTxPDF = function(){
+  const ids = [..._selectedTxIds];
+  if(!ids.length){ toast('اختر فاتورة على الأقل','#ffb340'); return; }
+  const html = _buildPdfHtml(ids);
+  closeModal('txExportModal');
+  toast('🖨 جاري تحضير التقرير…','#00d4ff');
+  // Use a hidden iframe + print() on ALL devices — browser print dialog lets user choose "Save as PDF"
+  let f = document.getElementById('rxp-inv-frame');
+  if(!f){
+    f = document.createElement('iframe');
+    f.id = 'rxp-inv-frame';
+    f.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;border:none;opacity:0;pointer-events:none;z-index:-9999';
+    document.body.appendChild(f);
+  }
+  f.srcdoc = html;
+  f.onload = () => { setTimeout(() => { f.contentWindow.print(); }, 700); };
+};
+
+})(); // end Export PDF module
 
 
 
@@ -8586,6 +9299,505 @@ window.bsmSaveAll = function(){
 
 })(); // end transfer IIFE
 
+/* ═══════════════════════════════════════════════════════════════
+   أخطاء الشهر — ERRORS MODULE
+═══════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+// ── Ensure db.errors exists ─────────────────────────────────────
+function ensureErrDb(){
+  if(!db.errors) db.errors = {};
+  if(!db.errors.employees) db.errors.employees = [];
+  if(!db.errors.records) db.errors.records = {};
+}
+
+// ── Period key: same cycle logic as the rest of the app ─────────
+function getErrPeriodKey(){
+  const now = new Date();
+  const c = typeof cs === 'function' ? cs() : (db.settings?.cycleStart || 16);
+  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
+  if(d >= c){
+    return `${y}-${String(m).padStart(2,'0')}`;
+  } else {
+    const prev = m===1 ? 12 : m-1;
+    const py = m===1 ? y-1 : y;
+    return `${py}-${String(prev).padStart(2,'0')}`;
+  }
+}
+
+function getErrPeriodLabel(key){
+  if(!key) return '—';
+  return typeof periodLabel==='function' ? periodLabel(key) : key;
+}
+
+function allErrPeriods(){
+  ensureErrDb();
+  const cur = getErrPeriodKey();
+  const keys = new Set([cur]);
+  Object.keys(db.errors.records||{}).forEach(k => keys.add(k));
+  return [...keys].sort((a,b) => b.localeCompare(a));
+}
+
+// ── Active period from selector ──────────────────────────────────
+function getActivePeriodKey(){
+  const sel = document.getElementById('errPeriodSel');
+  return sel ? (sel.value || getErrPeriodKey()) : getErrPeriodKey();
+}
+
+// ── Records for a period ─────────────────────────────────────────
+function getPeriodRecords(periodKey){
+  ensureErrDb();
+  return Object.values(db.errors.records[periodKey] || {})
+    .sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+}
+
+// ── Render the whole tab ────────────────────────────────────────
+window.renderErrTab = function(){
+  ensureErrDb();
+  const cur = getErrPeriodKey();
+
+  // Populate period selector
+  const sel = document.getElementById('errPeriodSel');
+  if(sel){
+    const periods = allErrPeriods();
+    sel.innerHTML = periods.map(p =>
+      `<option value="${p}">${getErrPeriodLabel(p)}${p===cur?' (الحالية)':''}</option>`
+    ).join('');
+    if(!sel.value) sel.value = cur;
+  }
+
+  // Period new-cycle banner: show if today >= cycleStart and last stored period is old
+  const bannerEl = document.getElementById('errPeriodBanner');
+  const bannerText = document.getElementById('errPeriodBannerText');
+  if(bannerEl && bannerText){
+    const c = typeof cs === 'function' ? cs() : 16;
+    const today = new Date();
+    if(today.getDate() >= c){
+      const prevM = cur.split('-')[1]==='01' ? 12 : +cur.split('-')[1]-1;
+      const hasPrev = !!Object.keys(db.errors.records||{}).find(k => k !== cur);
+      bannerEl.style.display = hasPrev||today.getDate()===c ? 'flex' : 'none';
+      bannerText.textContent = `بدأت فترة جديدة في ${c} من الشهر — البيانات السابقة محفوظة وفي القائمة أعلاه`;
+    } else {
+      bannerEl.style.display = 'none';
+    }
+  }
+
+  renderErrEmpChips();
+  renderErrDashCards(getActivePeriodKey());
+  renderErrTable(getActivePeriodKey());
+};
+
+// ── Employee chips ────────────────────────────────────────────────
+function renderErrEmpChips(){
+  const container = document.getElementById('errEmpChips');
+  if(!container) return;
+  const emps = db.errors.employees || [];
+  if(!emps.length){
+    container.innerHTML = '<div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد موظفون بعد. أضف موظفاً للبدء.</div>';
+    return;
+  }
+  container.innerHTML = emps.map(e => `
+    <div style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;background:var(--glass2);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--white)">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);flex-shrink:0"></span>
+      ${e.name}
+      <button onclick="openErrEmpModal('${e.id}')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:0 2px;line-height:1" title="تعديل">✏</button>
+      <button onclick="deleteErrEmp('${e.id}')" style="background:none;border:none;color:var(--rose);cursor:pointer;font-size:13px;padding:0 2px;line-height:1" title="حذف">✕</button>
+    </div>`).join('');
+}
+
+// ── Dashboard cards ───────────────────────────────────────────────
+function renderErrDashCards(periodKey){
+  const records = getPeriodRecords(periodKey);
+  document.getElementById('errCard1').textContent = records.filter(r=>r.status==='reported').length;
+  document.getElementById('errCard2').textContent = records.filter(r=>r.status==='unreported').length;
+  document.getElementById('errCard3').textContent = records.filter(r=>r.discuss).length;
+  const badge = document.getElementById('errorsTabBadge');
+  if(badge){
+    badge.textContent = records.length;
+    badge.style.display = records.length ? '' : 'none';
+  }
+}
+
+// ── Table ────────────────────────────────────────────────────────
+function renderErrTable(periodKey){
+  const tbody = document.getElementById('errTableBody');
+  if(!tbody) return;
+  const records = getPeriodRecords(periodKey);
+  if(!records.length){
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>`;
+    return;
+  }
+  const empMap = {};
+  (db.errors.employees||[]).forEach(e => empMap[e.id]=e.name);
+
+  tbody.innerHTML = records.map((r,i) => {
+    const sc = r.status==='reported'
+      ? {label:'تم التبليغ',   bg:'rgba(0,200,150,0.1)',  border:'rgba(0,200,150,0.3)',  color:'var(--emerald)'}
+      : {label:'لم يتم التبليغ', bg:'rgba(255,77,109,0.1)', border:'rgba(255,77,109,0.3)', color:'var(--rose)'};
+    const imgCount = (r.images||[]).length;
+    const dateStr = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{day:'2-digit',month:'short'}) : '—';
+    const shortDetails = r.details ? (r.details.length>40 ? r.details.slice(0,40)+'…' : r.details) : '—';
+    const empName = empMap[r.empId]||'—';
+    const shortEmp = empName.length>10 ? empName.slice(0,10)+'…' : empName;
+    return `<tr style="border-bottom:1px solid var(--border);transition:background 0.12s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;text-align:center">${i+1}</td>
+      <td style="padding:10px 8px;font-weight:700;color:var(--white);white-space:nowrap">${empName}</td>
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;white-space:nowrap">${dateStr}</td>
+      <td style="padding:10px 8px;color:var(--text);word-break:break-word;white-space:pre-wrap;line-height:1.55">${r.details||'—'}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--cyan);font-size:12px;font-weight:700">${imgCount?'📷 '+imgCount:'—'}</td>
+      <td style="padding:10px 8px;text-align:center">
+        <span style="padding:3px 8px;border-radius:20px;font-size:9.5px;font-weight:700;background:${sc.bg};border:1px solid ${sc.border};color:${sc.color};white-space:nowrap;display:inline-block">${sc.label}</span>
+      </td>
+      <td style="padding:10px 8px;text-align:center">
+        ${r.discuss
+          ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:rgba(255,179,64,0.2);border:1px solid rgba(255,179,64,0.4);font-size:11px">⚡</span>'
+          : '<span style="color:var(--text3);font-size:11px">—</span>'}
+      </td>
+      <td style="padding:10px 8px;text-align:center">
+        <button onclick="viewErrRecord('${r.id}')" style="padding:4px 10px;border-radius:7px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">عرض</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Employee CRUD ─────────────────────────────────────────────────
+window.openErrEmpModal = function(id){
+  document.getElementById('errEmpEditId').value = id||'';
+  const emp = id ? (db.errors.employees||[]).find(e=>e.id===id) : null;
+  document.getElementById('errEmpName').value = emp ? emp.name : '';
+  openModal('errEmpModal');
+};
+
+window.saveErrEmp = function(){
+  const name = document.getElementById('errEmpName').value.trim();
+  if(!name){ toast('أدخل اسم الموظف','#ff4d6d'); return; }
+  ensureErrDb();
+  const editId = document.getElementById('errEmpEditId').value;
+  if(editId){
+    const emp = db.errors.employees.find(e=>e.id===editId);
+    if(emp) emp.name = name;
+  } else {
+    db.errors.employees.push({id:'emp'+Date.now(), name});
+  }
+  Store.save();
+  closeModal('errEmpModal');
+  renderErrEmpChips();
+  populateErrEmpSelect();
+  toast('✅ تم الحفظ');
+};
+
+window.deleteErrEmp = function(id){
+  if(!confirm('حذف هذا الموظف؟')) return;
+  ensureErrDb();
+  db.errors.employees = db.errors.employees.filter(e=>e.id!==id);
+  Store.save();
+  renderErrEmpChips();
+  populateErrEmpSelect();
+  toast('تم الحذف');
+};
+
+function populateErrEmpSelect(){
+  const sel = document.getElementById('errEmpSel');
+  if(!sel) return;
+  const emps = db.errors.employees||[];
+  sel.innerHTML = '<option value="">اختر الموظف…</option>'
+    + emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+}
+
+// ── Image handling ────────────────────────────────────────────────
+// ── Image compression helper ──────────────────────────────────────
+function compressErrImage(file, cb){
+  const MAX_W = 900, MAX_H = 900, QUALITY = 0.65;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if(w > MAX_W || h > MAX_H){
+        const ratio = Math.min(MAX_W/w, MAX_H/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', QUALITY));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+var _errTempImages = [];
+
+window.handleErrImages = function(input){
+  const files = [...input.files];
+  const previews = document.getElementById('errImgPreviews');
+  files.forEach(file => {
+    compressErrImage(file, compressed => {
+      _errTempImages.push(compressed);
+      const idx = _errTempImages.length - 1;
+      const div = document.createElement('div');
+      div.style.cssText = 'position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);flex-shrink:0';
+      div.innerHTML = `<img src="${compressed}" style="width:100%;height:100%;object-fit:cover">
+        <button onclick="_errTempImages.splice(${idx},1);this.parentNode.remove()" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:4px;background:rgba(255,77,109,0.9);border:none;color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>`;
+      previews.appendChild(div);
+    });
+  });
+  input.value = '';
+};
+
+// ── Add/Edit Record Modal ────────────────────────────────────────
+window.openAddErrModal = function(id){
+  _errTempImages = [];
+  document.getElementById('errImgPreviews').innerHTML = '';
+  document.getElementById('errEditId').value = id||'';
+  document.getElementById('errAddModalTitle').textContent = id ? '✏️ تعديل الخطأ' : '➕ إضافة خطأ جديد';
+  populateErrEmpSelect();
+  const record = id ? _findErrRecord(id) : null;
+  if(record){
+    document.getElementById('errEmpSel').value = record.empId||'';
+    document.getElementById('errDate').value = record.date||'';
+    document.getElementById('errDetails').value = record.details||'';
+    document.getElementById('errDiscuss').checked = !!record.discuss;
+    document.querySelector(`input[name="errStatus"][value="${record.status||'unreported'}"]`).checked = true;
+    _errTempImages = [...(record.images||[])];
+    const previews = document.getElementById('errImgPreviews');
+    _errTempImages.forEach((src,idx) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border2)';
+      div.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">
+        <button onclick="_errTempImages.splice(${idx},1);this.parentNode.remove()" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:4px;background:rgba(255,77,109,0.9);border:none;color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>`;
+      previews.appendChild(div);
+    });
+  } else {
+    document.getElementById('errEmpSel').value = '';
+    document.getElementById('errDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('errDetails').value = '';
+    document.getElementById('errDiscuss').checked = false;
+    const r = document.querySelector('input[name="errStatus"][value="unreported"]');
+    if(r) r.checked = true;
+  }
+  openModal('errAddModal');
+};
+
+function _findErrRecord(id){
+  for(const pKey of Object.keys(db.errors.records||{})){
+    if(db.errors.records[pKey][id]) return db.errors.records[pKey][id];
+  }
+  return null;
+}
+
+window.saveErrRecord = function(){
+  const empId = document.getElementById('errEmpSel').value;
+  const date = document.getElementById('errDate').value;
+  const details = document.getElementById('errDetails').value.trim();
+  const statusEl = document.querySelector('input[name="errStatus"]:checked');
+  if(!empId||!date||!details||!statusEl){
+    toast('يرجى ملء جميع الحقول المطلوبة','#ff4d6d');
+    return;
+  }
+  ensureErrDb();
+  const periodKey = getErrPeriodKey();
+  if(!db.errors.records[periodKey]) db.errors.records[periodKey] = {};
+  const editId = document.getElementById('errEditId').value;
+  const id = editId || 'err'+Date.now();
+  db.errors.records[periodKey][id] = {
+    id, empId, date, details,
+    status: statusEl.value,
+    discuss: document.getElementById('errDiscuss').checked,
+    images: [..._errTempImages],
+    createdAt: editId ? (db.errors.records[periodKey][id]?.createdAt||Date.now()) : Date.now()
+  };
+  Store.save();
+  closeModal('errAddModal');
+  renderErrTab();
+  toast('✅ تم حفظ الخطأ');
+};
+
+// ── View Record Modal ────────────────────────────────────────────
+window.viewErrRecord = function(id){
+  const r = _findErrRecord(id);
+  if(!r){ toast('السجل غير موجود','#ff4d6d'); return; }
+  const empMap = {};
+  (db.errors.employees||[]).forEach(e => empMap[e.id]=e.name);
+  const sc = r.status==='reported'
+    ? {label:'تم التبليغ',    bg:'rgba(0,200,150,0.12)',  border:'rgba(0,200,150,0.35)',  color:'#00c896'}
+    : {label:'لم يتم التبليغ', bg:'rgba(255,77,109,0.12)', border:'rgba(255,77,109,0.35)', color:'#ff4d6d'};
+  const dateStr = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  const images = r.images||[];
+
+  document.getElementById('errViewContent').innerHTML = `
+    <!-- Info grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="padding:12px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)">
+        <div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:5px">الموظف</div>
+        <div style="font-size:14px;font-weight:800;color:var(--white)">${empMap[r.empId]||'—'}</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)">
+        <div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:5px">التاريخ</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white)">${dateStr}</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:10px;background:${sc.bg};border:1px solid ${sc.border}">
+        <div style="font-size:9px;font-weight:700;color:${sc.color};letter-spacing:.5px;margin-bottom:5px">الحالة</div>
+        <div style="font-size:13px;font-weight:800;color:${sc.color}">${sc.label}</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:10px;background:${r.discuss?'rgba(255,179,64,0.08)':'var(--glass)'};border:1px solid ${r.discuss?'rgba(255,179,64,0.25)':'var(--border)'}">
+        <div style="font-size:9px;font-weight:700;color:${r.discuss?'var(--amber)':'var(--text2)'};letter-spacing:.5px;margin-bottom:5px">مناقشة</div>
+        <div style="font-size:13px;font-weight:800;color:${r.discuss?'var(--amber)':'var(--text3)'}">${r.discuss?'⚡ تحتاج مناقشة':'—'}</div>
+      </div>
+    </div>
+    <!-- Details -->
+    <div style="padding:14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)">
+      <div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">تفاصيل الخطأ</div>
+      <div style="font-size:13px;color:var(--white);line-height:1.7;white-space:pre-wrap;direction:rtl;text-align:right">${r.details||'—'}</div>
+    </div>
+    <!-- Images -->
+    ${images.length ? `
+    <div>
+      <div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:10px">المرفقات (${images.length} صورة)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px">
+        ${images.map((src,i)=>`
+          <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border2);cursor:zoom-in;aspect-ratio:4/3" onclick="viewErrImgFull('${r.id}',${i})">
+            <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+          </div>`).join('')}
+      </div>
+    </div>` : ''}`;
+
+  document.getElementById('errViewEditBtn').dataset.id = id;
+  openModal('errViewModal');
+};
+
+window.editErrFromView = function(){
+  const id = document.getElementById('errViewEditBtn').dataset.id;
+  closeModal('errViewModal');
+  openAddErrModal(id);
+};
+
+window.viewErrImgFull = function(recId, imgIdx){
+  const r = _findErrRecord(recId);
+  if(!r) return;
+  const src = (r.images||[])[imgIdx];
+  if(!src) return;
+  const lb = document.getElementById('txLightbox');
+  const img = document.getElementById('txLightboxImg');
+  if(lb && img){ img.src = src; lb.style.display = 'flex'; }
+};
+
+// ── Delete record (called from view modal footer) ────────────────
+window.deleteErrRecord = function(id){
+  if(!id){ toast('خطأ: لم يتم تحديد السجل','#ff4d6d'); return; }
+  if(!confirm('حذف هذا السجل نهائياً؟')) return;
+  ensureErrDb();
+  let found = false;
+  for(const pKey of Object.keys(db.errors.records||{})){
+    if(db.errors.records[pKey][id]){
+      delete db.errors.records[pKey][id];
+      found = true;
+      break;
+    }
+  }
+  Store.save();
+  closeModal('errViewModal');
+  renderErrTab();
+  toast(found ? '🗑 تم الحذف' : 'السجل غير موجود', found ? '#ff4d6d' : '#ffb340');
+};
+
+// ── Print ─────────────────────────────────────────────────────────
+window.printErrReport = function(){
+  const periodKey = getActivePeriodKey();
+  const records = getPeriodRecords(periodKey);
+  const empMap = {};
+  (db.errors.employees||[]).forEach(e => empMap[e.id]=e.name);
+  const branchName = 'مشعل';
+  const adminName = db.settings?.adminDisplayName || 'المسؤول';
+  const periodStr = getErrPeriodLabel(periodKey);
+  const now = new Date();
+  const exportDate = now.toLocaleDateString('ar-EG',{day:'2-digit',month:'short',year:'numeric'});
+
+  const rows = records.map((r,i) => {
+    const sc = r.status==='reported'
+      ? {label:'تم التبليغ', bg:'#dcfce7', color:'#15803d', border:'#86efac'}
+      : {label:'لم يتم التبليغ', bg:'#fee2e2', color:'#b91c1c', border:'#fca5a5'};
+    const dateStr = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{day:'2-digit',month:'short'}) : '—';
+    return `<tr>
+      <td style="text-align:center;color:#94a3b8;font-size:10px">${i+1}</td>
+      <td style="font-weight:700">${empMap[r.empId]||'—'}</td>
+      <td style="white-space:nowrap;color:#475569">${dateStr}</td>
+      <td style="text-align:right;direction:rtl;color:#1e293b;line-height:1.6">${r.details||'—'}</td>
+      <td style="text-align:center"><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">${sc.label}</span></td>
+      <td style="text-align:center;color:${r.discuss?'#b45309':'#cbd5e1'};font-weight:700">${r.discuss?'⚡ نعم':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const total = records.length;
+  const reported = records.filter(r=>r.status==='reported').length;
+  const unreported = records.filter(r=>r.status==='unreported').length;
+  const discuss = records.filter(r=>r.discuss).length;
+
+  const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Cairo','Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:28px}
+    @media print{@page{size:A4 landscape;margin:10mm}body{padding:0;background:#f1f5f9}}
+    .page{background:#f1f5f9;padding:24px}
+    .header{background:#0f172a;border-radius:12px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .header h1{font-size:18px;color:#fff;margin:0}
+    .header .sub{font-size:10.5px;color:#94a3b8;margin-top:4px}
+    .header .date{font-size:11px;color:#64748b;background:#1e293b;padding:6px 12px;border-radius:8px}
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+    .card{padding:14px 16px;border-radius:10px;background:#fff;border:1px solid #e2e8f0;border-right:4px solid;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+    .card-label{font-size:9px;color:#64748b;margin-bottom:6px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+    .card-val{font-size:30px;font-weight:900}
+    .table-wrap{background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+    table{width:100%;border-collapse:collapse;font-size:11.5px}
+    thead tr{background:#0f172a}
+    th{padding:11px 13px;color:#94a3b8;font-weight:700;text-align:right;font-size:10px;letter-spacing:.3px}
+    tbody tr{border-bottom:1px solid #f1f5f9}
+    tbody tr:nth-child(even){background:#f8fafc}
+    tbody tr:hover{background:#f1f5f9}
+    td{padding:10px 13px;color:#0f172a;vertical-align:top;font-weight:500}
+    .status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;padding:0 4px}
+  </style></head><body><div class="page">
+    <div class="header">
+      <div>
+        <h1>⚠️ تقرير أخطاء الشهر</h1>
+        <div class="sub">الفترة: ${periodStr} &nbsp;·&nbsp; الفرع: ${branchName} &nbsp;·&nbsp; أعده: ${adminName}</div>
+      </div>
+      <div class="date">${exportDate}</div>
+    </div>
+    <div class="cards">
+      <div class="card" style="border-right-color:#0ea5e9"><div class="card-label">إجمالي السجلات</div><div class="card-val" style="color:#0369a1">${total}</div></div>
+      <div class="card" style="border-right-color:#16a34a"><div class="card-label">تم التبليغ</div><div class="card-val" style="color:#15803d">${reported}</div></div>
+      <div class="card" style="border-right-color:#dc2626"><div class="card-label">لم يتم التبليغ</div><div class="card-val" style="color:#b91c1c">${unreported}</div></div>
+      <div class="card" style="border-right-color:#d97706"><div class="card-label">تحتاج مناقشة</div><div class="card-val" style="color:#b45309">${discuss}</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="text-align:center;width:36px">#</th><th>الموظف</th><th>التاريخ</th><th>تفاصيل الخطأ</th><th style="text-align:center">الحالة</th><th style="text-align:center">مناقشة</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">لا توجد سجلات</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="footer"><span>تم إنشاؤه بواسطة RxPerform Pro</span><span>${exportDate}</span></div>
+  </div></body></html>`;
+
+  let f = document.getElementById('rxp-err-print-frame');
+  if(!f){
+    f = document.createElement('iframe');
+    f.id = 'rxp-err-print-frame';
+    f.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;border:none;opacity:0;pointer-events:none;z-index:-9999';
+    document.body.appendChild(f);
+  }
+  f.srcdoc = html;
+  f.onload = () => setTimeout(()=>f.contentWindow.print(), 500);
+  toast('🖨 جاري تحضير التقرير…', '#00d4ff');
+};
+
+// ── Init: ensure db structure on first load ──────────────────────
+ensureErrDb();
+
+})(); // end errors module
+
 </script>
 
 
@@ -8624,7 +9836,7 @@ window.bsmSaveAll = function(){
 </div>
 
 
-<div class="modal-overlay" id="settingsModal"><div class="modal-box"><div class="modal-title">⚙ <span data-i18n="settings">Settings</span></div><div class="form-group"><label class="form-label" data-i18n="cycle_start">Cycle Start Day</label><input class="form-input" type="number" id="settingsCycleStart" min="1" max="28" value="16"></div><div class="form-group"><label class="form-label" data-i18n="admin_name">Admin Display Name</label><input class="form-input" type="text" id="settingsAdminName"></div><div class="form-group"><label class="form-label" data-i18n="new_password">New Password</label><input class="form-input" type="password" id="settingsPassword" placeholder="Leave blank to keep"></div><div class="form-group"><label class="form-label">Shift Duration Limit (hours)</label><input class="form-input" type="number" id="settingsShiftLimit" min="4" max="16" value="8"></div><div class="form-group"><label class="form-label">🗜 صور الفواتير</label><button class="m-btn" type="button" onclick="compressAllTxImages()" style="width:100%;justify-content:center">ضغط كل صور الفواتير المخزّنة الآن</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يقلل حجم الصور القديمة الكبيرة لحل مشاكل فشل الحفظ</div></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('settingsModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveSettings()" data-i18n="save">Save</button></div></div></div>
+<div class="modal-overlay" id="settingsModal"><div class="modal-box"><div class="modal-title">⚙ <span data-i18n="settings">Settings</span></div><div class="form-group"><label class="form-label" data-i18n="cycle_start">Cycle Start Day</label><input class="form-input" type="number" id="settingsCycleStart" min="1" max="28" value="16"></div><div class="form-group"><label class="form-label" data-i18n="admin_name">Admin Display Name</label><input class="form-input" type="text" id="settingsAdminName"></div><div class="form-group"><label class="form-label">اسم الفرع / Branch Name</label><input class="form-input" type="text" id="settingsBranchName" placeholder="مثال: مشعل / Mashaal"></div><div class="form-group"><label class="form-label" data-i18n="new_password">New Password</label><input class="form-input" type="password" id="settingsPassword" placeholder="Leave blank to keep"></div><div class="form-group"><label class="form-label">Shift Duration Limit (hours)</label><input class="form-input" type="number" id="settingsShiftLimit" min="4" max="16" value="8"></div><div class="form-group"><label class="form-label">🗜 صور الفواتير</label><button class="m-btn" type="button" onclick="compressAllTxImages()" style="width:100%;justify-content:center">ضغط كل صور الفواتير المخزّنة الآن</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يقلل حجم الصور القديمة الكبيرة لحل مشاكل فشل الحفظ</div></div><div class="form-group"><label class="form-label">🗜 صور الأخطاء</label><button class="m-btn" type="button" onclick="compressAllErrImages()" style="width:100%;justify-content:center">ضغط كل صور الأخطاء المخزّنة الآن</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يقلل حجم صور الأخطاء القديمة</div></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('settingsModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveSettings()" data-i18n="save">Save</button></div></div></div>
 <!-- ═══ COLLEAGUE MANAGER ═══ -->
 <div class="modal-overlay" id="colManagerModal">
 <div class="modal-box" style="max-width:640px;max-height:90vh;display:flex;flex-direction:column">
