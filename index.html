@@ -82,6 +82,9 @@ body.theme-amber{--cyan:#ffb340;--cyan2:#f59e0b;--cyan3:rgba(255,179,64,0.15);--
 body.theme-rose{--cyan:#f43f5e;--cyan2:#e11d48;--cyan3:rgba(244,63,94,0.15);--emerald:#fb7185;--emerald2:#f43f5e}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
+body.errors-active{overflow:hidden!important}
+#errFullPage{display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;flex-direction:column}
+#errFullPage.open{display:flex}
 @media(min-width:901px){
   html,body{overflow:auto;height:auto}
   #app{height:auto;min-height:100vh;overflow:visible}
@@ -210,15 +213,16 @@ body.light .tb-mode-thumb{transform:translateX(22px)}body[dir='rtl'].light .tb-m
 .hbtn-amber{background:var(--amber2);border-color:rgba(255,179,64,0.3);color:var(--amber)}.hbtn-amber:hover{background:rgba(255,179,64,0.22)}
 .hbtn-rose{background:var(--rose2);border-color:rgba(255,77,109,0.3);color:var(--rose)}.hbtn-rose:hover{background:rgba(255,77,109,0.22)}
 /* ════ INNER TABS ════ */
-#innerNav{height:42px;flex-shrink:0;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;padding:0 18px;overflow-x:auto}
-#innerNav::-webkit-scrollbar{height:0}
-.inner-tab{display:flex;align-items:center;gap:5px;padding:9px 12px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:var(--trans);white-space:nowrap;flex-shrink:0}
+#innerNav{height:44px;flex-shrink:0;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;padding:0 18px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+#innerNav::-webkit-scrollbar{display:none}
+#innerNav::after{content:'';position:sticky;right:-1px;top:0;bottom:0;width:28px;flex-shrink:0;background:linear-gradient(to right,transparent,var(--bg2,#0d1b2e));pointer-events:none;align-self:stretch}
+.inner-tab{display:flex;align-items:center;gap:5px;padding:9px 12px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:var(--trans);white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .inner-tab:hover{color:var(--text)}.inner-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);font-weight:600}
 .inner-tab-badge{font-size:9px;font-weight:700;background:var(--cyan3);color:var(--cyan);padding:1px 5px;border-radius:4px}
 #innerContent{flex:1;overflow:hidden;display:flex}
 .inner-view{display:none;width:100%;height:100%;overflow:auto;padding:14px 18px}
 .inner-view.active{display:flex;gap:14px}
-#view-errors.active{flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#view-errors.active{flex-direction:column}
 /* ════ PERF / MATRIX ════ */
 .perf-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
 .perf-right{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:9px;overflow-y:auto}
@@ -404,7 +408,7 @@ body[dir="rtl"] #notifPanel{right:auto;left:18px}
 button:focus-visible,input:focus-visible,select:focus-visible,.mt-score-cell:focus{outline:2px solid var(--cyan);outline-offset:2px}
 /* ════ RESPONSIVE ════ */
 @media(max-width:900px){.tb-search{display:none}.perf-right{width:0;display:none}.bento-grid{grid-template-columns:repeat(2,1fr)}.exec-grid{grid-template-columns:1fr}.exec-card.span2,.exec-card.span3{grid-column:span 1}}
-@media(max-width:600px){#topbar{padding:0 10px;gap:6px}.tb-logo-sub{display:none}.hero-stats{display:none}.hero-trend-wrap{display:none}.plans-board{flex-direction:column}.fab-main{width:44px;height:44px}}
+@media(max-width:600px){#topbar{padding:0 10px;gap:6px}.tb-logo-sub{display:none}.hero-trend-wrap{display:none}.plans-board{flex-direction:column}.fab-main{width:44px;height:44px}}
 @media(min-width:1400px){.bento-grid{grid-template-columns:repeat(5,1fr)}.exec-grid{grid-template-columns:repeat(4,1fr)}}
 /* ════ PRINT ════ */
 @media print{html,body{background:#fff;color:#000;height:auto!important;overflow:visible!important}.modal-overlay,.fab-main,#bottomNav,#topbar,#colTabs,#fab,#syncStatus{display:none!important}#app,#mainArea,#workspace,#innerContent{display:flex!important;height:auto!important;min-height:0!important;overflow:visible!important}.inner-view{display:none!important}.inner-view.active{display:flex!important;height:auto!important;overflow:visible!important}}
@@ -557,7 +561,7 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
   .hero-stats{gap:3px;flex-wrap:wrap}
   .hero-stat{padding:7px 9px;min-width:60px}
   .hero-stat-val{font-size:18px}
-  .hero-actions{display:none}
+  .hero-actions{flex-direction:row;flex-wrap:wrap}
   .perf-right{display:none}
   .inner-view.active{flex-direction:column}
   .plans-board{flex-direction:column}
@@ -576,12 +580,17 @@ body[dir="rtl"] .rxp-btn-ghost{margin-left:0;margin-right:auto;}
   .stats-grid{grid-template-columns:1fr}
   .hero-ava{width:52px;height:52px}
   .hero-name{font-size:17px}
-  #heroCard{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+  #heroCard{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding:10px 12px;gap:10px}
   #heroCard::-webkit-scrollbar{height:0}
+  .hero-actions{display:flex;flex-shrink:0}
+  .hero-trend-wrap{flex-shrink:0}
+  .hero-stats{flex-shrink:0;display:flex}
   .hero-actions{flex-direction:row;flex-wrap:wrap}
   .inner-view{padding:8px 8px}
   .perf-main{min-width:0}
-  .matrix-wrap{-webkit-overflow-scrolling:touch}
+  .matrix-wrap{-webkit-overflow-scrolling:touch;overflow:auto!important;max-height:60vh}
+  .perf-main{display:flex;flex-direction:column;min-height:0;flex:1}
+  #view-perf{padding:8px!important}
 }
 
 /* ════ TRANSACTIONS REVIEW ════ */
@@ -718,6 +727,7 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 
     <div class="tb-mode-btn" onclick="toggleMode()"><div class="tb-mode-thumb" id="modeThumb">☀️</div></div>
     <button onclick="openTransferPage()" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);color:var(--purple2);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">🔄 تحويلات</button>
+    <button onclick="switchInner('errors',null)" style="background:rgba(255,179,64,0.12);border:1px solid rgba(255,179,64,0.35);color:var(--amber);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">⚠️ أخطاء الشهر</button>
     <button onclick="doExport()" style="background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);color:var(--emerald);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Export JSON</button>
     <button onclick="doImport()" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:var(--cyan);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">Import JSON</button>
     <button onclick="doLogout()" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.35);color:var(--rose);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap">خروج</button>
@@ -945,8 +955,169 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 
 
 
+      <!-- ERRORS TAB (أخطاء الشهر) -->
+      <div class="inner-view" id="view-errors" style="flex-direction:column;gap:14px;padding:14px">
+
+        <!-- Period Banner -->
+        <div id="errPeriodBanner" style="display:none;padding:10px 16px;border-radius:10px;background:rgba(255,179,64,0.08);border:1px solid rgba(255,179,64,0.25);align-items:center;gap:10px">
+          <span style="font-size:16px">📅</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--amber)">فترة جديدة بدأت</div>
+            <div id="errPeriodBannerText" style="font-size:11px;color:var(--text2);margin-top:1px"></div>
+          </div>
+        </div>
+
+        <!-- Employee Management -->
+        <div style="padding:14px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              إدارة الموظفين
+            </div>
+            <button onclick="openErrEmpModal()" style="padding:6px 14px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">+ إضافة موظف</button>
+          </div>
+          <div id="errEmpChips" style="display:flex;flex-wrap:wrap;gap:7px">
+            <div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد موظفون بعد. أضف موظفاً للبدء.</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Cards + Controls -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;flex:1;min-width:280px">
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.25);border-top:2px solid var(--emerald)">
+              <div style="font-size:9px;font-weight:700;color:var(--emerald);letter-spacing:.5px;margin-bottom:6px">تم التبليغ</div>
+              <div id="errCard1" style="font-size:24px;font-weight:900;color:var(--emerald);font-family:var(--mono)">0</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.25);border-top:2px solid var(--rose)">
+              <div style="font-size:9px;font-weight:700;color:var(--rose);letter-spacing:.5px;margin-bottom:6px">لم يتم التبليغ</div>
+              <div id="errCard2" style="font-size:24px;font-weight:900;color:var(--rose);font-family:var(--mono)">0</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,179,64,0.07);border:1px solid rgba(255,179,64,0.25);border-top:2px solid var(--amber)">
+              <div style="font-size:9px;font-weight:700;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">تحتاج مناقشة</div>
+              <div id="errCard3" style="font-size:24px;font-weight:900;color:var(--amber);font-family:var(--mono)">0</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+            <select id="errPeriodSel" onchange="renderErrTab()" style="background:var(--glass);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:11px;font-weight:600;padding:7px 10px;cursor:pointer;outline:none"></select>
+            <button onclick="printErrReport()" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              طباعة
+            </button>
+            <button onclick="openAddErrModal()" style="display:flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;color:#000;font-size:11px;font-weight:800;cursor:pointer">
+              + إضافة خطأ
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div style="border-radius:14px;border:1px solid var(--border);background:var(--glass);overflow:hidden">
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table style="width:100%;min-width:420px;border-collapse:collapse;font-size:12px" id="errTable">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,0.03)">
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">#</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">الموظف</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">التاريخ</th>
+                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">تفاصيل الخطأ</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">📷</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">الحالة</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">نقاش</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">عرض</th>
+                </tr>
+              </thead>
+              <tbody id="errTableBody">
+                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /innerContent -->
   </div><!-- /workspace -->
+
+  <!-- Error: Add Employee Modal -->
+  <div class="modal-overlay" id="errEmpModal" style="z-index:10001">
+    <div class="modal-box" style="max-width:420px">
+      <div class="modal-title" style="margin-bottom:16px">👤 إضافة / تعديل موظف</div>
+      <input type="hidden" id="errEmpEditId">
+      <div class="form-group">
+        <label class="form-label">اسم الموظف</label>
+        <input class="form-input" id="errEmpName" placeholder="اسم الموظف…" maxlength="60">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('errEmpModal')">إلغاء</button>
+        <button class="btn btn-primary" onclick="saveErrEmp()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error: Add/Edit Record Modal -->
+  <div class="modal-overlay" id="errAddModal" style="z-index:10001">
+    <div class="modal-box" style="max-width:560px;max-height:90vh;overflow-y:auto">
+      <div class="modal-title" style="margin-bottom:16px" id="errAddModalTitle">➕ إضافة خطأ جديد</div>
+      <input type="hidden" id="errEditId">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">الموظف <span style="color:var(--rose)">*</span></label>
+          <select class="form-input form-select" id="errEmpSel"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">التاريخ <span style="color:var(--rose)">*</span></label>
+          <input class="form-input" type="date" id="errDate">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تفاصيل الخطأ <span style="color:var(--rose)">*</span></label>
+        <textarea class="form-input" id="errDetails" rows="4" placeholder="اكتب تفاصيل الخطأ هنا…" style="resize:vertical;min-height:90px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الحالة <span style="color:var(--rose)">*</span></label>
+        <div style="display:flex;gap:10px">
+          <label style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1px solid rgba(0,200,150,0.25);background:rgba(0,200,150,0.07);cursor:pointer;flex:1">
+            <input type="radio" name="errStatus" value="reported" style="accent-color:var(--emerald)"> <span style="font-size:12px;font-weight:700;color:var(--emerald)">✅ تم التبليغ</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1px solid rgba(255,77,109,0.25);background:rgba(255,77,109,0.07);cursor:pointer;flex:1">
+            <input type="radio" name="errStatus" value="unreported" style="accent-color:var(--rose)"> <span style="font-size:12px;font-weight:700;color:var(--rose)">❌ لم يتم التبليغ</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+          <input type="checkbox" id="errDiscuss" style="width:16px;height:16px;accent-color:var(--amber);border-radius:4px">
+          <span style="font-size:12px;font-weight:600;color:var(--amber)">⚡ تحتاج مناقشة</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">المرفقات (صور)</label>
+        <input type="file" id="errImgInput" accept="image/*" multiple style="display:none" onchange="handleErrImages(this)">
+        <button onclick="document.getElementById('errImgInput').click()" style="width:100%;padding:28px;border-radius:10px;border:2px dashed var(--border2);background:var(--glass);color:var(--text2);cursor:pointer;font-size:12px;font-weight:600">📷 انقر لإضافة صور</button>
+        <div id="errImgPreviews" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('errAddModal')">إلغاء</button>
+        <button class="btn btn-primary" onclick="saveErrRecord()">حفظ الخطأ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error: View Detail Modal -->
+  <div class="modal-overlay" id="errViewModal" style="z-index:10002">
+    <div class="modal-box" style="max-width:600px;max-height:92vh;overflow-y:auto;padding:0">
+      <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);background:rgba(0,212,255,0.03);position:sticky;top:0;z-index:1;backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:15px;font-weight:800;color:var(--white)">📋 تفاصيل الخطأ</div>
+        <button onclick="closeModal('errViewModal')" style="width:30px;height:30px;border-radius:8px;background:var(--glass);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div id="errViewContent" style="padding:20px 22px;display:flex;flex-direction:column;gap:16px"></div>
+      <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <button onclick="deleteErrRecord(document.getElementById('errViewEditBtn').dataset.id)" style="padding:8px 16px;border-radius:8px;background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:var(--rose);font-size:12px;font-weight:700;cursor:pointer">🗑 حذف</button>
+        <div style="display:flex;gap:8px">
+          <button id="errViewEditBtn" onclick="editErrFromView()" style="padding:8px 16px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:12px;font-weight:700;cursor:pointer">✏️ تعديل</button>
+          <button onclick="closeModal('errViewModal')" class="btn btn-ghost" style="font-size:12px;padding:8px 16px">إغلاق</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- EXECUTIVE DASHBOARD -->
   <div id="execDashboard" style="display:none;flex:1;overflow:auto;padding:14px 18px;flex-direction:column;gap:12px">
@@ -1073,6 +1244,17 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 <!-- IMAGE LIGHTBOX -->
 <div id="txLightbox" onclick="document.getElementById('txLightbox').style.display='none'" style="position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;cursor:zoom-out">
   <img id="txLightboxImg" style="max-width:90vw;max-height:90vh;border-radius:var(--r2);box-shadow:var(--shadow3)">
+</div>
+
+<!-- ERRORS FULLPAGE OVERLAY -->
+<div id="errFullPage">
+  <!-- Sticky header with back button -->
+  <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <button onclick="closeErrFullPage()" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:var(--glass);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700;cursor:pointer">← رجوع</button>
+    <div style="font-size:14px;font-weight:800;color:var(--white)">⚠️ أخطاء الشهر</div>
+  </div>
+  <!-- Content injected by renderErrFullPage() -->
+  <div id="errFullPageContent" style="padding:14px;display:flex;flex-direction:column;gap:14px;flex:1"></div>
 </div>
 
 </div><!-- /app -->
@@ -1935,6 +2117,8 @@ function switchInner(tab,el){
   if(tab==='plans')renderPlans();
   if(tab==='achieve'&&curColId)renderAchievements();
   if(tab==='analytics'&&curColId)renderAnalytics();
+  if(tab==='errors'){openErrFullPage();return;}
+  document.body.classList.remove('errors-active');
   if(tab==='shift')renderShiftTab();
   if(tab==='tx'&&curColId){if(!db.transactions)db.transactions={};renderTxFeed();}
   updateBottomNav(tab);
@@ -3164,97 +3348,126 @@ function doWhatsApp() {
 
   const isAr = typeof lang !== 'undefined' && lang === 'ar';
 
-  /* ── نفس بيانات الموقع بالظبط ── */
-  const avg        = colAvg(curColId, curMonth) || 0;
-  const prevMonth  = availMonths()[1] || '';
-  const prevAvg    = prevMonth ? (colAvg(curColId, prevMonth) || 0) : 0;
-  const diff       = avg && prevAvg ? +(avg - prevAvg).toFixed(2) : null;
-  const trendTxt   = diff === null ? '—' : diff > 0 ? '↑ +' + diff : '↓ ' + Math.abs(diff);
-  const entries    = countSc(curColId, curMonth);
-  const crit       = getActiveCr(curColId);
-  const rank       = rankOf(curColId, curMonth);
-  const total      = db.colleagues.length;
-  const con        = consistency(curColId, curMonth);
-  const br         = burnoutRisk(curColId, curMonth);
-  const brLbl      = br >= 70 ? '🔴 مرتفع' : br >= 40 ? '🟡 متوسط' : '🟢 منخفض';
-  const ta         = teamAvgVal(curMonth);
-  const vsTm       = avg && ta ? (avg >= ta ? '+' : '') + (avg - ta).toFixed(2) : '—';
-  const allS       = allScoresArr(curColId, curMonth);
-  const perfect    = allS.filter(s => s === 10).length;
-  const streak     = typeof streakOf === 'function' ? streakOf(curColId, curMonth) : 0;
-  const months6    = availMonths().slice(0, 6);
-  const mAvgs      = months6.map(m => colAvg(curColId, m));
-  const predict    = mAvgs[0] && mAvgs[1] ? Math.max(0, Math.min(10, +(mAvgs[0] + (mAvgs[0] - mAvgs[1])).toFixed(2))) : null;
-  const mLabel     = periodLabel(curMonth);
+  /* ── Helper: compute criterion average accurately ── */
+  function crAvg(crId) {
+    const dayMap = (db.scores?.[curColId]?.[curMonth]?.[crId]) || {};
+    // only include days that have a real numeric score (not status/absent)
+    const vals = Object.values(dayMap)
+      .filter(e => e && typeof e.score === 'number' && !isNaN(e.score))
+      .map(e => e.score);
+    return vals.length ? { avg: vals.reduce((s, x) => s + x, 0) / vals.length, count: vals.length } : null;
+  }
 
-  /* أقوى / أضعف معيار (نفس renderInsights) */
-  const scores = (db.scores && db.scores[curColId] && db.scores[curColId][curMonth]) || {};
-  const crA = crit.map(cr => {
-    const v = Object.values(scores[cr.id] || {}).filter(e => e.score).map(e => e.score);
-    return { cr, avg: v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0 };
-  }).filter(x => x.avg > 0).sort((a, b) => b.avg - a.avg);
-  const best  = crA[0];
-  const worst = crA[crA.length - 1];
+  /* ── Core metrics ── */
+  const avg       = colAvg(curColId, curMonth) || 0;
+  const allMonths = availMonths();
+  const prevMonth = allMonths[1] || '';
+  const prevAvg   = prevMonth ? (colAvg(curColId, prevMonth) || 0) : 0;
+  const diff      = avg && prevAvg ? +(avg - prevAvg).toFixed(2) : null;
+  const trendArrow = diff === null ? '—' : diff > 0 ? `↑ +${diff}` : `↓ ${Math.abs(diff)}`;
+  const entries   = countSc(curColId, curMonth);
+  const crit      = getActiveCr(curColId);
+  const rank      = rankOf(curColId, curMonth);
+  const total     = db.colleagues.filter(co => !co.hidden).length || db.colleagues.length;
+  const con       = consistency(curColId, curMonth);
+  const br        = burnoutRisk(curColId, curMonth);
+  const ta        = teamAvgVal(curMonth);
+  const vsTm      = avg && ta ? ((avg >= ta ? '+' : '') + (avg - ta).toFixed(2)) : '—';
+  const allS      = allScoresArr(curColId, curMonth);
+  const perfect   = allS.filter(s => s === 10).length;
+  const streak    = typeof streakOf === 'function' ? streakOf(curColId, curMonth) : 0;
+  const mLabel    = periodLabel(curMonth);
 
-  /* كل المعايير مرتبة (نفس الموقع) */
-  const crLines = crit.map(cr => {
-    const v = Object.values(scores[cr.id] || {}).filter(e => e.score).map(e => e.score);
-    const a = v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
-    const lbl = a >= 9 ? '🌟' : a >= 8 ? '✅' : a >= 6 ? '🔶' : a > 0 ? '⚠️' : '➖';
-    const name = (cr.nameAr && isAr ? cr.nameAr : cr.name).slice(0, 18);
-    return a > 0 ? `${lbl} ${name}: *${a.toFixed(1)}/10*` : null;
-  }).filter(Boolean).join('\n');
+  /* ── Prediction (last 3 months trend) ── */
+  const m3    = allMonths.slice(0, 3).map(m => colAvg(curColId, m)).filter(Boolean);
+  let predict = null;
+  if (m3.length >= 2) {
+    const delta = m3[0] - m3[1];
+    predict = Math.max(1, Math.min(10, +(m3[0] + delta * 0.5).toFixed(2)));
+  }
 
-  /* ملاحظات الفترة (إيجابية وتحسين) */
+  /* ── Criteria breakdown (accurate) ── */
+  const crData = crit.map(cr => {
+    const res = crAvg(cr.id);
+    const name = (isAr && cr.nameAr ? cr.nameAr : cr.name).slice(0, 20);
+    return { cr, name, avg: res?.avg || 0, count: res?.count || 0 };
+  }).filter(x => x.count > 0).sort((a, b) => b.avg - a.avg);
+
+  const best  = crData[0] || null;
+  const worst = crData[crData.length - 1] || null;
+
+  const crLines = crData.map(x => {
+    const a = x.avg;
+    const bar = a >= 9.5 ? '██████████' : a >= 9 ? '█████████░' : a >= 8.5 ? '████████░░' : a >= 8 ? '███████░░░' : a >= 7 ? '██████░░░░' : a >= 6 ? '█████░░░░░' : '████░░░░░░';
+    const emoji = a >= 9 ? '🌟' : a >= 8 ? '✅' : a >= 6 ? '🔶' : '⚠️';
+    return `${emoji} ${x.name}: *${a.toFixed(1)}* ${bar}`;
+  }).join('\n');
+
+  /* ── Period notes (current period only) ── */
   const periodNotes = [
-    ...(db.notes?.positive || []).filter(n => n.colId === curColId && (!n.month || n.month === curMonth)),
-    ...(db.notes?.negative || []).filter(n => n.colId === curColId && (!n.month || n.month === curMonth))
-  ].sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 3);
-  const notesLines = periodNotes.map(n => {
-    const isPos = (db.notes?.positive || []).some(x => x.ts === n.ts);
-    return `${isPos ? '✅' : '⚠️'} ${n.text.slice(0, 100)}${n.text.length > 100 ? '…' : ''}`;
-  }).join('\n');
+    ...(db.notes?.positive || []).filter(n => n.colId === curColId && n.month === curMonth).map(n => ({ ...n, type: '+' })),
+    ...(db.notes?.negative || []).filter(n => n.colId === curColId && n.month === curMonth).map(n => ({ ...n, type: '-' }))
+  ].sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 4);
 
-  /* خطط التحسين */
-  const pips = (db.settings?.pips || []).filter(p => p.colId === curColId);
-  const activePips  = pips.filter(p => p.status === 'active');
-  const monitorPips = pips.filter(p => p.status === 'monitoring');
-  const pipLines = [...activePips, ...monitorPips].map(p => {
+  const notesLines = periodNotes.length
+    ? periodNotes.map(n => `${n.type === '+' ? '✅' : '⚠️'} ${n.text.slice(0, 120)}${n.text.length > 120 ? '…' : ''}`).join('\n')
+    : '';
+
+  /* ── Active improvement plans ── */
+  const pips = (db.settings?.pips || []).filter(p => p.colId === curColId && (p.status === 'active' || p.status === 'monitoring'));
+  const pipLines = pips.map(p => {
     const daysLeft = p.endDate ? Math.ceil((new Date(p.endDate) - new Date()) / 86400000) : null;
-    const st = p.status === 'active' ? '⚡' : '👁';
-    const dl = daysLeft !== null ? (daysLeft > 0 ? ` — ${daysLeft} يوم متبقي` : ' — متأخرة') : '';
-    return `${st} ${(p.goal || p.reason || '').slice(0, 80)}${dl}`;
+    const st = p.status === 'active' ? '⚡ نشطة' : '👁 مراقبة';
+    const dl = daysLeft !== null ? (daysLeft > 0 ? ` · ${daysLeft} يوم` : ' · ⏰ متأخرة') : '';
+    return `${st}: ${(p.goal || p.reason || '').slice(0, 90)}${dl}`;
   }).join('\n');
 
-  const avgEmoji = avg >= 9 ? '🌟' : avg >= 8 ? '✅' : avg >= 6 ? '🔶' : avg > 0 ? '⚠️' : '➖';
+  /* ── Burnout label ── */
+  const brLbl = br >= 70 ? '🔴 مرتفع' : br >= 40 ? '🟡 متوسط' : '🟢 منخفض';
+  const avgEmoji = avg >= 9.5 ? '🌟' : avg >= 9 ? '⭐' : avg >= 8 ? '✅' : avg >= 6 ? '🔶' : avg > 0 ? '⚠️' : '➖';
 
-  const msg =
-`📊 *تقرير الأداء — RxPerform Pro*
-━━━━━━━━━━━━━━━━━━━━━
-👤 *${c.name}*${c.role ? ' · ' + c.role : ''}${c.department ? ' · ' + c.department : ''}
-📅 *الفترة:* ${mLabel}
-━━━━━━━━━━━━━━━━━━━━━
-${avgEmoji} *متوسط الأداء:* ${avg ? avg.toFixed(2) : '—'}/10
-📈 *الاتجاه:* ${trendTxt}${prevAvg ? ' (الفترة السابقة: ' + prevAvg.toFixed(1) + ')' : ''}
+  /* ── Build message ── */
+  const sep = '─────────────────────';
+
+  const msg = [
+`📊 *تقرير الأداء الشهري*
+_RxPerform Pro_
+${sep}`,
+
+`👤 *${c.name}*${c.role ? '\n🏷 ' + c.role : ''}
+📅 *الفترة:* ${mLabel}`,
+
+`${sep}
+${avgEmoji} *متوسط الأداء:* *${avg ? avg.toFixed(2) : '—'}/10*
+📈 *الاتجاه:* ${trendArrow}${prevAvg ? '  _(السابقة: ' + prevAvg.toFixed(1) + ')_' : ''}
 🏆 *الترتيب:* #${rank} من ${total}
+👥 *مقارنة بالفريق:* ${vsTm}  _(متوسط: ${ta || '—'})_`,
 
-💪 *الاتساق:* ${con}%
-🔥 *خطر الإرهاق:* ${brLbl} (${br}%)
-👥 *مقارنة بالفريق:* ${vsTm} (متوسط الفريق: ${ta || '—'})
-💯 *درجات 10/10:* ${perfect}
-${streak > 0 ? '🔥 *أيام متتالية:* ' + streak : ''}
-${predict !== null ? '🔮 *التوقع:* ' + predict + '/10 (' + (predict >= avg ? '↑ تحسن متوقع' : '↓ مراجعة مطلوبة') + ')' : ''}
-━━━━━━━━━━━━━━━━━━━━━
+`📅 *أيام مسجلة:* ${entries}
+💪 *ثبات الأداء:* ${con}%
+💯 *درجات كاملة:* ${perfect}${streak > 1 ? '\n🔥 *تسلسل:* ' + streak + ' يوم متتالي' : ''}
+🔥 *خطر الإرهاق:* ${brLbl} (${br}%)${predict !== null ? '\n🔮 *توقع الفترة القادمة:* ' + predict + '/10' : ''}`,
+
+crLines ? `${sep}
 📐 *تفاصيل المعايير:*
-${crLines || '— لا توجد بيانات —'}
-${best && worst && best !== worst ? `\n🏆 *أقوى:* ${isAr && best.cr.nameAr ? best.cr.nameAr : best.cr.name} (${best.avg.toFixed(1)}/10)\n⚠️ *يحتاج تحسين:* ${isAr && worst.cr.nameAr ? worst.cr.nameAr : worst.cr.name} (${worst.avg.toFixed(1)}/10)` : ''}
-${notesLines ? '━━━━━━━━━━━━━━━━━━━━━\n📝 *ملاحظات الفترة:*\n' + notesLines : ''}
-${pipLines ? '━━━━━━━━━━━━━━━━━━━━━\n📋 *خطط التطوير:*\n' + pipLines : ''}
-━━━━━━━━━━━━━━━━━━━━━
-_RxPerform Pro · ${new Date().toLocaleDateString('ar-EG')} · سري_`;
+${crLines}` : '',
+
+(best && worst && best.cr.id !== worst.cr.id) ? `\n🥇 *الأقوى:* ${best.name} (${best.avg.toFixed(1)}/10)\n🎯 *يحتاج تركيز:* ${worst.name} (${worst.avg.toFixed(1)}/10)` : '',
+
+notesLines ? `${sep}
+📝 *ملاحظات الفترة:*
+${notesLines}` : '',
+
+pipLines ? `${sep}
+📋 *خطط التطوير:*
+${pipLines}` : '',
+
+`${sep}
+_${new Date().toLocaleDateString('ar-EG')} · سري وللاستخدام الداخلي فقط_`
+
+  ].filter(Boolean).join('\n\n');
 
   /* ── pre-fill modal ── */
-  /* colleague select */
   const sel = document.getElementById('waColSel');
   if (sel) {
     sel.innerHTML = db.colleagues.map(co =>
@@ -3263,33 +3476,33 @@ _RxPerform Pro · ${new Date().toLocaleDateString('ar-EG')} · سري_`;
     sel.value = curColId;
     _waUpdatePhone(sel);
   }
-  /* message preview */
   const msgArea = document.getElementById('waMsgArea');
   if (msgArea) msgArea.value = msg;
 
   openModal('waModal');
 }
 
-/* ── helpers ── */
 function _waUpdatePhone(sel) {
   const colId = sel.value;
   const c = db && db.colleagues.find(x => x.id === colId);
   const phoneEl = document.getElementById('waPhoneInp');
   if (phoneEl) phoneEl.value = c && c.phone ? c.phone : '';
-  /* regenerate message for chosen colleague */
-  if (colId !== curColId) {
-    /* minimal fast re-gen for different colleague */
-    const avg2  = colAvg(colId, curMonth) || 0;
-    const mLbl2 = typeof periodLabel === 'function' ? periodLabel(curMonth) : curMonth;
-    const ta    = document.getElementById('waMsgArea');
-    if (ta && avg2) {
-      const existing = ta.value;
-      /* just update the avg line so user can see */
-      ta.value = existing.replace(
-        /متوسط الأداء:\*[^\n]*/,
-        `متوسط الأداء:* ${avg2.toFixed(2)}/10`
-      );
+  // full re-gen for the selected colleague
+  if (colId && colId !== curColId) {
+    const savedColId = curColId;
+    curColId = colId;
+    const msgArea = document.getElementById('waMsgArea');
+    if (msgArea) {
+      // re-run doWhatsApp logic inline for the new colleague
+      const avg2 = colAvg(colId, curMonth) || 0;
+      if (avg2) {
+        // trigger full regen
+        const prevMsg = msgArea.value;
+        doWhatsApp();
+        // restore colleague selection
+      }
     }
+    curColId = savedColId;
   }
 }
 
@@ -8597,6 +8810,413 @@ window.bsmSaveAll = function(){
 };
 
 })(); // end transfer IIFE
+
+/* ═══════════════════════════════════════════════════════════════
+   أخطاء الشهر — ERRORS MODULE
+═══════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function ensureErrDb(){
+  if(!db.errors) db.errors={};
+  if(!db.errors.employees) db.errors.employees=[];
+  if(!db.errors.records) db.errors.records={};
+}
+
+function getErrPeriodKey(){
+  const now=new Date();
+  const c=typeof cs==='function'?cs():(db.settings?.cycleStart||16);
+  const y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
+  if(d>=c) return `${y}-${String(m).padStart(2,'0')}`;
+  const prev=m===1?12:m-1,py=m===1?y-1:y;
+  return `${py}-${String(prev).padStart(2,'0')}`;
+}
+
+function getErrPeriodLabel(key){
+  if(!key) return '—';
+  return typeof periodLabel==='function'?periodLabel(key):key;
+}
+
+function allErrPeriods(){
+  ensureErrDb();
+  const cur=getErrPeriodKey();
+  const keys=new Set([cur]);
+  Object.keys(db.errors.records||{}).forEach(k=>keys.add(k));
+  return [...keys].sort((a,b)=>b.localeCompare(a));
+}
+
+function getActivePeriodKey(){
+  return window._errActivePeriod||getErrPeriodKey();
+}
+
+function getPeriodRecords(periodKey){
+  ensureErrDb();
+  return Object.values(db.errors.records[periodKey]||{})
+    .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+}
+
+window.openErrFullPage=function(){
+  const fp=document.getElementById('errFullPage');
+  if(fp){fp.classList.add('open');fp.scrollTop=0;}
+  document.body.classList.add('errors-active');
+  renderErrTab();
+};
+
+window.closeErrFullPage=function(){
+  const fp=document.getElementById('errFullPage');
+  if(fp) fp.classList.remove('open');
+  document.body.classList.remove('errors-active');
+};
+
+window.renderErrTab=function(){
+  ensureErrDb();
+  const cur=getErrPeriodKey();
+  const container=document.getElementById('errFullPageContent');
+  if(!container) return;
+
+  // Build period options
+  const periods=allErrPeriods();
+  const activePeriod=(function(){
+    // use last selected or current
+    return window._errActivePeriod&&periods.includes(window._errActivePeriod)?window._errActivePeriod:cur;
+  })();
+  window._errActivePeriod=activePeriod;
+
+  const periodOpts=periods.map(p=>`<option value="${p}"${p===activePeriod?' selected':''}>${getErrPeriodLabel(p)}${p===cur?' (الحالية)':''}</option>`).join('');
+
+  const records=getPeriodRecords(activePeriod);
+  const empMap={};(db.errors.employees||[]).forEach(e=>empMap[e.id]=e.name);
+  const reported=records.filter(r=>r.status==='reported').length;
+  const unreported=records.filter(r=>r.status==='unreported').length;
+  const discuss=records.filter(r=>r.discuss).length;
+
+  const tableRows=records.length?records.map((r,i)=>{
+    const sc=r.status==='reported'
+      ?{label:'تم التبليغ',bg:'rgba(0,200,150,0.1)',border:'rgba(0,200,150,0.3)',color:'var(--emerald)'}
+      :{label:'لم يتم التبليغ',bg:'rgba(255,77,109,0.1)',border:'rgba(255,77,109,0.3)',color:'var(--rose)'};
+    const imgCount=(r.images||[]).length;
+    const dateStr=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{day:'2-digit',month:'short'}):'—';
+    const empName=empMap[r.empId]||'—';
+    const shortDetails=r.details?(r.details.length>40?r.details.slice(0,40)+'…':r.details):'—';
+    return `<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;text-align:center">${i+1}</td>
+      <td style="padding:10px 8px;font-weight:700;color:var(--white);white-space:nowrap">${empName}</td>
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;white-space:nowrap">${dateStr}</td>
+      <td style="padding:10px 8px;color:var(--text);word-break:break-word;line-height:1.55">${shortDetails}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--cyan);font-size:12px;font-weight:700">${imgCount?'📷 '+imgCount:'—'}</td>
+      <td style="padding:10px 8px;text-align:center"><span style="padding:3px 8px;border-radius:20px;font-size:9.5px;font-weight:700;background:${sc.bg};border:1px solid ${sc.border};color:${sc.color};white-space:nowrap;display:inline-block">${sc.label}</span></td>
+      <td style="padding:10px 8px;text-align:center">${r.discuss?'<span style="font-size:14px">⚡</span>':'—'}</td>
+      <td style="padding:10px 8px;text-align:center"><button onclick="viewErrRecord('${r.id}')" style="padding:4px 10px;border-radius:7px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">عرض</button></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>`;
+
+  container.innerHTML=`
+    <!-- Employee Management -->
+    <div style="padding:14px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          إدارة الموظفين
+        </div>
+        <button onclick="openErrEmpModal()" style="padding:6px 14px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">+ إضافة موظف</button>
+      </div>
+      <div id="errEmpChips" style="display:flex;flex-wrap:wrap;gap:7px">${_buildEmpChipsHtml()}</div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.25);border-top:2px solid var(--emerald)">
+        <div style="font-size:9px;font-weight:700;color:var(--emerald);letter-spacing:.5px;margin-bottom:6px">تم التبليغ</div>
+        <div style="font-size:24px;font-weight:900;color:var(--emerald);font-family:var(--mono)">${reported}</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.25);border-top:2px solid var(--rose)">
+        <div style="font-size:9px;font-weight:700;color:var(--rose);letter-spacing:.5px;margin-bottom:6px">لم يتم التبليغ</div>
+        <div style="font-size:24px;font-weight:900;color:var(--rose);font-family:var(--mono)">${unreported}</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(255,179,64,0.07);border:1px solid rgba(255,179,64,0.25);border-top:2px solid var(--amber)">
+        <div style="font-size:9px;font-weight:700;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">تحتاج مناقشة</div>
+        <div style="font-size:24px;font-weight:900;color:var(--amber);font-family:var(--mono)">${discuss}</div>
+      </div>
+    </div>
+
+    <!-- Controls row -->
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select onchange="window._errActivePeriod=this.value;renderErrTab()" style="flex:1;background:var(--glass);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:11px;font-weight:600;padding:8px 10px;cursor:pointer;outline:none">${periodOpts}</select>
+      <button onclick="printErrReport()" style="display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">🖨 طباعة</button>
+      <button onclick="openAddErrModal()" style="padding:8px 16px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;color:#000;font-size:11px;font-weight:800;cursor:pointer">+ إضافة خطأ</button>
+    </div>
+
+    <!-- Table -->
+    <div style="border-radius:14px;border:1px solid var(--border);background:var(--glass);overflow:hidden">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table style="width:100%;min-width:420px;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,0.03)">
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">#</th>
+              <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">الموظف</th>
+              <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">التاريخ</th>
+              <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">تفاصيل الخطأ</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">📷</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">الحالة</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">نقاش</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">عرض</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+};
+
+function _buildEmpChipsHtml(){
+  const emps=db.errors.employees||[];
+  if(!emps.length) return '<div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد موظفون بعد. أضف موظفاً للبدء.</div>';
+  return emps.map(e=>`
+    <div style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;background:var(--glass2);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--white)">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);flex-shrink:0"></span>
+      ${e.name}
+      <button onclick="openErrEmpModal('${e.id}')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:0 2px;line-height:1">✏</button>
+      <button onclick="deleteErrEmp('${e.id}')" style="background:none;border:none;color:var(--rose);cursor:pointer;font-size:13px;padding:0 2px;line-height:1">✕</button>
+    </div>`).join('');
+}
+
+function renderErrEmpChips(){
+  const container=document.getElementById('errEmpChips');
+  if(container) container.innerHTML=_buildEmpChipsHtml();
+}
+
+function renderErrDashCards(periodKey){
+  const records=getPeriodRecords(periodKey);
+  const c1=document.getElementById('errCard1');
+  const c2=document.getElementById('errCard2');
+  const c3=document.getElementById('errCard3');
+  if(c1) c1.textContent=records.filter(r=>r.status==='reported').length;
+  if(c2) c2.textContent=records.filter(r=>r.status==='unreported').length;
+  if(c3) c3.textContent=records.filter(r=>r.discuss).length;
+}
+
+function renderErrTable(periodKey){
+  const tbody=document.getElementById('errTableBody');
+  if(!tbody) return;
+  const records=getPeriodRecords(periodKey);
+  if(!records.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>`;
+    return;
+  }
+  const empMap={};
+  (db.errors.employees||[]).forEach(e=>empMap[e.id]=e.name);
+  tbody.innerHTML=records.map((r,i)=>{
+    const sc=r.status==='reported'
+      ?{label:'تم التبليغ',bg:'rgba(0,200,150,0.1)',border:'rgba(0,200,150,0.3)',color:'var(--emerald)'}
+      :{label:'لم يتم التبليغ',bg:'rgba(255,77,109,0.1)',border:'rgba(255,77,109,0.3)',color:'var(--rose)'};
+    const imgCount=(r.images||[]).length;
+    const dateStr=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{day:'2-digit',month:'short'}):'—';
+    const shortDetails=r.details?(r.details.length>40?r.details.slice(0,40)+'…':r.details):'—';
+    const empName=empMap[r.empId]||'—';
+    return `<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;text-align:center">${i+1}</td>
+      <td style="padding:10px 8px;font-weight:700;color:var(--white);white-space:nowrap">${empName}</td>
+      <td style="padding:10px 8px;color:var(--text2);font-size:11px;white-space:nowrap">${dateStr}</td>
+      <td style="padding:10px 8px;color:var(--text);word-break:break-word;white-space:pre-wrap;line-height:1.55">${shortDetails}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--cyan);font-size:12px;font-weight:700">${imgCount?'📷 '+imgCount:'—'}</td>
+      <td style="padding:10px 8px;text-align:center"><span style="padding:3px 8px;border-radius:20px;font-size:9.5px;font-weight:700;background:${sc.bg};border:1px solid ${sc.border};color:${sc.color};white-space:nowrap;display:inline-block">${sc.label}</span></td>
+      <td style="padding:10px 8px;text-align:center">${r.discuss?'<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:rgba(255,179,64,0.2);border:1px solid rgba(255,179,64,0.4);font-size:11px">⚡</span>':'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+      <td style="padding:10px 8px;text-align:center"><button onclick="viewErrRecord('${r.id}')" style="padding:4px 10px;border-radius:7px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">عرض</button></td>
+    </tr>`;
+  }).join('');
+}
+
+window.openErrEmpModal=function(id){
+  document.getElementById('errEmpEditId').value=id||'';
+  const emp=id?(db.errors.employees||[]).find(e=>e.id===id):null;
+  document.getElementById('errEmpName').value=emp?emp.name:'';
+  openModal('errEmpModal');
+};
+
+window.saveErrEmp=function(){
+  const name=document.getElementById('errEmpName').value.trim();
+  if(!name){toast('أدخل اسم الموظف','#ff4d6d');return;}
+  ensureErrDb();
+  const editId=document.getElementById('errEmpEditId').value;
+  if(editId){const emp=db.errors.employees.find(e=>e.id===editId);if(emp)emp.name=name;}
+  else db.errors.employees.push({id:'emp'+Date.now(),name});
+  Store.save();closeModal('errEmpModal');renderErrTab();populateErrEmpSelect();toast('✅ تم الحفظ');
+};
+
+window.deleteErrEmp=function(id){
+  if(!confirm('حذف هذا الموظف؟'))return;
+  ensureErrDb();
+  db.errors.employees=db.errors.employees.filter(e=>e.id!==id);
+  Store.save();renderErrTab();populateErrEmpSelect();toast('تم الحذف');
+};
+
+function populateErrEmpSelect(){
+  const sel=document.getElementById('errEmpSel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">اختر الموظف…</option>'+(db.errors.employees||[]).map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+}
+
+function compressErrImage(file,cb){
+  const MAX_W=900,MAX_H=900,QUALITY=0.65;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>MAX_W||h>MAX_H){const ratio=Math.min(MAX_W/w,MAX_H/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);cb(canvas.toDataURL('image/jpeg',QUALITY));
+    };img.src=e.target.result;
+  };reader.readAsDataURL(file);
+}
+
+var _errTempImages=[];
+
+window.handleErrImages=function(input){
+  const files=[...input.files];
+  const previews=document.getElementById('errImgPreviews');
+  files.forEach(file=>{
+    compressErrImage(file,compressed=>{
+      _errTempImages.push(compressed);
+      const idx=_errTempImages.length-1;
+      const div=document.createElement('div');
+      div.style.cssText='position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);flex-shrink:0';
+      div.innerHTML=`<img src="${compressed}" style="width:100%;height:100%;object-fit:cover"><button onclick="_errTempImages.splice(${idx},1);this.parentNode.remove()" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:4px;background:rgba(255,77,109,0.9);border:none;color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>`;
+      previews.appendChild(div);
+    });
+  });input.value='';
+};
+
+window.openAddErrModal=function(id){
+  _errTempImages=[];
+  document.getElementById('errImgPreviews').innerHTML='';
+  document.getElementById('errEditId').value=id||'';
+  document.getElementById('errAddModalTitle').textContent=id?'✏️ تعديل الخطأ':'➕ إضافة خطأ جديد';
+  populateErrEmpSelect();
+  const record=id?_findErrRecord(id):null;
+  if(record){
+    document.getElementById('errEmpSel').value=record.empId||'';
+    document.getElementById('errDate').value=record.date||'';
+    document.getElementById('errDetails').value=record.details||'';
+    document.getElementById('errDiscuss').checked=!!record.discuss;
+    const rEl=document.querySelector(`input[name="errStatus"][value="${record.status||'unreported'}"]`);
+    if(rEl)rEl.checked=true;
+    _errTempImages=[...(record.images||[])];
+    const previews=document.getElementById('errImgPreviews');
+    _errTempImages.forEach((src,idx)=>{
+      const div=document.createElement('div');
+      div.style.cssText='position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);flex-shrink:0';
+      div.innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover"><button onclick="_errTempImages.splice(${idx},1);this.parentNode.remove()" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:4px;background:rgba(255,77,109,0.9);border:none;color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>`;
+      previews.appendChild(div);
+    });
+  }else{
+    document.getElementById('errEmpSel').value='';
+    document.getElementById('errDate').value=new Date().toISOString().slice(0,10);
+    document.getElementById('errDetails').value='';
+    document.getElementById('errDiscuss').checked=false;
+    const r=document.querySelector('input[name="errStatus"][value="unreported"]');
+    if(r)r.checked=true;
+  }
+  openModal('errAddModal');
+};
+
+function _findErrRecord(id){
+  for(const pKey of Object.keys(db.errors.records||{})){
+    if(db.errors.records[pKey][id])return db.errors.records[pKey][id];
+  }return null;
+}
+
+window.saveErrRecord=function(){
+  const empId=document.getElementById('errEmpSel').value;
+  const date=document.getElementById('errDate').value;
+  const details=document.getElementById('errDetails').value.trim();
+  const statusEl=document.querySelector('input[name="errStatus"]:checked');
+  if(!empId||!date||!details||!statusEl){toast('يرجى ملء جميع الحقول المطلوبة','#ff4d6d');return;}
+  ensureErrDb();
+  const periodKey=getErrPeriodKey();
+  if(!db.errors.records[periodKey])db.errors.records[periodKey]={};
+  const editId=document.getElementById('errEditId').value;
+  const id=editId||'err'+Date.now();
+  const existing=editId?db.errors.records[periodKey][id]:null;
+  db.errors.records[periodKey][id]={id,empId,date,details,status:statusEl.value,discuss:document.getElementById('errDiscuss').checked,images:[..._errTempImages],createdAt:existing?.createdAt||Date.now()};
+  Store.save();closeModal('errAddModal');renderErrTab();toast('✅ تم حفظ الخطأ');
+};
+
+window.viewErrRecord=function(id){
+  const r=_findErrRecord(id);
+  if(!r){toast('السجل غير موجود','#ff4d6d');return;}
+  const empMap={};(db.errors.employees||[]).forEach(e=>empMap[e.id]=e.name);
+  const sc=r.status==='reported'
+    ?{label:'تم التبليغ',bg:'rgba(0,200,150,0.12)',border:'rgba(0,200,150,0.35)',color:'#00c896'}
+    :{label:'لم يتم التبليغ',bg:'rgba(255,77,109,0.12)',border:'rgba(255,77,109,0.35)',color:'#ff4d6d'};
+  const dateStr=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
+  const images=r.images||[];
+  document.getElementById('errViewContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="padding:12px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:5px">الموظف</div><div style="font-size:14px;font-weight:800;color:var(--white)">${empMap[r.empId]||'—'}</div></div>
+      <div style="padding:12px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:5px">التاريخ</div><div style="font-size:13px;font-weight:700;color:var(--white)">${dateStr}</div></div>
+      <div style="padding:12px 14px;border-radius:10px;background:${sc.bg};border:1px solid ${sc.border}"><div style="font-size:9px;font-weight:700;color:${sc.color};letter-spacing:.5px;margin-bottom:5px">الحالة</div><div style="font-size:13px;font-weight:800;color:${sc.color}">${sc.label}</div></div>
+      <div style="padding:12px 14px;border-radius:10px;background:${r.discuss?'rgba(255,179,64,0.08)':'var(--glass)'};border:1px solid ${r.discuss?'rgba(255,179,64,0.25)':'var(--border)'}"><div style="font-size:9px;font-weight:700;color:${r.discuss?'var(--amber)':'var(--text2)'};letter-spacing:.5px;margin-bottom:5px">مناقشة</div><div style="font-size:13px;font-weight:800;color:${r.discuss?'var(--amber)':'var(--text3)'}">${r.discuss?'⚡ تحتاج مناقشة':'—'}</div></div>
+    </div>
+    <div style="padding:14px;border-radius:10px;background:var(--glass);border:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">تفاصيل الخطأ</div><div style="font-size:13px;color:var(--white);line-height:1.7;white-space:pre-wrap;direction:rtl;text-align:right">${r.details||'—'}</div></div>
+    ${images.length?`<div><div style="font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:10px">المرفقات (${images.length} صورة)</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px">${images.map((src,i)=>`<div style="border-radius:10px;overflow:hidden;border:1px solid var(--border2);cursor:zoom-in;aspect-ratio:4/3" onclick="viewErrImgFull('${r.id}',${i})"><img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`).join('')}</div></div>`:''}`;
+  document.getElementById('errViewEditBtn').dataset.id=id;
+  openModal('errViewModal');
+};
+
+window.editErrFromView=function(){
+  const id=document.getElementById('errViewEditBtn').dataset.id;
+  closeModal('errViewModal');openAddErrModal(id);
+};
+
+window.viewErrImgFull=function(recId,imgIdx){
+  const r=_findErrRecord(recId);if(!r)return;
+  const src=(r.images||[])[imgIdx];if(!src)return;
+  const lb=document.getElementById('txLightbox');const img=document.getElementById('txLightboxImg');
+  if(lb&&img){img.src=src;lb.style.display='flex';}
+};
+
+window.deleteErrRecord=function(id){
+  if(!id){toast('خطأ: لم يتم تحديد السجل','#ff4d6d');return;}
+  if(!confirm('حذف هذا السجل نهائياً؟'))return;
+  ensureErrDb();let found=false;
+  for(const pKey of Object.keys(db.errors.records||{})){
+    if(db.errors.records[pKey][id]){delete db.errors.records[pKey][id];found=true;break;}
+  }
+  Store.save();closeModal('errViewModal');renderErrTab();
+  toast(found?'🗑 تم الحذف':'السجل غير موجود',found?'#ff4d6d':'#ffb340');
+};
+
+window.printErrReport=function(){
+  const periodKey=getActivePeriodKey();
+  const records=getPeriodRecords(periodKey);
+  const empMap={};(db.errors.employees||[]).forEach(e=>empMap[e.id]=e.name);
+  const branchName='مشعل';
+  const adminName=db.settings?.adminDisplayName||'المسؤول';
+  const periodStr=getErrPeriodLabel(periodKey);
+  const now=new Date();
+  const exportDate=now.toLocaleDateString('ar-EG',{day:'2-digit',month:'short',year:'numeric'});
+  const rows=records.map((r,i)=>{
+    const sc=r.status==='reported'?{label:'تم التبليغ',bg:'#dcfce7',color:'#15803d',border:'#86efac'}:{label:'لم يتم التبليغ',bg:'#fee2e2',color:'#b91c1c',border:'#fca5a5'};
+    const dateStr=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('ar-EG',{day:'2-digit',month:'short'}):'—';
+    return `<tr><td style="text-align:center;color:#94a3b8;font-size:10px">${i+1}</td><td style="font-weight:700">${empMap[r.empId]||'—'}</td><td style="white-space:nowrap;color:#475569">${dateStr}</td><td style="text-align:right;direction:rtl;color:#1e293b;line-height:1.6">${r.details||'—'}</td><td style="text-align:center"><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">${sc.label}</span></td><td style="text-align:center;color:${r.discuss?'#b45309':'#cbd5e1'};font-weight:700">${r.discuss?'⚡ نعم':'—'}</td></tr>`;
+  }).join('');
+  const total=records.length,reported=records.filter(r=>r.status==='reported').length,unreported=records.filter(r=>r.status==='unreported').length,discuss=records.filter(r=>r.discuss).length;
+  const html=`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Cairo','Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:28px}@media print{@page{size:A4 landscape;margin:10mm}body{padding:0;background:#f1f5f9}}.header{background:#0f172a;border-radius:12px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.header h1{font-size:18px;color:#fff;margin:0}.header .sub{font-size:10.5px;color:#94a3b8;margin-top:4px}.header .date{font-size:11px;color:#64748b;background:#1e293b;padding:6px 12px;border-radius:8px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}.card{padding:14px 16px;border-radius:10px;background:#fff;border:1px solid #e2e8f0;border-right:4px solid;box-shadow:0 1px 4px rgba(0,0,0,.06)}.card-label{font-size:9px;color:#64748b;margin-bottom:6px;font-weight:700;letter-spacing:.4px}.card-val{font-size:30px;font-weight:900}.table-wrap{background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}table{width:100%;border-collapse:collapse;font-size:11.5px}thead tr{background:#0f172a}th{padding:11px 13px;color:#94a3b8;font-weight:700;text-align:right;font-size:10px;letter-spacing:.3px}tbody tr{border-bottom:1px solid #f1f5f9}tbody tr:nth-child(even){background:#f8fafc}td{padding:10px 13px;color:#0f172a;vertical-align:top;font-weight:500}.footer{margin-top:16px;display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;padding:0 4px}</style></head><body>
+  <div class="header"><div><h1>⚠️ تقرير أخطاء الشهر</h1><div class="sub">الفترة: ${periodStr} · الفرع: ${branchName} · أعده: ${adminName}</div></div><div class="date">${exportDate}</div></div>
+  <div class="cards"><div class="card" style="border-right-color:#0ea5e9"><div class="card-label">إجمالي السجلات</div><div class="card-val" style="color:#0369a1">${total}</div></div><div class="card" style="border-right-color:#16a34a"><div class="card-label">تم التبليغ</div><div class="card-val" style="color:#15803d">${reported}</div></div><div class="card" style="border-right-color:#dc2626"><div class="card-label">لم يتم التبليغ</div><div class="card-val" style="color:#b91c1c">${unreported}</div></div><div class="card" style="border-right-color:#d97706"><div class="card-label">تحتاج مناقشة</div><div class="card-val" style="color:#b45309">${discuss}</div></div></div>
+  <div class="table-wrap"><table><thead><tr><th style="text-align:center;width:36px">#</th><th>الموظف</th><th>التاريخ</th><th>تفاصيل الخطأ</th><th style="text-align:center">الحالة</th><th style="text-align:center">مناقشة</th></tr></thead><tbody>${rows||'<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">لا توجد سجلات</td></tr>'}</tbody></table></div>
+  <div class="footer"><span>تم إنشاؤه بواسطة RxPerform Pro</span><span>${exportDate}</span></div>
+  </body></html>`;
+  let f=document.getElementById('rxp-err-print-frame');
+  if(!f){f=document.createElement('iframe');f.id='rxp-err-print-frame';f.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;border:none;opacity:0;pointer-events:none;z-index:-9999';document.body.appendChild(f);}
+  f.srcdoc=html;f.onload=()=>setTimeout(()=>f.contentWindow.print(),500);
+  toast('🖨 جاري تحضير التقرير…','#00d4ff');
+};
+
+ensureErrDb();
+
+})(); // end errors module
 
 </script>
 
