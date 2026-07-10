@@ -2537,13 +2537,32 @@ function renderShiftTab(){populatePrintPeriodDropdown();
     return;
   }
 
-  /* ── GROUP by activity type, then within each group sort by date/time ── */
-  /* Groups in SHIFT_ACTS order, then 'other' custom ones */
+  /* GROUP by activity type — multi-type gets its own combined group key */
   const groups={};
   SHIFT_ACTS.forEach(a=>groups[a.id]=[]);
+  const combinedGroups={}; // key = sorted type ids joined, value = {def, rows}
+
   allActs.forEach(a=>{
-    const key=groups[a.id]!==undefined?a.id:'other';
-    groups[key].push(a);
+    const types = a.types && a.types.length > 0 ? a.types : [a.id];
+    if(types.length === 1){
+      // Single type → goes to its own group
+      const key = groups[types[0]] !== undefined ? types[0] : 'other';
+      groups[key].push(a);
+    } else {
+      // Multi-type → goes to a combined group
+      const combinedKey = [...types].sort().join('+');
+      if(!combinedGroups[combinedKey]){
+        // Build combined label and color
+        const defs = types.map(tid => SHIFT_ACTS.find(x=>x.id===tid)).filter(Boolean);
+        combinedGroups[combinedKey] = {
+          icon: defs.map(d=>d.icon).join(''),
+          label: defs.map(d=>d.label).join(' + '),
+          color: defs[0]?.color || '#94a3b8',
+          rows: []
+        };
+      }
+      combinedGroups[combinedKey].rows.push(a);
+    }
   });
 
   /* Build table HTML */
@@ -2615,6 +2634,43 @@ function renderShiftTab(){populatePrintPeriodDropdown();
   });
 
   tableHTML+='</tbody></table>';
+
+  // Render combined multi-type groups
+  if(Object.keys(combinedGroups).length){
+    tableHTML+='<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:2px">';
+    Object.values(combinedGroups).forEach(grp=>{
+      let groupTotal=0;
+      grp.rows.forEach(a=>{
+        const s=typeof a.start==='number'?a.start:new Date(a.start).getTime();
+        const e=typeof a.end==='number'?a.end:new Date(a.end).getTime();
+        if(e>s)groupTotal+=Math.floor((e-s)/1000);
+      });
+      tableHTML+=`<tr style="background:${grp.color}18;border-top:2px solid ${grp.color}40">
+        <td colspan="5" style="padding:8px 12px;font-weight:800;font-size:13px;color:${grp.color}">${grp.icon} ${grp.label}</td>
+        <td colspan="2" style="padding:8px 12px;text-align:left;font-weight:800;color:${grp.color};white-space:nowrap;font-size:13px">إجمالي: ${fmtDur(groupTotal)}</td>
+      </tr>`;
+      grp.rows.forEach((a,i)=>{
+        const sMs=typeof a.start==='number'?a.start:new Date(a.start).getTime();
+        const eMs=typeof a.end==='number'?a.end:new Date(a.end).getTime();
+        const dur=eMs>sMs?Math.floor((eMs-sMs)/1000):0;
+        tableHTML+=`<tr style="border-bottom:1px solid var(--border);background:${i%2===0?'transparent':'var(--bg3)'}">
+          <td style="padding:8px 12px;font-size:11px;color:var(--text2)">${a.desc||'—'}</td>
+          <td style="padding:8px 8px;text-align:center;color:var(--text2);white-space:nowrap">${a._date}</td>
+          <td style="padding:8px 8px;text-align:center;font-weight:600;white-space:nowrap">${a.startFmt||'—'}</td>
+          <td style="padding:8px 8px;text-align:center;font-weight:600;white-space:nowrap">${a.endFmt||'—'}</td>
+          <td style="padding:8px 8px;text-align:center;font-weight:800;color:${grp.color};white-space:nowrap">${dur?fmtDur(dur):'—'}</td>
+          <td style="padding:8px 8px;text-align:center;color:var(--text2);font-size:11px">${a.note||''}</td>
+          <td style="padding:8px 4px;text-align:center">
+            <button onclick="deleteShiftActivity(${a.start||0})" title="حذف"
+              style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;line-height:1"
+              onmouseover="this.style.color='#ff4d6d'" onmouseout="this.style.color='var(--text2)'">✕</button>
+          </td>
+        </tr>`;
+      });
+    });
+    tableHTML+='</table>';
+  }
+
   tableEl.innerHTML=tableHTML;
 }
 
@@ -2865,7 +2921,39 @@ function renderCompareContent(){
 /* ══════════════════════════════════════
    SETTINGS + MANAGERS
 ══════════════════════════════════════ */
-function openSettings(){if(role!=='admin'){toast(t('viewer_title'));return;}document.getElementById('settingsCycleStart').value=db.settings?.cycleStart||16;document.getElementById('settingsAdminName').value=db.settings?.adminDisplayName||'';document.getElementById('settingsShiftLimit').value=db.settings?.shiftLimit||8;openModal('settingsModal');}
+function migrateOldActivities(){
+  if(!db.shifts){ toast('لا توجد أنشطة للترحيل','#ffb340'); return; }
+  let count=0;
+  Object.values(db.shifts).forEach(sh=>{
+    (sh.history||[]).forEach(day=>{
+      (day.activities||[]).forEach(act=>{
+        // Add types array if missing
+        if(!act.types){
+          act.types = [act.id];
+          count++;
+        }
+        // Add label if missing
+        if(!act.label){
+          const def = SHIFT_ACTS.find(a=>a.id===act.id);
+          act.label = def ? def.label : (act.desc||act.id);
+          act.icon  = def ? def.icon  : '📌';
+        }
+      });
+    });
+  });
+  if(count===0){ toast('✅ كل الأنشطة محدّثة بالفعل','#00c896'); return; }
+  Store.save();
+  toast('✅ تم ترحيل '+count+' نشاط بنجاح','#00c896');
+}
+
+function openSettings(){
+  if(role!=='admin'){toast(t('viewer_title'));return;}
+  document.getElementById('settingsCycleStart').value=db.settings?.cycleStart||16;
+  document.getElementById('settingsAdminName').value=db.settings?.adminDisplayName||'';
+  if(document.getElementById('settingsBranchName')) document.getElementById('settingsBranchName').value=db.settings?.branchName||'';
+  document.getElementById('settingsShiftLimit').value=db.settings?.shiftLimit||8;
+  openModal('settingsModal');
+}
 function saveSettings(){const c=+document.getElementById('settingsCycleStart').value,n=document.getElementById('settingsAdminName').value.trim(),pw=document.getElementById('settingsPassword').value,sl=+document.getElementById('settingsShiftLimit').value;if(!isNaN(c)&&c>=1&&c<=28)db.settings.cycleStart=c;if(n)db.settings.adminDisplayName=n;if(pw)localStorage.setItem('rxp_admin_pw',pw);if(!isNaN(sl))db.settings.shiftLimit=sl;closeModal('settingsModal');Store.save();updateTopbar();if(curColId)renderWorkspace();toast('✅ '+t('save'));}
 let _colMgrTab = 'active';
 
@@ -9542,7 +9630,7 @@ ensureErrDb();
 </div>
 
 
-<div class="modal-overlay" id="settingsModal"><div class="modal-box"><div class="modal-title">⚙ <span data-i18n="settings">Settings</span></div><div class="form-group"><label class="form-label" data-i18n="cycle_start">Cycle Start Day</label><input class="form-input" type="number" id="settingsCycleStart" min="1" max="28" value="16"></div><div class="form-group"><label class="form-label" data-i18n="admin_name">Admin Display Name</label><input class="form-input" type="text" id="settingsAdminName"></div><div class="form-group"><label class="form-label" data-i18n="new_password">New Password</label><input class="form-input" type="password" id="settingsPassword" placeholder="Leave blank to keep"></div><div class="form-group"><label class="form-label">Shift Duration Limit (hours)</label><input class="form-input" type="number" id="settingsShiftLimit" min="4" max="16" value="8"></div><div class="form-group"><label class="form-label">🗜 صور الفواتير</label><button class="m-btn" type="button" onclick="compressAllTxImages()" style="width:100%;justify-content:center">ضغط كل صور الفواتير المخزّنة الآن</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يقلل حجم الصور القديمة الكبيرة لحل مشاكل فشل الحفظ</div></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('settingsModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveSettings()" data-i18n="save">Save</button></div></div></div>
+<div class="modal-overlay" id="settingsModal"><div class="modal-box"><div class="modal-title">⚙ <span data-i18n="settings">Settings</span></div><div class="form-group"><label class="form-label" data-i18n="cycle_start">Cycle Start Day</label><input class="form-input" type="number" id="settingsCycleStart" min="1" max="28" value="16"></div><div class="form-group"><label class="form-label" data-i18n="admin_name">Admin Display Name</label><input class="form-input" type="text" id="settingsAdminName"></div><div class="form-group"><label class="form-label" data-i18n="new_password">New Password</label><input class="form-input" type="password" id="settingsPassword" placeholder="Leave blank to keep"></div><div class="form-group"><label class="form-label">Shift Duration Limit (hours)</label><input class="form-input" type="number" id="settingsShiftLimit" min="4" max="16" value="8"></div><div class="form-group"><label class="form-label">🔄 ترحيل الأنشطة القديمة</label><button class="m-btn" type="button" onclick="migrateOldActivities()" style="width:100%;justify-content:center">تحديث الأنشطة القديمة لدعم التعدد</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يحول الأنشطة القديمة لتدعم اختيار أكثر من نوع — آمن تماماً ولا يمسح أي بيانات</div></div><button class="m-btn" type="button" onclick="compressAllTxImages()" style="width:100%;justify-content:center">ضغط كل صور الفواتير المخزّنة الآن</button><div style="font-size:10px;color:var(--text2);margin-top:4px">يقلل حجم الصور القديمة الكبيرة لحل مشاكل فشل الحفظ</div></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('settingsModal')" data-i18n="cancel">Cancel</button><button class="btn btn-primary" onclick="saveSettings()" data-i18n="save">Save</button></div></div></div>
 <!-- ═══ COLLEAGUE MANAGER ═══ -->
 <div class="modal-overlay" id="colManagerModal">
 <div class="modal-box" style="max-width:640px;max-height:90vh;display:flex;flex-direction:column">
