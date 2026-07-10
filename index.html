@@ -83,6 +83,9 @@ body.theme-rose{--cyan:#f43f5e;--cyan2:#e11d48;--cyan3:rgba(244,63,94,0.15);--em
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body.errors-active{overflow:hidden!important}
+/* Archived read-only mode — block all edits */
+body.archived-view-mode .matrix-cell{pointer-events:none!important;cursor:default!important}
+body.archived-view-mode .m-btn,.archived-view-mode .fab-main,.archived-view-mode .hero-actions button{opacity:0.3!important;pointer-events:none!important}
 #errFullPage{display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;flex-direction:column}
 #errFullPage.open{display:flex}
 @media(min-width:901px){
@@ -1258,6 +1261,32 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
   <div id="errFullPageContent" style="padding:14px;display:flex;flex-direction:column;gap:14px;flex:1"></div>
 </div>
 
+<!-- ARCHIVED COLLEAGUE VIEW MODAL -->
+<div class="modal-overlay" id="archivedColModal" style="z-index:10003">
+  <div class="modal-box" style="max-width:500px;padding:0;overflow:hidden">
+    <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);background:rgba(255,179,64,0.04);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">📦</span>
+        <div>
+          <div id="archivedColName" style="font-size:15px;font-weight:800;color:var(--white)"></div>
+          <div id="archivedColMeta" style="font-size:11px;color:var(--amber);margin-top:2px"></div>
+        </div>
+      </div>
+      <button onclick="closeModal('archivedColModal')" style="width:30px;height:30px;border-radius:8px;background:var(--glass);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="padding:16px 22px;display:flex;flex-direction:column;gap:12px">
+      <div style="padding:12px;border-radius:10px;background:rgba(255,179,64,0.07);border:1px solid rgba(255,179,64,0.2);font-size:12px;color:var(--amber)">
+        ⚠️ هذا الزميل مؤرشف — العرض فقط، لا يمكن إجراء أي تعديلات
+      </div>
+      <div id="archivedColStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="viewArchivedPerf()" style="flex:1;padding:10px;border-radius:9px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:12px;font-weight:700;cursor:pointer">📊 عرض التقييمات السابقة</button>
+        <button onclick="closeModal('archivedColModal');openColleagueManager('archived')" style="flex:1;padding:10px;border-radius:9px;background:var(--glass);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">⚙️ إدارة الأرشيف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app -->
 
 <!-- CMD PALETTE -->
@@ -1851,7 +1880,7 @@ function renderTabs(){
       tab.title='مؤرشف — '+col.name+(col.leaveDate?' ('+col.leaveDate+')':'');
       tab.innerHTML=`<div class="col-tab-ava" style="background:${col.color}22;color:${col.color}">${ini(colName(col))}</div><span class="col-tab-name">${colName(col)}</span><span style="font-size:9px;color:var(--amber);padding:1px 5px;border-radius:4px;background:rgba(255,179,64,0.1)">📦</span>`;
       // Clicking archived tab opens the colleague manager to unarchive, not the workspace
-      tab.addEventListener('click',()=>{if(typeof openColleagueManager==='function')openColleagueManager('archived');});
+      tab.addEventListener('click',()=>openArchivedColView(col.id));
       c.appendChild(tab);
     });
   }
@@ -1864,6 +1893,89 @@ function selectTab(id){
   document.getElementById('execDashboard').style.display='none';
   document.getElementById('workspace').style.display='flex';
   renderWorkspace();
+}
+
+var _archivedViewId=null;
+
+function openArchivedColView(colId){
+  const col=db.colleagues.find(x=>x.id===colId);
+  if(!col) return;
+  _archivedViewId=colId;
+  document.getElementById('archivedColName').textContent=col.name+(col.nameAr?' / '+col.nameAr:'');
+  const archDate=col.archivedAt?new Date(col.archivedAt).toLocaleDateString('ar-EG',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  document.getElementById('archivedColMeta').textContent='📦 مؤرشف منذ '+archDate+(col.leaveDate?' · مغادرة: '+col.leaveDate:'');
+
+  // Stats across all periods
+  const months=availMonths().filter(m=>{
+    const sc=db.scores?.[colId]?.[m];
+    return sc&&Object.keys(sc).length>0;
+  });
+  const avgs=months.map(m=>colAvg(colId,m)).filter(Boolean);
+  const overallAvg=avgs.length?+(avgs.reduce((s,x)=>s+x,0)/avgs.length).toFixed(2):null;
+  const totalEntries=months.reduce((s,m)=>s+countSc(colId,m),0);
+
+  const statsEl=document.getElementById('archivedColStats');
+  statsEl.innerHTML=[
+    {label:'المتوسط العام',val:overallAvg?overallAvg+'/10':'—',color:'var(--cyan)'},
+    {label:'الفترات',val:months.length,color:'var(--text)'},
+    {label:'إجمالي التقييمات',val:totalEntries,color:'var(--text)'},
+  ].map(s=>`<div style="padding:10px;border-radius:9px;background:var(--glass);border:1px solid var(--border);text-align:center">
+    <div style="font-size:18px;font-weight:900;color:${s.color};font-family:var(--mono)">${s.val}</div>
+    <div style="font-size:9.5px;color:var(--text2);margin-top:3px">${s.label}</div>
+  </div>`).join('');
+
+  openModal('archivedColModal');
+}
+
+function viewArchivedPerf(){
+  const col=db.colleagues.find(x=>x.id===_archivedViewId);
+  if(!col) return;
+  closeModal('archivedColModal');
+  // Open workspace in read-only mode for archived colleague
+  const prevCurColId=curColId;
+  curColId=_archivedViewId;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('execDashboard').style.display='none';
+  document.getElementById('workspace').style.display='flex';
+  renderWorkspace();
+  // Add read-only banner
+  const existing=document.getElementById('archivedReadOnlyBanner');
+  if(existing) existing.remove();
+  const banner=document.createElement('div');
+  banner.id='archivedReadOnlyBanner';
+  banner.style.cssText='position:sticky;top:0;z-index:500;background:rgba(180,130,0,0.18);border-bottom:1px solid rgba(255,179,64,0.4);padding:7px 16px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(10px);flex-shrink:0';
+  banner.innerHTML=`<span style="font-size:12px;font-weight:700;color:var(--amber)">📦 عرض أرشيف: ${col.name} — للقراءة فقط</span>
+    <button onclick="exitArchivedView()" style="padding:4px 12px;border-radius:7px;background:rgba(255,179,64,0.2);border:1px solid rgba(255,179,64,0.4);color:var(--amber);font-size:11px;font-weight:700;cursor:pointer">← خروج</button>`;
+  const workspace=document.getElementById('workspace');
+  if(workspace) workspace.insertBefore(banner, workspace.firstChild);
+  else document.body.appendChild(banner);
+  // Block all edit interactions
+  document.body.classList.add('archived-view-mode');
+  window._prevColId=prevCurColId;
+}
+
+// ── Archived view guard — call at top of any edit function ──────
+function _guardArchived(){
+  if(document.body.classList.contains('archived-view-mode')){
+    toast('📦 عرض أرشيف فقط — لا يمكن التعديل','#ffb340');
+    return true;
+  }
+  return false;
+}
+
+function exitArchivedView(){
+  const banner=document.getElementById('archivedReadOnlyBanner');
+  if(banner) banner.remove();
+  document.body.classList.remove('archived-view-mode');
+  curColId=window._prevColId||null;
+  if(curColId){
+    renderTabs();
+    renderWorkspace();
+  } else {
+    document.getElementById('workspace').style.display='none';
+    document.getElementById('emptyState').style.display='flex';
+    renderTabs();
+  }
 }
 function closeTab(id,e){if(e)e.stopPropagation();if(curColId===id){const others=db.colleagues.filter(x=>x.id!==id);curColId=others.length?others[0].id:null;if(!curColId){document.getElementById('workspace').style.display='none';document.getElementById('emptyState').style.display='flex';}}renderTabs();if(curColId)renderWorkspace();}
 function openColPicker(){}
@@ -1992,6 +2104,7 @@ function showLockedDayMsg(lkSt){
 }
 function openDayStatusModal(day){
   if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
+  if(_guardArchived()) return;
   const currentSt=getDayLockStatus(curColId,curMonth,day);
   const stLabels={busy:'⏳ مشغول',col_off:'🏖 إجازة (زميل)',my_off:'🌴 إجازتي'};
   document.getElementById('dayStatusDay').textContent='اليوم '+day+' — '+fmtMonth(curMonth);
@@ -2049,6 +2162,7 @@ function handleMatrixKey(e,crId,day,ri,ci){
 ══════════════════════════════════════ */
 function openScoreModal(crId,day){
   if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
+  if(_guardArchived()) return;
   // Block if day is locked
   const dayLock=getDayLockStatus(curColId,curMonth,day);
   if(dayLock){
@@ -2110,6 +2224,7 @@ function clearScore(){if(!_pendingScore)return;snapshotUndo();const{colId,crId,d
    BULK ENTRY
 ══════════════════════════════════════ */
 function openBulkEntry(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}
+  if(_guardArchived()) return;
   const crit=getActiveCr(curColId);
   // criteria selector removed - applies to all criteria
   // Build day options from period
@@ -2563,7 +2678,7 @@ function renderNotes(){
   all.sort((a,b)=>(b.ts||0)-(a.ts||0));
   document.getElementById('notesList').innerHTML=all.length?all.map(n=>{const col=db.colleagues.find(x=>x.id===n.colId);const color=n.type==='pos'?'var(--emerald)':'var(--rose)';const pc=n.priority==='critical'?'var(--rose)':n.priority==='high'?'var(--amber)':'var(--text2)';return`<div class="note-card ${n.type}"><div class="note-ava" style="background:${col?col.color+'22':'rgba(255,255,255,0.05)'};color:${col?col.color:'var(--text)'}">${col?ini(colName(col)):'👥'}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;color:${col?col.color:'var(--text)'}">${col?colName(col):t('all')}</span><span class="note-type-badge" style="background:${color}22;color:${color}">${n.type==='pos'?'✅':' ⚠'}</span>${n.priority&&n.priority!=='normal'?`<span class="note-type-badge" style="background:${pc}22;color:${pc}">${n.priority==='critical'?'🔥':'⭐'}</span>`:''}</div><div class="note-text">${n.text}</div><div class="note-meta">${n.date||''}</div></div>${role==='admin'?`<button onclick="deleteNote('${n.type}',${n.ts})" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:3px;flex-shrink:0" title="Delete">🗑</button>`:''}</div>`;}).join(''):`<div style="color:var(--text2);text-align:center;padding:40px 0;font-size:13px">${t('no_data')}</div>`;}
 function deleteNote(type,ts){if(!confirm(t('delete')+'?'))return;snapshotUndo();['positive','negative'].forEach(function(k){db.notes[k]=(db.notes[k]||[]).filter(function(n){return n.ts!=ts;});});Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));}
-function openAddNote(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}const s=document.getElementById('noteColSel');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');document.getElementById('noteText').value='';document.getElementById('noteDate').value='';openModal('noteModal');}
+function openAddNote(){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}if(_guardArchived())return;const s=document.getElementById('noteColSel');s.innerHTML=`<option value="">${t('all')}</option>`+db.colleagues.map(c=>`<option value="${c.id}" ${c.id===curColId?'selected':''}>${colName(c)}</option>`).join('');document.getElementById('noteText').value='';document.getElementById('noteDate').value='';openModal('noteModal');}
 function saveNote(){const text=document.getElementById('noteText').value.trim();if(!text){toast('Enter a note','#ffb340');return;}const type=document.getElementById('noteType').value,colId=document.getElementById('noteColSel').value||null,date=document.getElementById('noteDate').value,priority=document.getElementById('notePriority').value;const noteMonth=curMonth&&curMonth!=='all'?curMonth:availMonths()[0]||new Date().toISOString().slice(0,7);snapshotUndo();if(!db.notes[type])db.notes[type]=[];db.notes[type].push({colId,text,date,priority,month:noteMonth,ts:Date.now()});closeModal('noteModal');Store.save();renderNotes();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅ '+t('save'));
   if(typeof RxNotifMgr!=='undefined'){const nc=colId&&db.colleagues.find(x=>x.id===colId);if(nc)RxNotifMgr.notify({title:(type==='positive'?'✅ ملاحظة إيجابية':'⚠ ملاحظة تحسين'),message:colName(nc)+': '+text.slice(0,60),icon:type==='positive'?'✅':'⚠',priority:priority==='critical'?'high':priority==='high'?'medium':'low',category:'employee'});}
 }
@@ -2587,7 +2702,7 @@ function renderPlans(){
   return`<div class="plan-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px"><div style="font-size:11px;font-weight:700;color:${c?c.color:'var(--cyan)'}">${c?colName(c):t('unknown')}</div><span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${statusBg};color:${statusColor}">${t(p.status||'active')}</span></div><div class="plan-goal">${p.goal||'—'}</div>${reasonHtml}${p.target?`<div style="font-size:10px;color:var(--text2);margin-top:4px">Target: <strong style="color:var(--amber)">${p.target}/10</strong></div>`:''}${actionsHtml}<div class="plan-progress" style="margin-top:8px"><div class="plan-progress-fill" style="width:${progress}%"></div></div><div style="font-size:10px;color:var(--text2);margin-bottom:7px">${progress}% · ${daysLeft!=null?(daysLeft>0?daysLeft+' '+t('days_remaining'):t('overdue')):'—'}</div>${role==='admin'?`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="openEditPlan('${p.id}')" style="padding:4px 9px;font-size:10px">✏</button>${p.status!=='completed'?`<button class="btn btn-emerald" onclick="completePlan('${p.id}')" style="padding:4px 9px;font-size:10px">✓</button>`:''}<button class="btn btn-danger" onclick="deletePlanById('${p.id}')" style="padding:4px 9px;font-size:10px">🗑</button></div>`:''}</div>`;}
   document.getElementById('plansBoard').innerHTML=`<div class="plans-col"><div class="plans-col-header"><span>⚡ ${t('active')}</span><span class="plans-col-count" style="background:var(--amber2);color:var(--amber)">${active.length}</span></div>${active.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div><div class="plans-col"><div class="plans-col-header"><span>👁 ${t('monitoring')}</span><span class="plans-col-count" style="background:var(--cyan3);color:var(--cyan)">${monitoring.length}</span></div>${monitoring.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div><div class="plans-col"><div class="plans-col-header"><span>✅ ${t('completed')}</span><span class="plans-col-count" style="background:var(--emerald3);color:var(--emerald)">${completed.length}</span></div>${completed.map(planCard).join('')||`<div style="color:var(--text2);font-size:11px;text-align:center;padding:16px">${t('no_data')}</div>`}</div>`;
 }
-function openPIPModal(colId){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}document.getElementById('pipModalTitle').textContent=t('new_plan');document.getElementById('pipId').value='';document.getElementById('pipColId').value=colId||'';['pipStart','pipEnd','pipTarget','pipGoal','pipReason','pipActions'].forEach(id=>document.getElementById(id).value='');document.getElementById('pipStatus').value='active';document.getElementById('pipDeleteBtn').style.display='none';openModal('pipModal');}
+function openPIPModal(colId){if(role!=='admin'){toast(t('viewer_title'),'#ff4d6d');return;}if(_guardArchived())return;document.getElementById('pipModalTitle').textContent=t('new_plan');document.getElementById('pipId').value='';document.getElementById('pipColId').value=colId||'';['pipStart','pipEnd','pipTarget','pipGoal','pipReason','pipActions'].forEach(id=>document.getElementById(id).value='');document.getElementById('pipStatus').value='active';document.getElementById('pipDeleteBtn').style.display='none';openModal('pipModal');}
 function openEditPlan(pipId){if(role!=='admin')return;const p=(db.settings?.pips||[]).find(x=>x.id===pipId);if(!p)return;document.getElementById('pipModalTitle').textContent=t('save');document.getElementById('pipId').value=p.id;document.getElementById('pipColId').value=p.colId||'';document.getElementById('pipStart').value=p.startDate||'';document.getElementById('pipEnd').value=p.endDate||'';document.getElementById('pipTarget').value=p.target||'';document.getElementById('pipGoal').value=p.goal||'';document.getElementById('pipReason').value=p.reason||'';document.getElementById('pipActions').value=p.actions||'';document.getElementById('pipStatus').value=p.status||'active';document.getElementById('pipDeleteBtn').style.display='';openModal('pipModal');}
 function savePlan(){const sd=document.getElementById('pipStart').value,ed=document.getElementById('pipEnd').value,tr=document.getElementById('pipTarget').value,goal=document.getElementById('pipGoal').value.trim(),reason=document.getElementById('pipReason').value.trim(),actions=document.getElementById('pipActions').value.trim(),status=document.getElementById('pipStatus').value,exId=document.getElementById('pipId').value,colId=document.getElementById('pipColId').value||curColId;if(!sd){toast(t('start_date'),'#ffb340');return;}if(!goal&&!reason){toast(t('goal'),'#ffb340');return;}snapshotUndo();if(!db.settings.pips)db.settings.pips=[];if(exId){const p=db.settings.pips.find(x=>x.id===exId);if(p)Object.assign(p,{startDate:sd,endDate:ed,target:tr?+tr:null,goal,reason,actions,status});}else db.settings.pips.push({id:'pip'+Date.now(),colId,startDate:sd,endDate:ed,target:tr?+tr:null,goal,reason,actions,status,createdAt:new Date().toISOString()});closeModal('pipModal');Store.save();renderPlans();if(curColId)updateTabBadges(db.colleagues.find(x=>x.id===curColId));toast('✅');}
 function completePlan(id){const p=(db.settings?.pips||[]).find(x=>x.id===id);if(!p)return;snapshotUndo();p.status='completed';p.completedAt=new Date().toISOString();Store.save();renderPlans();}
@@ -3368,6 +3483,7 @@ function toggleProfileMenu() {
 
 /* ── FAB (Floating Action Button) ── */
 function toggleFab() {
+  if(_guardArchived()) return;
   _fabOpen = !_fabOpen;
   const fab = document.getElementById('fabMenu') || document.querySelector('.fab-menu');
   if (fab) {
@@ -3932,6 +4048,7 @@ function toggleActType(id){
 
 function openLogActivityModal(){
   if(!curColId){ toast('اختر زميلاً أولاً','#ffb340'); return; }
+  if(_guardArchived()) return;
   var today=new Date().toISOString().split('T')[0];
   document.getElementById('logActDate').value=today;
   document.getElementById('logActStart').value='';
@@ -4525,6 +4642,7 @@ let _txImgLoading2=false;
 let _justAddedTxId=null;
 
 function openAddTxModal(){
+  if(_guardArchived()) return;
   if(role!=='admin'){toast('للمديرين فقط','#ff4d6d');return;}
   if(!curColId){toast('اختر زميلاً أولاً','#ffb340');return;}
   openModal('txTypeModal');
