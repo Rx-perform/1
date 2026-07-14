@@ -960,82 +960,8 @@ tr.ice-row td{border-top:none!important;border-bottom:none!important}
 
 
       <!-- ERRORS TAB (أخطاء الشهر) -->
-      <div class="inner-view" id="view-errors" style="flex-direction:column;gap:14px;padding:14px">
-
-        <!-- Period Banner -->
-        <div id="errPeriodBanner" style="display:none;padding:10px 16px;border-radius:10px;background:rgba(255,179,64,0.08);border:1px solid rgba(255,179,64,0.25);align-items:center;gap:10px">
-          <span style="font-size:16px">📅</span>
-          <div>
-            <div style="font-size:12px;font-weight:700;color:var(--amber)">فترة جديدة بدأت</div>
-            <div id="errPeriodBannerText" style="font-size:11px;color:var(--text2);margin-top:1px"></div>
-          </div>
-        </div>
-
-        <!-- Employee Management -->
-        <div style="padding:14px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--border)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              إدارة الموظفين
-            </div>
-            <button onclick="openErrEmpModal()" style="padding:6px 14px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">+ إضافة موظف</button>
-          </div>
-          <div id="errEmpChips" style="display:flex;flex-wrap:wrap;gap:7px">
-            <div style="font-size:11px;color:var(--text2);padding:8px 0">لا يوجد موظفون بعد. أضف موظفاً للبدء.</div>
-          </div>
-        </div>
-
-        <!-- Dashboard Cards + Controls -->
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;flex:1;min-width:280px">
-            <div style="padding:12px 14px;border-radius:12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.25);border-top:2px solid var(--emerald)">
-              <div style="font-size:9px;font-weight:700;color:var(--emerald);letter-spacing:.5px;margin-bottom:6px">تم التبليغ</div>
-              <div id="errCard1" style="font-size:24px;font-weight:900;color:var(--emerald);font-family:var(--mono)">0</div>
-            </div>
-            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.25);border-top:2px solid var(--rose)">
-              <div style="font-size:9px;font-weight:700;color:var(--rose);letter-spacing:.5px;margin-bottom:6px">لم يتم التبليغ</div>
-              <div id="errCard2" style="font-size:24px;font-weight:900;color:var(--rose);font-family:var(--mono)">0</div>
-            </div>
-            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,179,64,0.07);border:1px solid rgba(255,179,64,0.25);border-top:2px solid var(--amber)">
-              <div style="font-size:9px;font-weight:700;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">تحتاج مناقشة</div>
-              <div id="errCard3" style="font-size:24px;font-weight:900;color:var(--amber);font-family:var(--mono)">0</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap">
-            <select id="errPeriodSel" onchange="renderErrTab()" style="background:var(--glass);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:11px;font-weight:600;padding:7px 10px;cursor:pointer;outline:none"></select>
-            <button onclick="printErrReport()" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              طباعة
-            </button>
-            <button onclick="openAddErrModal()" style="display:flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;color:#000;font-size:11px;font-weight:800;cursor:pointer">
-              + إضافة خطأ
-            </button>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div style="border-radius:14px;border:1px solid var(--border);background:var(--glass);overflow:hidden">
-          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-            <table style="width:100%;min-width:420px;border-collapse:collapse;font-size:12px" id="errTable">
-              <thead>
-                <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,0.03)">
-                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">#</th>
-                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">الموظف</th>
-                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">التاريخ</th>
-                  <th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--text2)">تفاصيل الخطأ</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">📷</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">الحالة</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">نقاش</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--text2)">عرض</th>
-                </tr>
-              </thead>
-              <tbody id="errTableBody">
-                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2);font-size:13px">لا توجد أخطاء مسجلة لهذه الفترة</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <!-- ERRORS TAB — content rendered in #errFullPage overlay -->
+      <div class="inner-view" id="view-errors"></div>
 
     </div><!-- /innerContent -->
   </div><!-- /workspace -->
