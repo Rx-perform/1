@@ -1427,19 +1427,36 @@ const Store={
     clearTimeout(_syncT);_syncT=setTimeout(()=>{const s=JSON.stringify(db);_sq=_sq.then(()=>Store.push(s)).catch(()=>{});},500);},
   async push(snap){setSyncSt('⏳',t('period')+'…');
     const pushTime=Date.now();
-    const payload={id:'main',data:JSON.parse(snap),updated_at:new Date(pushTime).toISOString()};
+    // ── Strip large binary data (images) before sending to server ──
+    // Images are stored locally only; server keeps everything else
+    const dbFull=JSON.parse(snap);
+    const dbLite=JSON.parse(JSON.stringify(dbFull));
+    // Strip invoice images
+    if(dbLite.transactions){
+      Object.values(dbLite.transactions).forEach(colTx=>{
+        Object.values(colTx).forEach(tx=>{if(tx.imgData)delete tx.imgData;});
+      });
+    }
+    // Strip error images
+    if(dbLite.errors?.records){
+      Object.values(dbLite.errors.records).forEach(period=>{
+        Object.values(period).forEach(r=>{if(r.images)r.images=r.images.map(()=>'__img__');});
+      });
+    }
+    const payload={id:'main',data:dbLite,updated_at:new Date(pushTime).toISOString()};
     try{
       // Try PATCH first (row exists)
       let r=await fetch(EP,{method:'PATCH',headers:SH,body:JSON.stringify({data:payload.data,updated_at:payload.updated_at})});
-      // If no row matched (204 with no content but PATCH on missing row returns empty), do upsert via POST
+      // If no row matched, do upsert via POST
       if(!r.ok||(r.status===200&&(await r.clone().text())==='[]')){
         const EP2=`${SUPA_URL}/rest/v1/rxperform`;
         const SH2={...SH,'Prefer':'resolution=merge-duplicates,return=minimal'};
         r=await fetch(EP2,{method:'POST',headers:SH2,body:JSON.stringify(payload)});
       }
-      if(r.ok){db._savedAt=pushTime;_pendingPush=false;try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}}
-      setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed');
-    }catch(e){setSyncSt('⚠','Offline');}},
+      if(r.ok){db._savedAt=pushTime;_pendingPush=false;try{localStorage.setItem('rxp_db',JSON.stringify(dbFull));}catch(e){}}
+      else{console.warn('[push] failed:',r.status,await r.clone().text().catch(()=>''));}
+      setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed ('+r.status+')');
+    }catch(e){setSyncSt('⚠','Offline');console.warn('[push] error:',e);}},
   async pull(){setSyncSt('⏳','Syncing…');
     if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
       setSyncSt('✅','Synced '+now12());return false;
@@ -1468,19 +1485,39 @@ const Store={
           Store.defaults();
 
           // ── Restore/merge local-wins data ──
-          // Transactions: merge by id — local wins if same id (preserves images)
+          // Transactions: server has no images (stripped on push) — always restore from local
           if(!db.transactions) db.transactions={};
           Object.keys(localTx).forEach(colId=>{
             if(!db.transactions[colId]) db.transactions[colId]={};
             Object.keys(localTx[colId]).forEach(txId=>{
               const localEntry = localTx[colId][txId];
               const remoteEntry = db.transactions[colId]?.[txId];
-              // local always wins for transactions (images are local-only)
-              if(!remoteEntry || (localEntry.createdAt >= (remoteEntry.createdAt||0))){
+              if(!remoteEntry){
+                // New local tx not on server yet
                 db.transactions[colId][txId] = localEntry;
+              } else {
+                // Merge: take server metadata, restore local image
+                db.transactions[colId][txId] = {...remoteEntry};
+                if(localEntry.imgData) db.transactions[colId][txId].imgData = localEntry.imgData;
+                // If local is newer, use local
+                if(localEntry.createdAt > (remoteEntry.createdAt||0)){
+                  db.transactions[colId][txId] = {...localEntry};
+                }
               }
             });
           });
+
+          // Error images: restore from local (server has __img__ placeholders)
+          if(localErrors.records && db.errors?.records){
+            Object.keys(localErrors.records).forEach(pKey=>{
+              if(!db.errors.records[pKey]) return;
+              Object.keys(localErrors.records[pKey]).forEach(id=>{
+                if(db.errors.records[pKey][id] && localErrors.records[pKey][id]?.images?.length){
+                  db.errors.records[pKey][id].images = localErrors.records[pKey][id].images;
+                }
+              });
+            });
+          }
 
           // Scores: local wins per day-entry (more granular)
           if(!db.scores) db.scores={};
