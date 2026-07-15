@@ -1383,8 +1383,10 @@ const Store={
       else{console.warn('[push] failed:',r.status,await r.clone().text().catch(()=>''));}
       setSyncSt(r.ok?'✅':'⚠',r.ok?'Saved '+now12():'Save failed ('+r.status+')');
     }catch(e){setSyncSt('⚠','Offline');console.warn('[push] error:',e);}},
-  async pull(){setSyncSt('⏳','Syncing…');
-    if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
+  async pull(isFreshLoad){setSyncSt('⏳','Syncing…');
+    // On fresh load always fetch from server — user may have edited on another device
+    // On auto-sync skip if we have very recent local edits
+    if(!isFreshLoad && (_pendingPush||(Date.now()-_lastLocalEdit)<8000)){
       setSyncSt('✅','Synced '+now12());return false;
     }
     try{
@@ -1393,82 +1395,98 @@ const Store={
       if(rows?.length&&rows[0].data){
         const rem=rows[0].data;
         if(rem?.colleagues?.length||rem?.criteria?.length){
-          // check again — local edit may have happened during the request
-          if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
-            setSyncSt('✅','Synced '+now12());return false;
-          }
-          // ── SAFE MERGE: never lose local transactions/images/shifts/errors ──
-          // Save critical local data before overwriting
-          const localTx        = db.transactions    ? JSON.parse(JSON.stringify(db.transactions))    : {};
-          const localShifts    = db.shifts          ? JSON.parse(JSON.stringify(db.shifts))          : {};
-          const localDayStatus = db.dayStatus       ? JSON.parse(JSON.stringify(db.dayStatus))       : {};
-          const localErrors    = db.errors          ? JSON.parse(JSON.stringify(db.errors))          : {};
-          const localScores    = db.scores          ? JSON.parse(JSON.stringify(db.scores))          : {};
-          const localActivities= db.activities      ? JSON.parse(JSON.stringify(db.activities))      : {};
 
-          // Replace db with remote (source of truth for colleagues/criteria/notes/settings)
-          db = rem;
-          Store.defaults();
-
-          // ── Restore/merge local-wins data ──
-          // Transactions: server has no images (stripped on push) — always restore from local
-          if(!db.transactions) db.transactions={};
-          Object.keys(localTx).forEach(colId=>{
-            if(!db.transactions[colId]) db.transactions[colId]={};
-            Object.keys(localTx[colId]).forEach(txId=>{
-              const localEntry = localTx[colId][txId];
-              const remoteEntry = db.transactions[colId]?.[txId];
-              if(!remoteEntry){
-                // New local tx not on server yet
-                db.transactions[colId][txId] = localEntry;
-              } else {
-                // Merge: take server metadata, restore local image
-                db.transactions[colId][txId] = {...remoteEntry};
-                if(localEntry.imgData) db.transactions[colId][txId].imgData = localEntry.imgData;
-                // If local is newer, use local
-                if(localEntry.createdAt > (remoteEntry.createdAt||0)){
-                  db.transactions[colId][txId] = {...localEntry};
-                }
-              }
+          if(isFreshLoad){
+            // ── FRESH LOAD: server is source of truth ──
+            // Only preserve local images (not stored on server)
+            const localTxImgs={};
+            if(db.transactions) Object.keys(db.transactions).forEach(colId=>{
+              localTxImgs[colId]={};
+              Object.keys(db.transactions[colId]||{}).forEach(txId=>{
+                if(db.transactions[colId][txId]?.imgData)
+                  localTxImgs[colId][txId]=db.transactions[colId][txId].imgData;
+              });
             });
-          });
-
-          // Error images: restore from local (server has __img__ placeholders)
-          if(localErrors.records && db.errors?.records){
-            Object.keys(localErrors.records).forEach(pKey=>{
-              if(!db.errors.records[pKey]) return;
-              Object.keys(localErrors.records[pKey]).forEach(id=>{
-                if(db.errors.records[pKey][id] && localErrors.records[pKey][id]?.images?.length){
-                  db.errors.records[pKey][id].images = localErrors.records[pKey][id].images;
+            const localErrImgs={};
+            if(db.errors?.records) Object.keys(db.errors.records).forEach(pKey=>{
+              localErrImgs[pKey]={};
+              Object.keys(db.errors.records[pKey]||{}).forEach(id=>{
+                const imgs=db.errors.records[pKey][id]?.images;
+                if(imgs?.length) localErrImgs[pKey][id]=imgs;
+              });
+            });
+            // Full replace from server
+            db=rem; Store.defaults();
+            // Restore local images only
+            Object.keys(localTxImgs).forEach(colId=>{
+              Object.keys(localTxImgs[colId]).forEach(txId=>{
+                if(db.transactions?.[colId]?.[txId])
+                  db.transactions[colId][txId].imgData=localTxImgs[colId][txId];
+              });
+            });
+            if(db.errors?.records) Object.keys(localErrImgs).forEach(pKey=>{
+              Object.keys(localErrImgs[pKey]).forEach(id=>{
+                if(db.errors.records[pKey]?.[id])
+                  db.errors.records[pKey][id].images=localErrImgs[pKey][id];
+              });
+            });
+          } else {
+            // ── AUTO-SYNC: check again after network wait ──
+            if(_pendingPush||(Date.now()-_lastLocalEdit)<8000){
+              setSyncSt('✅','Synced '+now12());return false;
+            }
+            // Merge: server wins for structure, local wins for recent edits & images
+            const localTx        = db.transactions ? JSON.parse(JSON.stringify(db.transactions)) : {};
+            const localShifts    = db.shifts       ? JSON.parse(JSON.stringify(db.shifts))       : {};
+            const localDayStatus = db.dayStatus    ? JSON.parse(JSON.stringify(db.dayStatus))    : {};
+            const localErrors    = db.errors       ? JSON.parse(JSON.stringify(db.errors))       : {};
+            const localScores    = db.scores       ? JSON.parse(JSON.stringify(db.scores))       : {};
+            const localActs      = db.activities   ? JSON.parse(JSON.stringify(db.activities))   : {};
+            db=rem; Store.defaults();
+            // Transactions: restore all local (server has no images)
+            if(!db.transactions) db.transactions={};
+            Object.keys(localTx).forEach(colId=>{
+              if(!db.transactions[colId]) db.transactions[colId]={};
+              Object.keys(localTx[colId]).forEach(txId=>{
+                const le=localTx[colId][txId], re=db.transactions[colId]?.[txId];
+                if(!re){ db.transactions[colId][txId]=le; }
+                else {
+                  db.transactions[colId][txId]={...re};
+                  if(le.imgData) db.transactions[colId][txId].imgData=le.imgData;
+                  if(le.createdAt>(re.createdAt||0)) db.transactions[colId][txId]={...le};
                 }
               });
             });
-          }
-
-          // Scores: local wins per day-entry (more granular)
-          if(!db.scores) db.scores={};
-          Object.keys(localScores).forEach(colId=>{
-            if(!db.scores[colId]) db.scores[colId]={};
-            Object.keys(localScores[colId]).forEach(month=>{
-              if(!db.scores[colId][month]) db.scores[colId][month]={};
-              Object.keys(localScores[colId][month]).forEach(crId=>{
-                if(!db.scores[colId][month][crId]) db.scores[colId][month][crId]={};
-                Object.keys(localScores[colId][month][crId]).forEach(day=>{
-                  const le = localScores[colId][month][crId][day];
-                  const re = db.scores[colId][month][crId][day];
-                  if(le && (!re || (le.ts && re.ts && le.ts > re.ts) || (le.ts && !re.ts))){
-                    db.scores[colId][month][crId][day] = le;
-                  }
+            // Error images
+            if(localErrors.records&&db.errors?.records)
+              Object.keys(localErrors.records).forEach(pKey=>{
+                Object.keys(localErrors.records[pKey]||{}).forEach(id=>{
+                  if(db.errors.records[pKey]?.[id]&&localErrors.records[pKey][id]?.images?.length)
+                    db.errors.records[pKey][id].images=localErrors.records[pKey][id].images;
+                });
+              });
+            // Scores: local wins per day if newer
+            if(!db.scores) db.scores={};
+            Object.keys(localScores).forEach(colId=>{
+              if(!db.scores[colId]) db.scores[colId]={};
+              Object.keys(localScores[colId]).forEach(month=>{
+                if(!db.scores[colId][month]) db.scores[colId][month]={};
+                Object.keys(localScores[colId][month]).forEach(crId=>{
+                  if(!db.scores[colId][month][crId]) db.scores[colId][month][crId]={};
+                  Object.keys(localScores[colId][month][crId]).forEach(day=>{
+                    const le=localScores[colId][month][crId][day];
+                    const re=db.scores[colId][month][crId][day];
+                    if(le&&(!re||(le.ts&&re.ts&&le.ts>re.ts)||(le.ts&&!re.ts)))
+                      db.scores[colId][month][crId][day]=le;
+                  });
                 });
               });
             });
-          });
-
-          // Shifts, dayStatus, activities, errors — local always wins
-          if(Object.keys(localShifts).length)    db.shifts     = localShifts;
-          if(Object.keys(localDayStatus).length)  db.dayStatus  = localDayStatus;
-          if(Object.keys(localActivities).length) db.activities = localActivities;
-          if(localErrors.employees?.length||Object.keys(localErrors.records||{}).length) db.errors = localErrors;
+            if(Object.keys(localShifts).length)    db.shifts    =localShifts;
+            if(Object.keys(localDayStatus).length)  db.dayStatus =localDayStatus;
+            if(Object.keys(localActs).length)       db.activities=localActs;
+            if(localErrors.employees?.length||Object.keys(localErrors.records||{}).length) db.errors=localErrors;
+          }
 
           try{localStorage.setItem('rxp_db',JSON.stringify(db));}catch(e){}
         } else {
@@ -1745,7 +1763,7 @@ function launch(){
   buildQAGrid();startClock();applyLang();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();
   // auto-open first colleague
   if(db.colleagues.length){selectTab(db.colleagues[0].id);}
-  Store.pull().then(()=>{if(!db.colleagues.length)Store.seed();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(!curColId&&db.colleagues.length)selectTab(db.colleagues[0].id);});
+  Store.pull(true).then(()=>{if(!db.colleagues.length)Store.seed();updateTopbar();renderTabs();buildNotifications();updateNotifBadge();if(!curColId&&db.colleagues.length)selectTab(db.colleagues[0].id);});
   // Auto-sync every 90 seconds — always refresh UI even if no remote change
   if(window._autoSyncInterval)clearInterval(window._autoSyncInterval);
   window._autoSyncInterval=setInterval(function(){
